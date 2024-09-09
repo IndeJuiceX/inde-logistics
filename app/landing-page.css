@@ -3,59 +3,65 @@
 /* Landing Page Container */
 .landing-container {
     @apply max-w-4xl mx-auto p-6 bg-gray-50 rounded-lg shadow-md;
-  }
-  
-  /* Landing Page Title */
-  .landing-title {
+}
+
+/* Landing Page Title */
+.landing-title {
     @apply text-3xl font-bold mb-6 text-center text-gray-800;
-  }
-  
-  /* Loading Text */
-  .loading-text {
+}
+
+/* Loading Text */
+.loading-text {
     @apply text-center text-gray-600;
-  }
-  
-  /* Vendor List Grid */
-  .vendor-list {
+}
+
+/* Vendor List Grid */
+.vendor-list {
     @apply grid grid-cols-1 gap-4 sm:grid-cols-2;
-  }
-  
-  /* Individual Vendor Card */
-  .vendor-card {
+}
+
+/* Individual Vendor Card */
+.vendor-card {
     @apply bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow;
-  }
-  
-  /* Vendor Name */
-  .vendor-name {
+}
+
+/* Vendor Name */
+.vendor-name {
     @apply text-xl font-semibold text-gray-800 mb-2;
-  }
-  
-  /* Vendor Info */
-  .vendor-info {
+}
+
+/* Vendor Info */
+.vendor-info {
     @apply text-gray-700 mb-1;
-  }
-  
-  /* Vendor Status */
-  .vendor-status {
+}
+
+/* Vendor Status */
+.vendor-status {
     @apply text-gray-600 mt-4 font-medium;
-  }
-  
-  /* Active Status Style */
-  .status-active {
+}
+
+/* Active Status Style */
+.status-active {
     @apply text-green-600;
-  }
-  
-  /* Inactive Status Style */
-  .status-inactive {
+}
+
+/* Inactive Status Style */
+.status-inactive {
     @apply text-red-600;
-  }
-  
-  /* No Vendors Found Text */
-  .no-vendors {
+}
+
+/* No Vendors Found Text */
+.no-vendors {
     @apply text-center text-gray-600 mt-4;
-  }
-  
-  .upload-button {
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.upload-button {
     background-color: #007bff;
     color: white;
     border: none;
@@ -63,18 +69,19 @@
     margin-top: 10px;
     cursor: pointer;
     border-radius: 5px;
-  }
-  
-  .upload-button:hover {
+}
+
+.upload-button:hover {
     background-color: #0056b3;
-  }
-  
-  .upload-button:disabled {
+}
+
+.upload-button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
-  }
-  .upload-button,
-  .view-button {
+}
+
+.upload-button,
+.view-button {
     background-color: #007bff;
     color: white;
     border: none;
@@ -82,15 +89,24 @@
     margin-top: 10px;
     cursor: pointer;
     border-radius: 5px;
-  }
-  
-  .upload-button:hover,
-  .view-button:hover {
+}
+
+.upload-button:hover,
+.view-button:hover {
     background-color: #0056b3;
-  }
-  
-  .upload-button:disabled {
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.upload-button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
-  }
-  
+}

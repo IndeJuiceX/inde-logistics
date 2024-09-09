@@ -21,11 +21,8 @@ export default function Home() {
         // Check if products exist for each vendor
         const productExistence = {};
         for (const vendor of data) {
-
           const res = await fetch(`/api/v1/internal/vendor/products?vendorId=${vendor.PK.split('VENDOR#')[1]}`);
-          
           const productData = await res.json();
-          console.log(productData)
           productExistence[vendor.PK] = productData.length > 0;
         }
 
@@ -53,15 +50,12 @@ export default function Home() {
       });
 
       if (response.ok) {
-        console.log(`Products uploaded successfully for vendor ${vendorId}`);
         alert(`Products uploaded successfully for vendor ${vendorId}`);
         setVendorProductsExist((prev) => ({ ...prev, [vendorId]: true })); // Update the existence check
       } else {
-        console.error(`Failed to upload products for vendor ${vendorId}`);
         alert(`Failed to upload products for vendor ${vendorId}`);
       }
     } catch (error) {
-      console.error('Error uploading products:', error);
       alert(`Error uploading products for vendor ${vendorId}`);
     } finally {
       setUploading((prev) => ({ ...prev, [vendorId]: false }));
@@ -69,12 +63,28 @@ export default function Home() {
   };
 
   const handleViewProducts = (vendorId) => {
-    // Logic to view products for the given vendorId
-    //alert(`Viewing products for vendor ${vendorId}`);
-    // You can navigate to a new page or display a modal with product information
     const extractedId = vendorId.split('VENDOR#')[1];
     router.push(`/${extractedId}/products`);  // Navigate to the vendor-specific products page
+  };
 
+  const handleDeleteProducts = async (vendorId) => {
+    const confirmed = confirm(`Are you sure you want to delete all products for vendor ${vendorId}?`);
+    if (!confirmed) return;
+    const extractedId = vendorId.split('VENDOR#')[1];
+    try {
+      const response = await fetch(`/api/v1/internal/vendor/delete-products?vendorId=${extractedId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert(`Products deleted successfully for vendor ${vendorId}`);
+        setVendorProductsExist((prev) => ({ ...prev, [vendorId]: false })); // Update the existence check
+      } else {
+        alert(`Failed to delete products for vendor ${vendorId}`);
+      }
+    } catch (error) {
+      alert(`Error deleting products for vendor ${vendorId}`);
+    }
   };
 
   return (
@@ -95,24 +105,34 @@ export default function Home() {
                 <p className={`vendor-status ${vendor.Status === 'Active' ? 'status-active' : 'status-inactive'}`}>
                   Status: {vendor.Status}
                 </p>
-                
-                {/* Conditional rendering for Upload and View buttons */}
-                {!vendorProductsExist[vendor.PK] ? (
-                  <button
-                    className="upload-button"
-                    onClick={() => handleUploadProducts(vendor.PK)}
-                    disabled={uploading[vendor.PK]}
-                  >
-                    {uploading[vendor.PK] ? 'Uploading...' : 'Upload Products'}
-                  </button>
-                ) : (
-                  <button
-                    className="view-button"
-                    onClick={() => handleViewProducts(vendor.PK)}
-                  >
-                    View Products
-                  </button>
-                )}
+
+                <div className="button-container">
+                  {/* Conditional rendering for Upload, View, and Delete buttons */}
+                  {!vendorProductsExist[vendor.PK] ? (
+                    <button
+                      className="upload-button"
+                      onClick={() => handleUploadProducts(vendor.PK)}
+                      disabled={uploading[vendor.PK]}
+                    >
+                      {uploading[vendor.PK] ? 'Uploading...' : 'Upload Products'}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="view-button"
+                        onClick={() => handleViewProducts(vendor.PK)}
+                      >
+                        View Products
+                      </button>
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDeleteProducts(vendor.PK)}
+                      >
+                        Delete Products
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))
           ) : (
