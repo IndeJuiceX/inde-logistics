@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+  title: Vendor Product Catalogue API
+  version: 1.0.0
+  description: >
+    API documentation for the Vendor Product Catalogue system.
+    This API allows vendors to upload product batches (up to 500 products)
+    with a maximum payload size of 5 MB.
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+
+paths:
+  /vendor/upload-products:
+    post:
+      summary: Upload product catalog
+      description: >
+        Endpoint for vendors to upload their product catalog in batches.
+        The payload must contain a maximum of 500 products and should not exceed 5 MB in size.
+        Requires API token for authentication.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Products:
+                  type: array
+                  maxItems: 500
+                  items:
+                    $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Products uploaded successfully
+        '400':
+          description: Validation errors or request payload exceeds limits
+        '401':
+          description: Unauthorized - Missing or invalid API token
+        '413':
+          description: Payload exceeds the allowed size limit (5 MB)
+        '500':
+          description: Server error
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Product:
+      type: object
+      required:
+        - VendorSku
+        - Status
+        - Stock
+        - Details
+      properties:
+        VendorSku:
+          type: string
+          example: "12345678"
+        Status:
+          type: string
+          example: "Active"
+        Stock:
+          type: integer
+          example: 0
+        Details:
+          type: object
+          required:
+            - Name
+            - CostPrice
+            - SalePrice
+          properties:
+            Name:
+              type: string
+              example: "Product A"
+            CostPrice:
+              type: number
+              example: 10.99
+            SalePrice:
+              type: number
+              example: 14.99
+            BrandName:
+              type: string
+              example: "Brand A"
+            Image:
+              type: string
+              example: "https://example.com/image.jpg"
+            Attributes:
+              type: object
+              additionalProperties:
+                type: string
+              example:
+                Color: "Red"
+                Size: "Medium"
+                Material: "Cotton"

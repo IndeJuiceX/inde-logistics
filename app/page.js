@@ -1,101 +1,125 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
+import './landing-page.css'; // Import the new CSS file
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const router = useRouter();  // Use Next.js router
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState({}); // Track upload state for each vendor
+  const [vendorProductsExist, setVendorProductsExist] = useState({}); // Track product existence for each vendor
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await fetch('/api/v1/internal/vendors');
+        const data = await response.json();
+
+        // Check if products exist for each vendor
+        const productExistence = {};
+        for (const vendor of data) {
+
+          const res = await fetch(`/api/v1/internal/vendor/products?vendorId=${vendor.PK.split('VENDOR#')[1]}`);
+          
+          const productData = await res.json();
+          console.log(productData)
+          productExistence[vendor.PK] = productData.length > 0;
+        }
+
+        setVendors(data);
+        setVendorProductsExist(productExistence);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching vendors:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchVendors();
+  }, []);
+
+  const handleUploadProducts = async (vendorId) => {
+    setUploading((prev) => ({ ...prev, [vendorId]: true }));
+    try {
+      const response = await fetch('/api/v1/vendor/upload-products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ vendorId }),
+      });
+
+      if (response.ok) {
+        console.log(`Products uploaded successfully for vendor ${vendorId}`);
+        alert(`Products uploaded successfully for vendor ${vendorId}`);
+        setVendorProductsExist((prev) => ({ ...prev, [vendorId]: true })); // Update the existence check
+      } else {
+        console.error(`Failed to upload products for vendor ${vendorId}`);
+        alert(`Failed to upload products for vendor ${vendorId}`);
+      }
+    } catch (error) {
+      console.error('Error uploading products:', error);
+      alert(`Error uploading products for vendor ${vendorId}`);
+    } finally {
+      setUploading((prev) => ({ ...prev, [vendorId]: false }));
+    }
+  };
+
+  const handleViewProducts = (vendorId) => {
+    // Logic to view products for the given vendorId
+    //alert(`Viewing products for vendor ${vendorId}`);
+    // You can navigate to a new page or display a modal with product information
+    const extractedId = vendorId.split('VENDOR#')[1];
+    router.push(`/${extractedId}/products`);  // Navigate to the vendor-specific products page
+
+  };
+
+  return (
+    <div className="landing-container">
+      <h1 className="landing-title">Vendors List</h1>
+      {loading ? (
+        <p className="loading-text">Loading vendors...</p>
+      ) : (
+        <div className="vendor-list">
+          {vendors.length > 0 ? (
+            vendors.map((vendor) => (
+              <div key={vendor.PK} className="vendor-card">
+                <h2 className="vendor-name">{vendor.VendorDetails.CompanyName}</h2>
+                <p className="vendor-info"><strong>Company Number:</strong> {vendor.VendorDetails.CompanyNumber}</p>
+                <p className="vendor-info"><strong>Phone:</strong> {vendor.VendorDetails.Phone}</p>
+                <p className="vendor-info"><strong>Email:</strong> {vendor.VendorDetails.Email}</p>
+                <p className="vendor-info"><strong>Shipping Code:</strong> {vendor.VendorDetails.ShippingCode}</p>
+                <p className={`vendor-status ${vendor.Status === 'Active' ? 'status-active' : 'status-inactive'}`}>
+                  Status: {vendor.Status}
+                </p>
+                
+                {/* Conditional rendering for Upload and View buttons */}
+                {!vendorProductsExist[vendor.PK] ? (
+                  <button
+                    className="upload-button"
+                    onClick={() => handleUploadProducts(vendor.PK)}
+                    disabled={uploading[vendor.PK]}
+                  >
+                    {uploading[vendor.PK] ? 'Uploading...' : 'Upload Products'}
+                  </button>
+                ) : (
+                  <button
+                    className="view-button"
+                    onClick={() => handleViewProducts(vendor.PK)}
+                  >
+                    View Products
+                  </button>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="no-vendors">No vendors found.</p>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
 }
