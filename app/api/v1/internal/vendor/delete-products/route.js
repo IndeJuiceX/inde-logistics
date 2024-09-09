@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { queryItems, deleteItemBatch } from '@/lib/dynamodb';  // Import your DynamoDB helper functions
+import { queryItems, batchWriteItems } from '@/lib/dynamodb';  // Import your DynamoDB helper functions
 
 export async function DELETE(request) {
   try {
@@ -33,7 +33,7 @@ export async function DELETE(request) {
     console.log('ITEM TO DELETE IS')
     console.log(itemsToDelete[0])
     // Batch delete the products
-    const deleteResponse = await deleteItemBatch(itemsToDelete);
+    const deleteResponse = await batchWriteItems(itemsToDelete,'Delete');
     if (!deleteResponse.success) {
       return NextResponse.json({ error: 'Failed to delete products', details: deleteResponse.error }, { status: 500 });
     }

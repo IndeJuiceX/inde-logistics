@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import SchemaValidation from '@/services/products/SchemaValidation';
-import { putItemBatch, getItem } from '@/lib/dynamodb';
+import { batchWriteItems, getItem } from '@/lib/dynamodb';
 import { generateSK } from '@/services/products/Helper';  // Import the generateSK function
 import { decodeToken } from '@/services/Helper';
 
@@ -89,7 +89,7 @@ export async function POST(request) {
     });
 
     // Call DynamoDB batch write
-    const dbWriteResponse = await putItemBatch(validatedProducts);
+    const dbWriteResponse = await batchWriteItems(validatedProducts,'Put');
 
     if (!dbWriteResponse.success) {
       return NextResponse.json({ error: 'Failed to save products to database', details: dbWriteResponse.error }, { status: 500 });
