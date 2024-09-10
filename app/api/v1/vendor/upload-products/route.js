@@ -89,18 +89,20 @@ export async function POST(request) {
     });
 
     // Call DynamoDB batch write
-    const dbWriteResponse = await batchWriteItems(validatedProducts,'Put');
+    const dbWriteResponse = await batchWriteItems(validatedProducts, 'Put');
 
     if (!dbWriteResponse.success) {
       return NextResponse.json({ error: 'Failed to save products to database', details: dbWriteResponse.error }, { status: 500 });
     }
 
-    const { added, duplicates, errors } = dbWriteResponse.results;
+    const {
+      added = [],
+      errors = []
+    } = dbWriteResponse.results || {};
 
     return NextResponse.json({
       message: 'Products uploaded successfully',
       addedCount: added.length,
-      duplicateCount: duplicates.length,
       errorCount: errors.length,
       errors: errors.length > 0 ? errors : undefined,
     }, { status: 200 });
