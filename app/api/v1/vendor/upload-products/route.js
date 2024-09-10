@@ -73,6 +73,7 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+    console.log('TOTAL VALID PRODUCTS = '+validationResults.validatedProducts.length);
 
     // Prepare products for insertion
     const validatedProducts = validationResults.validatedProducts.map((product) => {
@@ -87,7 +88,7 @@ export async function POST(request) {
         Details: product.Details,
       };
     });
-
+    console.log('TOTAL VALID PRODUCTS BEFORE WRITE COMMAND = '+validatedProducts.length);
     // Call DynamoDB batch write
     const dbWriteResponse = await batchWriteItems(validatedProducts, 'Put');
 
@@ -107,7 +108,7 @@ export async function POST(request) {
       errors: errors.length > 0 ? errors : undefined,
     }, { status: 200 });
   } catch (error) {
-    console.error('Error in /upload-products endpoint:', error);
+   // console.error('Error in /upload-products endpoint:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
