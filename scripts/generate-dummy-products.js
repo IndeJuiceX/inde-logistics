@@ -25,7 +25,7 @@ const generateProduct = (i) => ({
 
 // Generate 500 products
 const products = [];
-for (let i = 1; i <= 5000; i++) {
+for (let i = 1; i <= 10; i++) {
   products.push(generateProduct(i));
 }
 

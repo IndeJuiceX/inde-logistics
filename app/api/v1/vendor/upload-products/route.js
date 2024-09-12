@@ -21,6 +21,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
     }
 
+    console.log(decoded);
     // Lookup vendor by API token
     const result = await getItem(`VENDOR#${decoded.vendorId}`, `VENDOR#${decoded.vendorId}`);
     if (!result.success) {
