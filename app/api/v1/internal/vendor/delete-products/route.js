@@ -25,8 +25,8 @@ export async function DELETE(request) {
 
     // Extract the PK and SK for each product to delete them
     const itemsToDelete = products.map(product => ({
-      PK: product.PK,
-      SK: product.SK,
+      pk: product.pk,
+      sk: product.sk,
     }));
 
     console.log('ITEMS TO DELETE SIZE IS--'+itemsToDelete.length)
