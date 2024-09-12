@@ -21,9 +21,9 @@ export default function Home() {
         // Check if products exist for each vendor
         const productExistence = {};
         for (const vendor of data) {
-          const res = await fetch(`/api/v1/internal/vendor/products?vendorId=${vendor.PK.split('VENDOR#')[1]}`);
+          const res = await fetch(`/api/v1/internal/vendor/products?vendorId=${vendor.pk.split('VENDOR#')[1]}`);
           const productData = await res.json();
-          productExistence[vendor.PK] = productData.length > 0;
+          productExistence[vendor.pk] = productData.length > 0;
         }
 
         setVendors(data);
@@ -96,37 +96,37 @@ export default function Home() {
         <div className="vendor-list">
           {vendors.length > 0 ? (
             vendors.map((vendor) => (
-              <div key={vendor.PK} className="vendor-card">
-                <h2 className="vendor-name">{vendor.VendorDetails.CompanyName}</h2>
-                <p className="vendor-info"><strong>Company Number:</strong> {vendor.VendorDetails.CompanyNumber}</p>
-                <p className="vendor-info"><strong>Phone:</strong> {vendor.VendorDetails.Phone}</p>
-                <p className="vendor-info"><strong>Email:</strong> {vendor.VendorDetails.Email}</p>
-                <p className="vendor-info"><strong>Shipping Code:</strong> {vendor.VendorDetails.ShippingCode}</p>
-                <p className={`vendor-status ${vendor.Status === 'Active' ? 'status-active' : 'status-inactive'}`}>
-                  Status: {vendor.Status}
+              <div key={vendor.pk} className="vendor-card">
+                <h2 className="vendor-name">{vendor.vendor_details.company_name}</h2>
+                <p className="vendor-info"><strong>Company Number:</strong> {vendor.vendor_details.company_number}</p>
+                <p className="vendor-info"><strong>Phone:</strong> {vendor.vendor_details.phone}</p>
+                <p className="vendor-info"><strong>Email:</strong> {vendor.vendor_details.email}</p>
+                <p className="vendor-info"><strong>Shipping Code:</strong> {vendor.vendor_details.shipping_code}</p>
+                <p className={`vendor-status ${vendor.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
+                  Status: {vendor.status}
                 </p>
 
                 <div className="button-container">
                   {/* Conditional rendering for Upload, View, and Delete buttons */}
-                  {!vendorProductsExist[vendor.PK] ? (
+                  {!vendorProductsExist[vendor.pk] ? (
                     <button
                       className="upload-button"
-                      onClick={() => handleUploadProducts(vendor.PK)}
-                      disabled={uploading[vendor.PK]}
+                      onClick={() => handleUploadProducts(vendor.pk)}
+                      disabled={uploading[vendor.pk]}
                     >
-                      {uploading[vendor.PK] ? 'Uploading...' : 'Upload Products'}
+                      {uploading[vendor.pk] ? 'Uploading...' : 'Upload Products'}
                     </button>
                   ) : (
                     <>
                       <button
                         className="view-button"
-                        onClick={() => handleViewProducts(vendor.PK)}
+                        onClick={() => handleViewProducts(vendor.pk)}
                       >
                         View Products
                       </button>
                       <button
                         className="delete-button"
-                        onClick={() => handleDeleteProducts(vendor.PK)}
+                        onClick={() => handleDeleteProducts(vendor.pk)}
                       >
                         Delete Products
                       </button>

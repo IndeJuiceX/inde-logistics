@@ -21,18 +21,18 @@ export async function POST(req) {
     const apiKey = generateJwtToken(vendorId,companyNumber);//uuidv4();
 
     const vendorData = {
-      PK: `VENDOR#${vendorId}`,
-      SK:`VENDOR#${vendorId}`,
-      EntityType: 'Vendor',
-      VendorDetails: {
-        CompanyName: companyName,
-        CompanyNumber: companyNumber,
-        Phone: phone,
-        Email: email,
-        ShippingCode: shippingCode,
+      pk: `VENDOR#${vendorId}`,
+      sk:`VENDOR#${vendorId}`,
+      entity_type: 'Vendor',
+      vendor_details: {
+        company_name: companyName,
+        company_number: companyNumber,
+        phone: phone,
+        email: email,
+        shipping_code: shippingCode,
       },
-      ApiKey: apiKey,
-      Status: 'Active',
+      api_key: apiKey,
+      status: 'Active',
     };
 
     const result = await putItem(vendorData);
