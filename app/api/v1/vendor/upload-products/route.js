@@ -24,16 +24,17 @@ export async function POST(request) {
     console.log(decoded);
     // Lookup vendor by API token
     const result = await getItem(`VENDOR#${decoded.vendorId}`, `VENDOR#${decoded.vendorId}`);
+    console.log(result);
     if (!result.success) {
       return NextResponse.json({ error: 'Vendor not found or inactive' }, { status: 403 });
     }
 
     const vendor = result.data;
-    if (!vendor || vendor.Status !== 'Active') {
+    if (!vendor || vendor.status !== 'Active') {
       return NextResponse.json({ error: 'Vendor is inactive or not found' }, { status: 403 });
     }
 
-    const vendorId = vendor.PK;
+    const vendorId = vendor.pk;
 
     // Parse the request body
     const bodyText = await request.text();
@@ -57,17 +58,17 @@ export async function POST(request) {
     }
 
     // Ensure Products field exists and is an array
-    if (!body.Products || !Array.isArray(body.Products)) {
+    if (!body.products || !Array.isArray(body.products)) {
       return NextResponse.json({ error: 'Invalid request format: Products field is required' }, { status: 400 });
     }
 
     // Check product count limit
-    if (body.Products.length > MAX_PRODUCTS) {
+    if (body.products.length > MAX_PRODUCTS) {
       return NextResponse.json({ error: `Product limit exceeded. Max allowed: ${MAX_PRODUCTS}` }, { status: 400 });
     }
 
     // Validate the products
-    const validationResults = SchemaValidation.validateProducts(body.Products);
+    const validationResults = SchemaValidation.validateProducts(body.products);
     if (!validationResults.success) {
       return NextResponse.json(
         { error: 'Validation failed for some products', details: validationResults.errors },
@@ -80,13 +81,13 @@ export async function POST(request) {
     const validatedProducts = validationResults.validatedProducts.map((product) => {
       const sk = generateSK(vendorId, product.vendor_sku);
       return {
-        PK: vendorId,
-        SK: sk,
-        EntityType: 'Product',
+        pk: vendorId,
+        sk: sk,
+        entity_type: 'Product',
         vendor_sku: product.vendor_sku,
-        Status: product.Status,
-        Stock: product.Stock,
-        Details: product.Details,
+        status: product.status,
+        stock: product.stock,
+        details: product.details,
       };
     });
     console.log('TOTAL VALID PRODUCTS BEFORE WRITE COMMAND = ' + validatedProducts.length);
