@@ -8,7 +8,7 @@ class SchemaValidation {
             vendor_sku: Joi.string().required().label('vendor_sku'),
             status: Joi.string().valid('Active', 'Inactive').required().label('status'), // Assuming status is either Active or Inactive
             stock: Joi.number().integer().min(0).required().label('stock'),
-            Details: Joi.object({
+            details: Joi.object({
                 name: Joi.string().required().label('name'),
                 cost_price: Joi.number().required().label('cost_price'),
                 sale_price: Joi.number().required().label('sale_price'),
