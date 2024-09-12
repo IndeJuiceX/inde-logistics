@@ -5,20 +5,20 @@ class SchemaValidation {
     // Define the product schema using Joi
     static getProductSchema() {
         return Joi.object({
-            VendorSku: Joi.string().required().label('VendorSku'),
-            Status: Joi.string().valid('Active', 'Inactive').required().label('Status'), // Assuming status is either Active or Inactive
-            Stock: Joi.number().integer().min(0).required().label('Stock'),
+            vendor_sku: Joi.string().required().label('vendor_sku'),
+            status: Joi.string().valid('Active', 'Inactive').required().label('status'), // Assuming status is either Active or Inactive
+            stock: Joi.number().integer().min(0).required().label('stock'),
             Details: Joi.object({
-                Name: Joi.string().required().label('Name'),
-                CostPrice: Joi.number().required().label('CostPrice'),
-                SalePrice: Joi.number().required().label('SalePrice'),
-                BrandName: Joi.string().optional().label('BrandName'),
-                Image: Joi.string().uri().optional().label('Image'), // Assuming URL format
-                Attributes: Joi.object()
+                name: Joi.string().required().label('name'),
+                cost_price: Joi.number().required().label('cost_price'),
+                sale_price: Joi.number().required().label('sale_price'),
+                brand_name: Joi.string().optional().label('brand_name'),
+                image: Joi.string().uri().optional().label('image'), // Assuming URL format
+                attributes: Joi.object()
                     .pattern(Joi.string(), Joi.string().required())
                     .optional()
-                    .label('Attributes') // Optional but if present, each key must have a value
-            }).required().label('Details'),
+                    .label('attributes') // Optional but if present, each key must have a value
+            }).required().label('details'),
         });
     }
 

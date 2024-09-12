@@ -27,11 +27,11 @@ paths:
             schema:
               type: object
               properties:
-                Products:
+                products:
                   type: array
-                  maxItems: 500
+                  maxItems: 5000
                   items:
-                    $ref: '#/components/schemas/Product'
+                    $ref: '#/components/schemas/product'
       responses:
         '200':
           description: Products uploaded successfully
@@ -52,50 +52,50 @@ components:
       bearerFormat: JWT
 
   schemas:
-    Product:
+    product:
       type: object
       required:
-        - VendorSku
-        - Status
-        - Stock
-        - Details
+        - vendor_sku
+        - status
+        - stock
+        - details
       properties:
-        VendorSku:
+        vendor_sku:
           type: string
           example: "12345678"
-        Status:
+        status:
           type: string
           example: "Active"
-        Stock:
+        stock:
           type: integer
           example: 0
-        Details:
+        details:
           type: object
           required:
-            - Name
-            - CostPrice
-            - SalePrice
+            - name
+            - cost_price
+            - sale_price
           properties:
-            Name:
+            name:
               type: string
               example: "Product A"
-            CostPrice:
+            cost_price:
               type: number
               example: 10.99
-            SalePrice:
+            sale_price:
               type: number
               example: 14.99
-            BrandName:
+            brand_name:
               type: string
               example: "Brand A"
-            Image:
+            image:
               type: string
               example: "https://example.com/image.jpg"
-            Attributes:
+            attributes:
               type: object
               additionalProperties:
                 type: string
               example:
-                Color: "Red"
-                Size: "Medium"
-                Material: "Cotton"
+                color: "Red"
+                size: "Medium"
+                material: "Cotton"
