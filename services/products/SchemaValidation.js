@@ -8,19 +8,18 @@ class SchemaValidation {
             vendor_sku: Joi.string().required().label('vendor_sku'),
             status: Joi.string().valid('Active', 'Inactive').required().label('status'), // Assuming status is either Active or Inactive
             stock: Joi.number().integer().min(0).required().label('stock'),
-            details: Joi.object({
-                name: Joi.string().required().label('name'),
-                cost_price: Joi.number().required().label('cost_price'),
-                sale_price: Joi.number().required().label('sale_price'),
-                brand_name: Joi.string().optional().label('brand_name'),
-                image: Joi.string().uri().optional().label('image'), // Assuming URL format
-                attributes: Joi.object()
-                    .pattern(Joi.string(), Joi.string().required())
-                    .optional()
-                    .label('attributes') // Optional but if present, each key must have a value
-            }).required().label('details'),
+            name: Joi.string().required().label('name'), // Flattened name field
+            cost_price: Joi.number().required().label('cost_price'), // Flattened cost_price field
+            sale_price: Joi.number().required().label('sale_price'), // Flattened sale_price field
+            brand_name: Joi.string().optional().label('brand_name'), // Flattened brand_name field
+            image: Joi.string().uri().optional().label('image'), // Flattened image field, assuming URL format
+            attributes: Joi.object()
+                .pattern(Joi.string(), Joi.string().required())
+                .optional()
+                .label('attributes') // Optional but if present, each key must have a value
         });
     }
+
 
     // Function to validate a single product
     static validateProduct(product) {

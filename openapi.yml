@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: >
     API documentation for the Vendor Product Catalogue system.
-    This API allows vendors to upload product batches (up to 500 products)
-    with a maximum payload size of 5 MB.
+    This API allows vendors to upload product batches
+    with a maximum payload size of 2 MB.
 servers:
   - url: http://localhost:3000/api/v1
     description: Local development server
@@ -58,7 +58,11 @@ components:
         - vendor_sku
         - status
         - stock
-        - details
+        - name
+        - cost_price
+        - sale_price
+        - brand_name
+        - image
       properties:
         vendor_sku:
           type: string
@@ -68,34 +72,27 @@ components:
           example: "Active"
         stock:
           type: integer
-          example: 0
-        details:
+          example: 50
+        name:
+          type: string
+          example: "Example Product"
+        cost_price:
+          type: number
+          example: 90.41
+        sale_price:
+          type: number
+          example: 126.98
+        brand_name:
+          type: string
+          example: "Brand 1"
+        image:
+          type: string
+          example: "https://cdn.indejuice.com/image1.jpg"
+        attributes:
           type: object
-          required:
-            - name
-            - cost_price
-            - sale_price
-          properties:
-            name:
-              type: string
-              example: "Product A"
-            cost_price:
-              type: number
-              example: 10.99
-            sale_price:
-              type: number
-              example: 14.99
-            brand_name:
-              type: string
-              example: "Brand A"
-            image:
-              type: string
-              example: "https://example.com/image.jpg"
-            attributes:
-              type: object
-              additionalProperties:
-                type: string
-              example:
-                color: "Red"
-                size: "Medium"
-                material: "Cotton"
+          additionalProperties:
+            type: string
+          example:
+            color: "Red"
+            size: "Medium"
+            nicotine: ["0mg", "3mg"]
