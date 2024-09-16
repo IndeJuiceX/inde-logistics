@@ -24,6 +24,7 @@ export async function POST(req) {
       pk: `VENDOR#${vendorId}`,
       sk:`VENDOR#${vendorId}`,
       entity_type: 'Vendor',
+      vendor_id:vendorId,
       vendor_details: {
         company_name: companyName,
         company_number: companyNumber,
