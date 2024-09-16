@@ -38,15 +38,41 @@ export default function Home() {
     fetchVendors();
   }, []);
 
-  const handleUploadProducts = async (vendorId) => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsedData = JSON.parse(event.target.result);
+          setSelectedFile(parsedData);  // Store the file content
+        } catch (error) {
+          alert("Invalid JSON file");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+  const handleUploadProducts = async (vendorId, apiKey) => {
+    if (!selectedFile) {
+      alert("Please select a JSON file first");
+      return;
+    }
+
+    // Show a confirmation dialog
+    const confirmed = confirm(`Are you sure you want to upload products for vendor ${vendorId}?`);
+    if (!confirmed) return;
+
     setUploading((prev) => ({ ...prev, [vendorId]: true }));
+
     try {
       const response = await fetch('/api/v1/vendor/upload-products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`, // Include Bearer token from vendor.api_key
         },
-        body: JSON.stringify({ vendorId }),
+        body: JSON.stringify(selectedFile), // Use the uploaded file data
       });
 
       if (response.ok) {
@@ -61,6 +87,7 @@ export default function Home() {
       setUploading((prev) => ({ ...prev, [vendorId]: false }));
     }
   };
+
 
   const handleViewProducts = (vendorId) => {
     const extractedId = vendorId.split('VENDOR#')[1];
@@ -109,13 +136,30 @@ export default function Home() {
                 <div className="button-container">
                   {/* Conditional rendering for Upload, View, and Delete buttons */}
                   {!vendorProductsExist[vendor.pk] ? (
-                    <button
-                      className="upload-button"
-                      onClick={() => handleUploadProducts(vendor.pk)}
-                      disabled={uploading[vendor.pk]}
-                    >
-                      {uploading[vendor.pk] ? 'Uploading...' : 'Upload Products'}
-                    </button>
+                    <div>
+                      <input
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileChange}
+                        className="file-input"
+                        style={{
+                          display: 'inline-block',
+                          marginRight: '10px',
+                          padding: '10px',
+                          borderRadius: '5px',
+                          backgroundColor: '#f0f0f0',
+                          cursor: 'pointer',
+                        }}
+                      />
+
+                      <button
+                        className="upload-button"
+                        onClick={() => handleUploadProducts(vendor.pk, vendor.api_key)}
+                        disabled={uploading[vendor.pk]}
+                      >
+                        {uploading[vendor.pk] ? 'Uploading...' : 'Upload Products'}
+                      </button>
+                    </div>
                   ) : (
                     <>
                       <button

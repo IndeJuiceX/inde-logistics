@@ -57,7 +57,9 @@
 
 .button-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    align-items: center;
+    /* Align vertically */
     margin-top: 10px;
 }
 
@@ -66,10 +68,12 @@
     color: white;
     border: none;
     padding: 10px 15px;
-    margin-top: 10px;
+    margin-left: 10px;
+    /* To add space between input and button */
     cursor: pointer;
     border-radius: 5px;
 }
+
 
 .upload-button:hover {
     background-color: #0056b3;
