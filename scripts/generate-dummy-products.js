@@ -9,17 +9,15 @@ const generateProduct = (i) => ({
   vendor_sku: `SKU${i}`,
   status: 'Active',
   stock: Math.floor(Math.random() * 100), // Random stock between 0 and 100
-  details: {
-    name: `Product ${i}`,
-    cost_price: (Math.random() * 100).toFixed(2), // Random cost price
-    sale_price: (Math.random() * 150).toFixed(2), // Random sale price
-    brand_name: `Brand ${i}`,
-    image: `https://example.com/image${i}.jpg`,
-    attributes: {
-      color: ['Red', 'Blue', 'Green'][Math.floor(Math.random() * 3)], // Random color
-      size: ['Small', 'Medium', 'Large'][Math.floor(Math.random() * 3)], // Random size
-      material: ['Cotton', 'Polyester', 'Wool'][Math.floor(Math.random() * 3)], // Random material
-    }
+  name: `Product ${i}`,
+  cost_price: (Math.random() * 100).toFixed(2), // Random cost price
+  sale_price: (Math.random() * 150).toFixed(2), // Random sale price
+  brand_name: `Brand ${i}`,
+  image: `https://example.com/image${i}.jpg`,
+  attributes: {
+    color: ['Red', 'Blue', 'Green'][Math.floor(Math.random() * 3)], // Random color
+    size: ['Small', 'Medium', 'Large'][Math.floor(Math.random() * 3)], // Random size
+    material: ['Cotton', 'Polyester', 'Wool'][Math.floor(Math.random() * 3)], // Random material
   }
 });
 

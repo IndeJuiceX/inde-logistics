@@ -3,171 +3,151 @@
     {
       "vendor_sku": "SKU1",
       "status": "Active",
-      "stock": 24,
-      "details": {
-        "name": "Product 1",
-        "cost_price": "90.41",
-        "sale_price": "126.98",
-        "brand_name": "Brand 1",
-        "image": "https://example.com/image1.jpg",
-        "attributes": {
-          "color": "Green",
-          "size": "Medium",
-          "material": "Polyester"
-        }
+      "stock": 41,
+      "name": "Product 1",
+      "cost_price": "71.65",
+      "sale_price": "132.30",
+      "brand_name": "Brand 1",
+      "image": "https://example.com/image1.jpg",
+      "attributes": {
+        "color": "Blue",
+        "size": "Large",
+        "material": "Wool"
       }
     },
     {
       "vendor_sku": "SKU2",
       "status": "Active",
-      "stock": 87,
-      "details": {
-        "name": "Product 2",
-        "cost_price": "76.50",
-        "sale_price": "44.20",
-        "brand_name": "Brand 2",
-        "image": "https://example.com/image2.jpg",
-        "attributes": {
-          "color": "Blue",
-          "size": "Medium",
-          "material": "Wool"
-        }
+      "stock": 24,
+      "name": "Product 2",
+      "cost_price": "20.90",
+      "sale_price": "98.17",
+      "brand_name": "Brand 2",
+      "image": "https://example.com/image2.jpg",
+      "attributes": {
+        "color": "Red",
+        "size": "Small",
+        "material": "Cotton"
       }
     },
     {
       "vendor_sku": "SKU3",
       "status": "Active",
-      "stock": 29,
-      "details": {
-        "name": "Product 3",
-        "cost_price": "50.95",
-        "sale_price": "76.96",
-        "brand_name": "Brand 3",
-        "image": "https://example.com/image3.jpg",
-        "attributes": {
-          "color": "Red",
-          "size": "Small",
-          "material": "Polyester"
-        }
+      "stock": 64,
+      "name": "Product 3",
+      "cost_price": "47.59",
+      "sale_price": "142.38",
+      "brand_name": "Brand 3",
+      "image": "https://example.com/image3.jpg",
+      "attributes": {
+        "color": "Green",
+        "size": "Small",
+        "material": "Polyester"
       }
     },
     {
       "vendor_sku": "SKU4",
       "status": "Active",
-      "stock": 74,
-      "details": {
-        "name": "Product 4",
-        "cost_price": "4.73",
-        "sale_price": "144.63",
-        "brand_name": "Brand 4",
-        "image": "https://example.com/image4.jpg",
-        "attributes": {
-          "color": "Green",
-          "size": "Medium",
-          "material": "Cotton"
-        }
+      "stock": 52,
+      "name": "Product 4",
+      "cost_price": "28.89",
+      "sale_price": "18.21",
+      "brand_name": "Brand 4",
+      "image": "https://example.com/image4.jpg",
+      "attributes": {
+        "color": "Green",
+        "size": "Medium",
+        "material": "Cotton"
       }
     },
     {
       "vendor_sku": "SKU5",
       "status": "Active",
-      "stock": 6,
-      "details": {
-        "name": "Product 5",
-        "cost_price": "99.44",
-        "sale_price": "32.16",
-        "brand_name": "Brand 5",
-        "image": "https://example.com/image5.jpg",
-        "attributes": {
-          "color": "Red",
-          "size": "Small",
-          "material": "Cotton"
-        }
+      "stock": 68,
+      "name": "Product 5",
+      "cost_price": "31.37",
+      "sale_price": "87.38",
+      "brand_name": "Brand 5",
+      "image": "https://example.com/image5.jpg",
+      "attributes": {
+        "color": "Green",
+        "size": "Large",
+        "material": "Polyester"
       }
     },
     {
       "vendor_sku": "SKU6",
       "status": "Active",
-      "stock": 74,
-      "details": {
-        "name": "Product 6",
-        "cost_price": "17.36",
-        "sale_price": "94.70",
-        "brand_name": "Brand 6",
-        "image": "https://example.com/image6.jpg",
-        "attributes": {
-          "color": "Blue",
-          "size": "Medium",
-          "material": "Cotton"
-        }
+      "stock": 22,
+      "name": "Product 6",
+      "cost_price": "1.24",
+      "sale_price": "124.30",
+      "brand_name": "Brand 6",
+      "image": "https://example.com/image6.jpg",
+      "attributes": {
+        "color": "Red",
+        "size": "Large",
+        "material": "Polyester"
       }
     },
     {
       "vendor_sku": "SKU7",
       "status": "Active",
-      "stock": 91,
-      "details": {
-        "name": "Product 7",
-        "cost_price": "95.17",
-        "sale_price": "71.25",
-        "brand_name": "Brand 7",
-        "image": "https://example.com/image7.jpg",
-        "attributes": {
-          "color": "Green",
-          "size": "Large",
-          "material": "Wool"
-        }
+      "stock": 70,
+      "name": "Product 7",
+      "cost_price": "51.59",
+      "sale_price": "127.80",
+      "brand_name": "Brand 7",
+      "image": "https://example.com/image7.jpg",
+      "attributes": {
+        "color": "Green",
+        "size": "Large",
+        "material": "Wool"
       }
     },
     {
       "vendor_sku": "SKU8",
       "status": "Active",
-      "stock": 4,
-      "details": {
-        "name": "Product 8",
-        "cost_price": "53.38",
-        "sale_price": "38.56",
-        "brand_name": "Brand 8",
-        "image": "https://example.com/image8.jpg",
-        "attributes": {
-          "color": "Blue",
-          "size": "Small",
-          "material": "Cotton"
-        }
+      "stock": 62,
+      "name": "Product 8",
+      "cost_price": "8.61",
+      "sale_price": "8.13",
+      "brand_name": "Brand 8",
+      "image": "https://example.com/image8.jpg",
+      "attributes": {
+        "color": "Blue",
+        "size": "Large",
+        "material": "Cotton"
       }
     },
     {
       "vendor_sku": "SKU9",
       "status": "Active",
-      "stock": 52,
-      "details": {
-        "name": "Product 9",
-        "cost_price": "77.47",
-        "sale_price": "102.78",
-        "brand_name": "Brand 9",
-        "image": "https://example.com/image9.jpg",
-        "attributes": {
-          "color": "Red",
-          "size": "Medium",
-          "material": "Cotton"
-        }
+      "stock": 94,
+      "name": "Product 9",
+      "cost_price": "90.16",
+      "sale_price": "15.38",
+      "brand_name": "Brand 9",
+      "image": "https://example.com/image9.jpg",
+      "attributes": {
+        "color": "Red",
+        "size": "Medium",
+        "material": "Cotton"
       }
     },
     {
       "vendor_sku": "SKU10",
       "status": "Active",
-      "stock": 96,
-      "details": {
-        "name": "Product 10",
-        "cost_price": "19.59",
-        "sale_price": "113.66",
-        "brand_name": "Brand 10",
-        "image": "https://example.com/image10.jpg",
-        "attributes": {
-          "color": "Red",
-          "size": "Large",
-          "material": "Polyester"
-        }
+      "stock": 37,
+      "name": "Product 10",
+      "cost_price": "39.75",
+      "sale_price": "73.55",
+      "brand_name": "Brand 10",
+      "image": "https://example.com/image10.jpg",
+      "attributes": {
+        "color": "Red",
+        "size": "Large",
+        "material": "Cotton"
       }
     }
   ]

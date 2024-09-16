@@ -40,19 +40,38 @@ export default function Home() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
+      const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+
+      // Check if the file size exceeds the limit
+      if (file.size > maxSizeInBytes) {
+        alert("File size exceeds the 2MB limit. Please select a smaller file.");
+        return; // Prevent further processing if file is too large
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
+          // Parse JSON and check if it's valid
           const parsedData = JSON.parse(event.target.result);
-          setSelectedFile(parsedData);  // Store the file content
+          console.log("Parsed JSON:", parsedData);
+
+          // Check if the products array exists and is valid
+          if (Array.isArray(parsedData.products) && parsedData.products.length > 0) {
+            setSelectedFile(parsedData);  // Store the file content
+          } else {
+            alert("Invalid JSON file format: 'products' array missing or empty.");
+          }
         } catch (error) {
+          console.error("Error parsing JSON file:", error);
           alert("Invalid JSON file");
         }
       };
       reader.readAsText(file);
     }
   };
+
   const handleUploadProducts = async (vendorId, apiKey) => {
     if (!selectedFile) {
       alert("Please select a JSON file first");
