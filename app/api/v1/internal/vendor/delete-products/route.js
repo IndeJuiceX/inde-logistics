@@ -13,7 +13,7 @@ export async function DELETE(request) {
     }
 
     // Query all products for the given vendorId using GSI
-    const result = await queryItems(`VENDOR#${vendorId}`, 'PRODUCT#');
+    const result = await queryItems(`VENDORPRODUCT#${vendorId}`, 'PRODUCT#');
     if (!result.success) {
       return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
     }
