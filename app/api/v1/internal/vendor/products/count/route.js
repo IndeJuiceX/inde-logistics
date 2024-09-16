@@ -10,7 +10,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
     }
 
-    const result = await queryItemCount(`VENDOR#${vendorId}`, 'PRODUCT#');
+    const result = await queryItemCount(`VENDORPRODUCT#${vendorId}`, 'PRODUCT#');
 
     // Check if the query was successful
     if (!result.success) {

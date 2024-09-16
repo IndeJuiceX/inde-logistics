@@ -11,7 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState({}); // Track upload state for each vendor
   const [vendorProductsExist, setVendorProductsExist] = useState({}); // Track product existence for each vendor
-
+  const [selectedFile, setSelectedFile] = useState({});
   useEffect(() => {
     const fetchVendors = async () => {
       try {

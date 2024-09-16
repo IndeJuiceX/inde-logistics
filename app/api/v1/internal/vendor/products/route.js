@@ -12,7 +12,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
     }
 
-    const result = await queryItems(`VENDOR#${vendorId}`, 'PRODUCT#');
+    const result = await queryItems(`VENDORPRODUCT#${vendorId}`, 'PRODUCT#');
     
     // Paginate results
     const startIndex = (page - 1) * pageSize;
