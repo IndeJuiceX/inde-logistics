@@ -36,7 +36,7 @@ export async function POST(request) {
     }
 
     const vendorId = vendor.pk;
-    console.log('VENDOR ID IS '+vendorId);
+    console.log('VENDOR ID IS ' + vendorId);
     // Parse the request body
     const bodyText = await request.text();
     if (!bodyText) {
@@ -49,7 +49,7 @@ export async function POST(request) {
         { status: 413 }
       );
     }
- 
+
 
     // Try to parse JSON
     let body;
@@ -71,30 +71,41 @@ export async function POST(request) {
 
     // Validate the products
     const validationResults = SchemaValidation.validateProducts(body.products);
-    if (!validationResults.success) {
-      return NextResponse.json(
-        { error: 'Validation failed for some products', details: validationResults.errors },
-        { status: 400 }
-      );
+    // if (!validationResults.success) {
+    //   return NextResponse.json(
+    //     { error: 'Validation failed for some products', details: validationResults.errors },
+    //     { status: 400 }
+    //   );
+    // }
+    // Collect valid products and errors
+    const validatedProducts = validationResults.validatedProducts;
+    const invalidProducts = validationResults.errors;
+
+    if (validatedProducts.length === 0) {
+      return NextResponse.json({
+        error: 'Validation failed for all products',
+        invalidProducts,  // Return all invalid products with error messages
+      }, { status: 400 });
     }
-    console.log('TOTAL VALID PRODUCTS = ' + validationResults.validatedProducts.length);
+
+    console.log('TOTAL VALID PRODUCTS = ' +validatedProducts.length);
 
     // Prepare products for insertion
-    const validatedProducts = validationResults.validatedProducts.map((product) => {
+    const productsToInsert = validationResults.validatedProducts.map((product) => {
       const sk = generateSK(vendorId, product.vendor_sku);
       const productId = sk.split('VENDOR#')[1];
-      
+
       return {
         pk: 'VENDORPRODUCT#'+vendor.vendor_id,
         sk: sk,
         entity_type: 'Product',
         product_id: productId,
-       ...product
+        ...product
       };
     });
-    console.log('TOTAL VALID PRODUCTS BEFORE WRITE COMMAND = ' + validatedProducts.length);
+    console.log('TOTAL VALID PRODUCTS TO INSERT BEFORE WRITE COMMAND = ' + productsToInsert.length);
     // Call DynamoDB batch write
-    const dbWriteResponse = await batchWriteItems(validatedProducts, 'Put');
+    const dbWriteResponse = await batchWriteItems(productsToInsert, 'Put');
 
     if (!dbWriteResponse.success) {
       return NextResponse.json({ error: 'Failed to save products to database', details: dbWriteResponse.error }, { status: 500 });
@@ -108,8 +119,9 @@ export async function POST(request) {
     return NextResponse.json({
       message: 'Products uploaded successfully',
       addedCount: added.length,
-      errorCount: errors.length,
-      errors: errors.length > 0 ? errors : undefined,
+      failedProducts: errors.length > 0 ? errors : undefined,
+      invalidProducts: invalidProducts.length > 0 ? invalidProducts : undefined,  // Products that failed validation
+
     }, { status: 200 });
   } catch (error) {
     // console.error('Error in /upload-products endpoint:', error);

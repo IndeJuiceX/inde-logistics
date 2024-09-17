@@ -38,17 +38,25 @@ class SchemaValidation {
 
     // Function to validate multiple products
     static validateProducts(products) {
-        const results = products.map((product) => this.validateProduct(product));
+        const validatedProducts = [];
+        const invalidProducts = [];
 
-        const invalidProducts = results.filter((result) => !result.success);
+        products.forEach((product) => {
+            const result = this.validateProduct(product);
+            if (result.success) {
+                validatedProducts.push(result.value); // Valid product
+            } else {
+                invalidProducts.push({
+                    errors: result.errors, // List of error messages
+                    product: product.vendor_sku // Return the original product for easier identification by the client
+                });
+            }
+        });
 
         return {
-            success: invalidProducts.length === 0,
-            validatedProducts: results.filter((result) => result.success).map((res) => res.value),
-            errors: invalidProducts.map((result, index) => ({
-                index,
-                errors: result.errors
-            })),
+            success: invalidProducts.length === 0, // If no invalid products, success is true
+            validatedProducts, // All valid products
+            errors: invalidProducts, // All invalid products with error details
         };
     }
 }
