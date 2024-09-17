@@ -1,7 +1,8 @@
-'use client'
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image'
 
 export default function VendorProductsPage() {
   const { vendorId } = useParams();  // Get the vendorId from the route
@@ -83,14 +84,45 @@ export default function VendorProductsPage() {
           <>
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => (
-                <li key={product.sk} className="bg-white shadow-md rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
-                  <p className="text-gray-500 mb-2">SKU: {product.vendor_sku}</p>
-                  <p className="text-gray-700 mb-2">Price: £{product.sale_price}</p>
-                  <p className="text-gray-700">Stock: {product.stock}</p>
+                <li key={product.sk} className="bg-white shadow-md rounded-lg p-6 flex flex-col items-start">
+                  <div className="flex justify-between items-center w-full">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
+                      <p className="text-gray-500 mb-2">SKU: {product.vendor_sku}</p>
+                      <p className="text-gray-700 mb-2">Price: £{product.sale_price}</p>
+                      <p className="text-gray-700">Stock: {product.stock}</p>
+                    </div>
+                    {product.image && (
+                      <div className="ml-4 w-24 h-24 flex-shrink-0">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          width={96}
+                          height={96}
+                          className="object-cover rounded-md"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  {/* Attributes Section */}
+                  {product.attributes && Object.keys(product.attributes).length > 0 && (
+                    <div className="mt-4">
+        
+                      <ul className="text-gray-600 text-sm">
+                        {Object.entries(product.attributes).map(([key, value]) => (
+                          <li key={key}>
+                            <span className="font-semibold capitalize text-sm">{key}: </span>
+                            <span>{Array.isArray(value) ? value.join(', ') : value}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
+
+
 
             {/* Pagination controls */}
             <div className="flex justify-center items-center mt-8">

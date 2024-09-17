@@ -88,7 +88,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    console.log('TOTAL VALID PRODUCTS = ' +validatedProducts.length);
+    console.log('TOTAL VALID PRODUCTS = ' + validatedProducts.length);
 
     // Prepare products for insertion
     const productsToInsert = validationResults.validatedProducts.map((product) => {
@@ -96,7 +96,7 @@ export async function POST(request) {
       const productId = sk.split('VENDOR#')[1];
 
       return {
-        pk: 'VENDORPRODUCT#'+vendor.vendor_id,
+        pk: 'VENDORPRODUCT#' + vendor.vendor_id,
         sk: sk,
         entity_type: 'Product',
         product_id: productId,
@@ -107,6 +107,7 @@ export async function POST(request) {
     // Call DynamoDB batch write
     const dbWriteResponse = await batchWriteItems(productsToInsert, 'Put');
 
+    console.log(dbWriteResponse);
     if (!dbWriteResponse.success) {
       return NextResponse.json({ error: 'Failed to save products to database', details: dbWriteResponse.error }, { status: 500 });
     }
@@ -115,6 +116,8 @@ export async function POST(request) {
       added = [],
       errors = []
     } = dbWriteResponse.results || {};
+
+    
 
     return NextResponse.json({
       message: 'Products uploaded successfully',
@@ -125,6 +128,8 @@ export async function POST(request) {
     }, { status: 200 });
   } catch (error) {
     // console.error('Error in /upload-products endpoint:', error);
+    console.log('CATCH ERROR UPLOAD PRODUCTS')
+    console.log(error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

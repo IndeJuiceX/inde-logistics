@@ -57,7 +57,7 @@
 
 .button-container {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     /* Align vertically */
     margin-top: 10px;
@@ -68,7 +68,6 @@
     color: white;
     border: none;
     padding: 10px 15px;
-    margin-left: 10px;
     /* To add space between input and button */
     cursor: pointer;
     border-radius: 5px;
@@ -111,11 +110,12 @@
 .delete-button {
     background-color: #f44336;
     color: white;
-    padding: 10px 20px;
+    padding: 10px 15px;
     border: none;
     cursor: pointer;
     border-radius: 5px;
     font-size: 14px;
+    margin-top: 10px;
 }
 
 .upload-button:disabled {
