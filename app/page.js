@@ -12,13 +12,16 @@ export default function Home() {
   const [uploading, setUploading] = useState({}); // Track upload state for each vendor
   const [vendorProductsExist, setVendorProductsExist] = useState({}); // Track product existence for each vendor
   const [selectedFile, setSelectedFile] = useState({});
+  const [uploadResult, setUploadResult] = useState(null); // Store the upload result
+  const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const itemsPerPage = 20; // Number of results per page
+
   useEffect(() => {
     const fetchVendors = async () => {
       try {
         const response = await fetch('/api/v1/internal/vendors');
         const data = await response.json();
 
-        // Check if products exist for each vendor
         const productExistence = {};
         for (const vendor of data) {
           const res = await fetch(`/api/v1/internal/vendor/products?vendorId=${vendor.pk.split('VENDOR#')[1]}`);
@@ -44,27 +47,21 @@ export default function Home() {
     if (file) {
       const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
 
-      // Check if the file size exceeds the limit
       if (file.size > maxSizeInBytes) {
         alert("File size exceeds the 2MB limit. Please select a smaller file.");
-        return; // Prevent further processing if file is too large
+        return;
       }
 
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          // Parse JSON and check if it's valid
           const parsedData = JSON.parse(event.target.result);
-          console.log("Parsed JSON:", parsedData);
-
-          // Check if the products array exists and is valid
           if (Array.isArray(parsedData.products) && parsedData.products.length > 0) {
-            setSelectedFile(parsedData);  // Store the file content
+            setSelectedFile(parsedData);
           } else {
             alert("Invalid JSON file format: 'products' array missing or empty.");
           }
         } catch (error) {
-          console.error("Error parsing JSON file:", error);
           alert("Invalid JSON file");
         }
       };
@@ -78,7 +75,6 @@ export default function Home() {
       return;
     }
 
-    // Show a confirmation dialog
     const confirmed = confirm(`Are you sure you want to upload products for vendor ${vendorId}?`);
     if (!confirmed) return;
 
@@ -89,14 +85,18 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`, // Include Bearer token from vendor.api_key
+          'Authorization': `Bearer ${apiKey}`,
         },
-        body: JSON.stringify(selectedFile), // Use the uploaded file data
+        body: JSON.stringify(selectedFile),
       });
 
+      const result = await response.json();
       if (response.ok) {
         alert(`Products uploaded successfully for vendor ${vendorId}`);
-        setVendorProductsExist((prev) => ({ ...prev, [vendorId]: true })); // Update the existence check
+        setVendorProductsExist((prev) => ({ ...prev, [vendorId]: true }));
+        setUploadResult(result); // Store the result for display
+        console.log('UPLOAD RESULT IS ')
+        console.log(result);
       } else {
         alert(`Failed to upload products for vendor ${vendorId}`);
       }
@@ -106,7 +106,6 @@ export default function Home() {
       setUploading((prev) => ({ ...prev, [vendorId]: false }));
     }
   };
-
 
   const handleViewProducts = (vendorId) => {
     const extractedId = vendorId.split('VENDOR#')[1];
@@ -133,6 +132,22 @@ export default function Home() {
     }
   };
 
+  // Handle pagination
+  const paginatedResults = (items) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return items.slice(startIndex, startIndex + itemsPerPage);
+  };
+
+  // Handle file download
+  const handleDownloadReport = () => {
+    const reportData = JSON.stringify(uploadResult, null, 2);
+    const blob = new Blob([reportData], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'upload_report.json';
+    link.click();
+  };
+
   return (
     <div className="landing-container">
       <h1 className="landing-title">Vendors List</h1>
@@ -153,7 +168,6 @@ export default function Home() {
                 </p>
 
                 <div className="button-container">
-                  {/* Conditional rendering for Upload, View, and Delete buttons */}
                   {!vendorProductsExist[vendor.pk] ? (
                     <div>
                       <input
@@ -203,6 +217,83 @@ export default function Home() {
           )}
         </div>
       )}
+
+      {/* Display Upload Result */}
+      {/* Display Upload Result */}
+      {uploadResult && (
+        <div className="upload-result bg-white shadow-md rounded-lg p-6 mt-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Upload Summary</h2>
+          <p className="text-gray-600">
+            <strong>Total Products:</strong> {selectedFile?.products?.length || 0}
+          </p>
+          <p className="text-gray-600">
+            <strong>Successfully Uploaded:</strong> {uploadResult.addedCount}
+          </p>
+          <p className="text-gray-600">
+            <strong>Failed Products:</strong>
+            {uploadResult.failedProducts ? uploadResult.failedProducts.length : 0}
+          </p>
+          <p className="text-gray-600">
+            <strong>Invalid Products:</strong>
+            {uploadResult.invalidProducts ? uploadResult.invalidProducts.length : 0}
+          </p>
+
+          {/* Invalid Products Section */}
+          {uploadResult.invalidProducts && (
+            <>
+              <h3 className="text-lg font-semibold text-red-600 mt-4">Invalid Products:</h3>
+              {paginatedResults(uploadResult.invalidProducts).map((error, index) => (
+                <div key={index} className="bg-red-50 border border-red-400 text-red-600 p-3 rounded-lg mt-2">
+                  <p><strong>SKU:</strong> {error.product}</p>
+                  <p><strong>Errors:</strong> {error.errors.join(', ')}</p>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Failed Products Section */}
+          {uploadResult.failedProducts && (
+            <>
+              <h3 className="text-lg font-semibold text-yellow-600 mt-4">Failed Products:</h3>
+              {paginatedResults(uploadResult.failedProducts).map((failed, index) => (
+                <div key={index} className="bg-yellow-50 border border-yellow-400 text-yellow-600 p-3 rounded-lg mt-2">
+                  <p><strong>SKU:</strong> {failed.product}</p>
+                  <p><strong>Details:</strong> {failed.errors.join(', ')}</p>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Pagination Controls */}
+          <div className="pagination-controls flex justify-between items-center mt-4">
+            {currentPage > 1 && (
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              >
+                Previous
+              </button>
+            )}
+            {uploadResult.invalidProducts && uploadResult.invalidProducts.length > currentPage * itemsPerPage && (
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              >
+                Next
+              </button>
+            )}
+          </div>
+
+          {/* Download Report */}
+          <button
+            onClick={handleDownloadReport}
+            className="bg-green-500 text-white mt-6 px-6 py-2 rounded-lg hover:bg-green-600"
+          >
+            Download Report
+          </button>
+        </div>
+      )}
+
     </div>
   );
 }
