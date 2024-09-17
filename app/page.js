@@ -174,9 +174,9 @@ export default function Home() {
                   Status: {vendor.status}
                 </p>
 
-                <div className="button-container">
-                  {!vendorProductsExist[vendor.pk] ? (
-                    <div>
+                <div className="button-container flex flex-wrap items-center mt-4 space-x-2">
+                 
+                    <div className="flex items-center space-x-2 ">
                       <input
                         type="file"
                         accept=".json"
@@ -200,8 +200,8 @@ export default function Home() {
                         {uploading[vendor.pk] ? 'Uploading...' : 'Upload Products'}
                       </button>
                     </div>
-                  ) : (
-                    <>
+                  {vendorProductsExist[vendor.pk] &&  (
+                    <div className="flex space-x-2 mt-2 md:mt-0">
                       <button
                         className="view-button"
                         onClick={() => handleViewProducts(vendor.pk)}
@@ -214,7 +214,7 @@ export default function Home() {
                       >
                         Delete Products
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
