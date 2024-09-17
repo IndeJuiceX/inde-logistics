@@ -105,7 +105,7 @@ export default function Home() {
           message: result.error
         });
       } else {
-        alert(`Failed to upload products for vendor ${vendorId}`);
+        alert(`Failed to upload products for vendor ${vendorId} ${result.error}`);
       }
     } catch (error) {
       alert(`Error uploading products for vendor ${vendorId}`);
