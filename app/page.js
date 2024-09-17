@@ -97,6 +97,13 @@ export default function Home() {
         setUploadResult(result); // Store the result for display
         console.log('UPLOAD RESULT IS ')
         console.log(result);
+      } else if (response.status === 400 && result.invalidProducts) {
+        // Handle the case where all products are invalid
+        setUploadResult({
+          addedCount: 0,
+          invalidProducts: result.invalidProducts,
+          message: result.error
+        });
       } else {
         alert(`Failed to upload products for vendor ${vendorId}`);
       }
@@ -223,11 +230,15 @@ export default function Home() {
       {uploadResult && (
         <div className="upload-result bg-white shadow-md rounded-lg p-6 mt-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Upload Summary</h2>
+          {/* Display the response message if it exists */}
+          {uploadResult.message && (
+            <p className="upload-message">{uploadResult.message}</p>
+          )}
           <p className="text-gray-600">
             <strong>Total Products:</strong> {selectedFile?.products?.length || 0}
           </p>
           <p className="text-gray-600">
-            <strong>Successfully Uploaded:</strong> {uploadResult.addedCount}
+            <strong>Successfully Uploaded:</strong> {uploadResult.addedCount || 0}
           </p>
           <p className="text-gray-600">
             <strong>Failed Products:</strong>

@@ -79,6 +79,14 @@
     background-color: #0056b3;
 }
 
+.upload-message {
+    color: #ff0000;
+    /* Red color for error message */
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+
 .upload-button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;

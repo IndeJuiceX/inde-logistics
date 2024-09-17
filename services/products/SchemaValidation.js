@@ -13,10 +13,25 @@ class SchemaValidation {
             sale_price: Joi.number().required().label('sale_price'), // Flattened sale_price field
             brand_name: Joi.string().optional().label('brand_name'), // Flattened brand_name field
             image: Joi.string().uri().optional().label('image'), // Flattened image field, assuming URL format
-            attributes: Joi.object()
-                .pattern(Joi.string(), Joi.string().required())
-                .optional()
-                .label('attributes') // Optional but if present, each key must have a value
+            // Define attributes that can be either string values or arrays of strings
+            attributes: Joi.object().pattern(
+                Joi.string(),
+                Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
+            ).optional().label('attributes'),
+
+            // Add an optional warehouse field for stock location details
+            // Add an optional warehouse field, which can be non-existent, an empty array, or a valid object
+            warehouse: Joi.alternatives().try(
+                Joi.array().length(0),  // Accept an empty array
+                Joi.object({  // Accept an object with optional fields
+                    location_id: Joi.string().optional().label('location_id'),
+                    aisle: Joi.string().optional().label('aisle'),
+                    aisle_number: Joi.number().optional().label('aisle_number'),
+                    shelf: Joi.string().optional().label('shelf'),
+                    shelf_number: Joi.number().optional().label('shelf_number')
+                }).optional(),
+                Joi.forbidden()  // Accept non-existent (undefined)
+            ).optional().label('warehouse'),
         });
     }
 
