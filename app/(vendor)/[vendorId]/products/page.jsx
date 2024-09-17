@@ -86,7 +86,7 @@ export default function VendorProductsPage() {
                 <li key={product.sk} className="bg-white shadow-md rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
                   <p className="text-gray-500 mb-2">SKU: {product.vendor_sku}</p>
-                  <p className="text-gray-700 mb-2">Price: ${product.sale_price}</p>
+                  <p className="text-gray-700 mb-2">Price: £{product.sale_price}</p>
                   <p className="text-gray-700">Stock: {product.stock}</p>
                 </li>
               ))}
