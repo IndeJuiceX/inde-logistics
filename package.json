@@ -8,14 +8,15 @@
     "start": "next start",
     "lint": "next lint",
     "generate-products": "node ./scripts/generate-dummy-products.js"
-
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.645.0",
     "@aws-sdk/lib-dynamodb": "^3.645.0",
+    "bcryptjs": "^2.4.3",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "next": "14.2.8",
+    "next-auth": "^5.0.0-beta.21",
     "next-swagger-doc": "^0.4.0",
     "react": "^18",
     "react-dom": "^18",
