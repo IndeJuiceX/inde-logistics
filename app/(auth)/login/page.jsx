@@ -22,11 +22,11 @@ export default function SignIn() {
                 email,
                 password,
             });
-            console.log(res)
+
             if (!res.ok) {
                 setErrorMessage('Invalid email or password');
             } else {
-              //  window.location.href = '/';  // Adjust as per your app route
+                window.location.href = '/';  // Adjust as per your app route
             }
         } catch (error) {
             alert(error)

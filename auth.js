@@ -1,54 +1,58 @@
-import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-// Your own logic for dealing with plaintext password strings; be careful!
-import { hashPassword, verifyPassword } from "@/services/password"
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { deleteGuestCookie, getGuestCookie } from "@/services/guestCookies";
+import {verifyPassword } from "@/services/password"
 import { getItem } from "@/lib/dynamodb"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const {
+    handlers: { GET, POST },
+    auth,
+} = NextAuth({
     providers: [
-        Credentials({
-            // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-            // e.g. domain, username, password, 2FA token, etc.
-            credentials: {
-                email: {},
-                password: {},
-            },
-            authorize: async (credentials) => {
-                try {
-                    console.log(credentials)
-                    let user = null
-                    console.log('Attempting to AUTHORIZE')
-                    // logic to salt and hash password
-                    const pwHash = await hashPassword(credentials.password)
-                    // logic to verify if the user exists
-                    const res = await getItem('USER#' + credentials.email, 'USER#' + credentials.email)
-                    console.log('RESPONSE FROM DB')
-                    console.log(res)
-
-
-                    if (res.success == false) {
-                        // No user found, so this is their first attempt to login
-                        // meaning this is also the place you could do registration
-                        throw new Error("User not found.")
-                    }
-
-
-                    if (res && res.data) {
-                        const passMatch = await verifyPassword(credentials.password, pwHash)
-                        if (!passMatch) {
-                            throw new Error("Invalid Email or Password")
-                        }
-                        return res.data
-                    }
-
-                    // return user object with their profile data
-                    //return res.data
-                } catch (error) {
-                    console.log('AUTH ERROR')
-                    console.log(error)
+        CredentialsProvider({
+            name: "credentials",
+            credentials: {},
+            async authorize(credentials) {
+                const guestData = await getGuestCookie();
+                let guest = guestData ? guestData.value : null;
+                
+                const res = await getItem('USER#' + credentials.email, 'USER#' + credentials.email)
+                const resp = res//.json();
+                if (resp.success == false) {
+                    throw new Error("User not found.")
                 }
 
+
+                if (resp && resp.data) {
+                    const passMatch = await verifyPassword(credentials.password, resp.data.password)
+                    if (!passMatch) {
+                        throw new Error("Invalid Email or Password")
+                    }
+                    console.log('PASS MATCHED--')
+                    
+                }
+                const user = resp.data;
+                if (user) {
+                    deleteGuestCookie();
+                    return user;
+                } else {
+                    throw new Error(error);
+                }
             },
         }),
     ],
-})
+
+    pages: {
+        signIn: "/login",
+    },
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) token.user = user;
+            return token;
+        },
+        async session({ session, token }) {
+            session.user = token.user;
+            return session;
+        },
+    },
+});

@@ -10,6 +10,10 @@ export const hashPassword = async (password) => {
 
 // Compare the input password with the hashed password
 export const verifyPassword = async (inputPassword, hashedPassword) => {
+  console.log('Input Password:', inputPassword);
+  console.log('Hashed Password:', hashedPassword);
   const isMatch = await bcrypt.compare(inputPassword, hashedPassword);
+  console.log('Password Match:', isMatch);
+
   return isMatch;  // Returns true if passwords match, false otherwise
 };
