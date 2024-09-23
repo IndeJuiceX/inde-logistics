@@ -29,7 +29,7 @@ export default function Users() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">System Users</h1>
           <a
-            href="/admin/system-users/create"
+            href="/admin/users/create"
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300"
           >
             Create User
