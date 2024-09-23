@@ -165,42 +165,42 @@ export default function AdminDashbaord() {
           {vendors.length > 0 ? (
             vendors.map((vendor) => (
               <div key={vendor.pk} className="vendor-card">
-                <h2 className="vendor-name">{vendor.vendor_details.company_name}</h2>
-                <p className="vendor-info"><strong>Company Number:</strong> {vendor.vendor_details.company_number}</p>
-                <p className="vendor-info"><strong>Phone:</strong> {vendor.vendor_details.phone}</p>
-                <p className="vendor-info"><strong>Email:</strong> {vendor.vendor_details.email}</p>
-                <p className="vendor-info"><strong>Shipping Code:</strong> {vendor.vendor_details.shipping_code}</p>
+                <h2 className="vendor-name">{vendor.company_name}</h2>
+                <p className="vendor-info"><strong>Company Number:</strong> {vendor.company_number}</p>
+                <p className="vendor-info"><strong>Phone:</strong> {vendor.phone}</p>
+                <p className="vendor-info"><strong>Email:</strong> {vendor.email}</p>
+                <p className="vendor-info"><strong>Shipping Code:</strong> {vendor.shipping_code}</p>
                 <p className={`vendor-status ${vendor.status === 'Active' ? 'status-active' : 'status-inactive'}`}>
                   Status: {vendor.status}
                 </p>
 
                 <div className="button-container flex flex-wrap items-center mt-4 space-x-2">
-                 
-                    <div className="flex items-center space-x-2 ">
-                      <input
-                        type="file"
-                        accept=".json"
-                        onChange={handleFileChange}
-                        className="file-input"
-                        style={{
-                          display: 'inline-block',
-                          marginRight: '10px',
-                          padding: '10px',
-                          borderRadius: '5px',
-                          backgroundColor: '#f0f0f0',
-                          cursor: 'pointer',
-                        }}
-                      />
 
-                      <button
-                        className="upload-button"
-                        onClick={() => handleUploadProducts(vendor.pk, vendor.api_key)}
-                        disabled={uploading[vendor.pk]}
-                      >
-                        {uploading[vendor.pk] ? 'Uploading...' : 'Upload Products'}
-                      </button>
-                    </div>
-                  {vendorProductsExist[vendor.pk] &&  (
+                  <div className="flex items-center space-x-2 ">
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileChange}
+                      className="file-input"
+                      style={{
+                        display: 'inline-block',
+                        marginRight: '10px',
+                        padding: '10px',
+                        borderRadius: '5px',
+                        backgroundColor: '#f0f0f0',
+                        cursor: 'pointer',
+                      }}
+                    />
+
+                    <button
+                      className="upload-button"
+                      onClick={() => handleUploadProducts(vendor.pk, vendor.api_key)}
+                      disabled={uploading[vendor.pk]}
+                    >
+                      {uploading[vendor.pk] ? 'Uploading...' : 'Upload Products'}
+                    </button>
+                  </div>
+                  {vendorProductsExist[vendor.pk] && (
                     <div className="flex space-x-2 mt-2 md:mt-0">
                       <button
                         className="view-button"

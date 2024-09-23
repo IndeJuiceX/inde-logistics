@@ -43,8 +43,29 @@ const getItem = async (pkVal, skVal) => {
     }
 };
 
+// Generic Query function that accepts params for flexibility
+const queryItems = async (params) => {
+    const client = getClient(); // Initialize the DynamoDB client
+
+    const queryParams = {
+        TableName: TABLE_NAME, // Ensure the table name is always included
+        ...params, // Spread any additional params passed to the function
+    };
+
+    try {
+        const data = await client.send(new QueryCommand(queryParams));
+        return { success: true, data: data.Items };
+    } catch (error) {
+        console.error('DynamoDB QueryItems Error:', error);
+        return { success: false, error };
+    }
+};
+
+
+
+
 // Query items with optional sk prefix
-const queryItems = async (pkValue, skPrefix = null) => {
+/*const queryItems = async (pkValue, skPrefix = null) => {
     const client = getClient()
 
     let params = {
@@ -67,7 +88,7 @@ const queryItems = async (pkValue, skPrefix = null) => {
         console.error('DynamoDB QueryItems Error:', error);
         return { success: false, error };
     }
-};
+};*/
 
 // Delete an item by pk and sk
 const deleteItem = async (pk, sk) => {
@@ -107,26 +128,6 @@ const scanItems = async () => {
 };
 
 // Query vendors using a GSI
-const queryVendorsUsingGSI = async () => {
-    const client = getClient()
-
-    const params = {
-        TableName: TABLE_NAME,
-        IndexName: 'gs1_vendor_index',
-        KeyConditionExpression: 'entity_type = :entityType',
-        ExpressionAttributeValues: {
-            ':entityType': 'Vendor',
-        },
-    };
-
-    try {
-        const data = await client.send(new QueryCommand(params));
-        return { success: true, data: data.Items };
-    } catch (error) {
-        console.error('DynamoDB QueryItems Error:', error);
-        return { success: false, error };
-    }
-};
 
 
 
@@ -404,4 +405,4 @@ const queryItemCount = async (pkValue, skPrefix = null) => {
 };
 
 
-export { putItem, getItem, queryItems, deleteItem, scanItems, batchWriteItems, queryVendorsUsingGSI, deleteItemBatch, queryItemCount };
+export { putItem, getItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount };

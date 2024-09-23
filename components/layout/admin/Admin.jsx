@@ -15,9 +15,9 @@ const AdminLayout = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white">
+      <aside className="w-64 bg-gray-800 text-white fixed top-0 bottom-0 left-0 z-10">
         <div className="py-6 px-4 bg-gray-900">
           <h2 className="text-2xl font-bold text-center">Admin</h2>
         </div>
@@ -51,11 +51,11 @@ const AdminLayout = ({ children }) => {
         </nav>
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col ml-64">
         {/* Header */}
-        <header className="flex justify-between items-center bg-white shadow p-4">
-          <h1 className="text-3xl font-bold"></h1>
+        <header className="flex justify-between items-center bg-white shadow p-4 fixed top-0 left-64 right-0 z-10">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
           {/* Profile and Sign Out Button */}
           <div className="relative">
@@ -86,8 +86,8 @@ const AdminLayout = ({ children }) => {
           </div>
         </header>
 
-        {/* Content */}
-        <main className="flex-1 p-6 bg-gray-100">
+        {/* Scrollable Content */}
+        <main className="flex-1 p-6 bg-gray-100 mt-16 overflow-y-auto">
           {children}
         </main>
       </div>

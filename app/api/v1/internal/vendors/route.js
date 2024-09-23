@@ -1,11 +1,11 @@
 // app/api/vendors/route.js
-import { queryVendorsUsingGSI } from '@/lib/dynamodb';
+import { getAllVendors } from '@/services/data/vendor';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
     // Assuming all vendors have "Vendor" as their EntityType
-    const result = await queryVendorsUsingGSI();
+    const result = await getAllVendors();
 
     if (result.success) {
       return NextResponse.json(result.data);
