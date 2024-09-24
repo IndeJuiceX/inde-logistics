@@ -22,7 +22,7 @@ const CreateUserPage = () => {
   useEffect(() => {
     const fetchVendors = async () => {
       // Simulate API call to fetch vendors
-      const response = await fetch('/api/vendors');
+      const response = await fetch('/api/v1/admin/vendors');
       const data = await response.json();
       setVendors(data);
     };
@@ -182,8 +182,8 @@ const CreateUserPage = () => {
                   Select vendor
                 </option>
                 {vendors.map((vendor) => (
-                  <option key={vendor.id} value={vendor.id}>
-                    {vendor.name}
+                  <option key={vendor.vendor_id} value={vendor.vendor_id}>
+                    {vendor.company_name}
                   </option>
                 ))}
               </select>

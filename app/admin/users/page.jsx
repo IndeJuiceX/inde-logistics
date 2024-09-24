@@ -52,15 +52,15 @@ export default function Users() {
               </thead>
               <tbody className="text-gray-600 text-sm">
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-200 hover:bg-gray-100">
+                  <tr key={user.pk} className="border-b border-gray-200 hover:bg-gray-100">
                     <td className="py-3 px-6">{user.first_name} {user.last_name}</td>
                     <td className="py-3 px-6">{user.email}</td>
-                    <td className="py-3 px-6">{user.role}</td>
+                    <td className="py-3 px-6">{user.user_type}</td>
                     <td className="py-3 px-6">
                       <div className="flex space-x-4">
-                        <a href={`/admin/users/${user.id}`} className="text-blue-500 hover:underline">View</a>
-                        <a href={`/admin/users/${user.id}/edit`} className="text-green-500 hover:underline">Edit</a>
-                        <button className="text-red-500 hover:underline" onClick={() => handleDelete(user.id)}>
+                        <a href={`/admin/users/${user.email}`} className="text-blue-500 hover:underline">View</a>
+                        <a href={`/admin/users/${user.email}/edit`} className="text-green-500 hover:underline">Edit</a>
+                        <button className="text-red-500 hover:underline" onClick={() => handleDelete(user.email)}>
                           Delete
                         </button>
                       </div>
