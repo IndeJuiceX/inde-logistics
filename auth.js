@@ -58,14 +58,15 @@ export const {
             session.user.role = token.role;  // Adding role (user_type) to the session
             return session;
         },
+        async signIn({ user }) {
+            // Redirect based on user role
+            if (user.user_type === "admin") {
+                return "/admin/dashboard"; // Redirect admins to admin dashboard
+            } else if (user.user_type === "vendor" && user.vendor_id) {
+                return `/vendor/${user.vendor_id}/dashboard`; // Redirect vendors to their dashboard
+            }
+            return false; // Fallback (optional)
+        },
     },
-    async signIn({ user }) {
-        // Redirect based on user role
-        if (user.user_type === "admin") {
-            return "/admin/dashboard"; // Redirect admins to admin dashboard
-        } else if (user.user_type === "vendor" && user.vendor_id) {
-            return `/vendor/${user.vendor_id}/dashboard`; // Redirect vendors to their dashboard
-        }
-        return false; // Fallback (optional)
-    },
+
 });
