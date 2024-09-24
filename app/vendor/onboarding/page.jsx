@@ -24,7 +24,7 @@ export default function VendorOnboarding() {
     e.preventDefault();
 
     // Send form data to the backend API route to process
-    const res = await fetch('/api/v1/internal/vendor/onboard', {
+    const res = await fetch('/api/v1/admin/vendor/onboard', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

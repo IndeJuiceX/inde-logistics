@@ -10,7 +10,7 @@ export default function Users() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/admin/system-users');
+        const response = await fetch('/api/v1/admin/users');
         const data = await response.json();
         setUsers(data);
         setLoading(false);
@@ -58,8 +58,8 @@ export default function Users() {
                     <td className="py-3 px-6">{user.role}</td>
                     <td className="py-3 px-6">
                       <div className="flex space-x-4">
-                        <a href={`/admin/system-users/${user.id}`} className="text-blue-500 hover:underline">View</a>
-                        <a href={`/admin/system-users/${user.id}/edit`} className="text-green-500 hover:underline">Edit</a>
+                        <a href={`/admin/users/${user.id}`} className="text-blue-500 hover:underline">View</a>
+                        <a href={`/admin/users/${user.id}/edit`} className="text-green-500 hover:underline">Edit</a>
                         <button className="text-red-500 hover:underline" onClick={() => handleDelete(user.id)}>
                           Delete
                         </button>

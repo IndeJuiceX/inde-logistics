@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-
+import { useRouter } from 'next/navigation';
 const CreateUserPage = () => {
   const [vendors, setVendors] = useState([]); // Vendors list for the dropdown
   const [userType, setUserType] = useState(''); // State for user type
   const [selectedVendor, setSelectedVendor] = useState(''); // State for selected vendor
+  const router = useRouter()
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -39,6 +40,26 @@ const CreateUserPage = () => {
     // Add user submit logic here
     console.log(formData);
     // Call your API to save the user
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert('User registered successfully');
+        router.push("/login");  // Redirect to login after successful registration
+      } else {
+        alert(data.error || 'Error registering user');
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+      alert("Server error");
+    }
   };
 
   return (

@@ -19,12 +19,12 @@ export default function AdminDashbaord() {
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        const response = await fetch('/api/v1/internal/vendors');
+        const response = await fetch('/api/v1/admin/vendors');
         const data = await response.json();
 
         const productExistence = {};
         for (const vendor of data) {
-          const res = await fetch(`/api/v1/internal/vendor/products?vendorId=${vendor.pk.split('VENDOR#')[1]}`);
+          const res = await fetch(`/api/v1/admin/vendor/products?vendorId=${vendor.pk.split('VENDOR#')[1]}`);
           const productData = await res.json();
           productExistence[vendor.pk] = productData.length > 0;
         }
@@ -124,7 +124,7 @@ export default function AdminDashbaord() {
     if (!confirmed) return;
     const extractedId = vendorId.split('VENDOR#')[1];
     try {
-      const response = await fetch(`/api/v1/internal/vendor/delete-products?vendorId=${extractedId}`, {
+      const response = await fetch(`/api/v1/admin/vendor/delete-products?vendorId=${extractedId}`, {
         method: 'DELETE',
       });
 
