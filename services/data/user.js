@@ -14,3 +14,14 @@ export const saveUser = async (userData) => {
 
     return await putItem(userItem);
 };
+
+export const getAllVendorUsers = async() => {
+    const params = {
+        IndexName: 'gs1_vendor_index',
+        KeyConditionExpression: 'entity_type = :entityType',
+        ExpressionAttributeValues: {
+            ':entityType': 'User',
+        },
+    };
+    return await queryItems(params);
+}
