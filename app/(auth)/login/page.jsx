@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';  // Use the NextAuth client-side helper
+import { useRouter } from "next/navigation";
 
 export default function SignIn() {
     const [errorMessage, setErrorMessage] = useState('');  // Track error message
     const [loading, setLoading] = useState(false);  // Track loading state
-
+    const router = useRouter();
     const handleSignIn = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -26,7 +27,9 @@ export default function SignIn() {
             if (!res.ok) {
                 setErrorMessage('Invalid email or password');
             } else {
-                window.location.href = '/';  // Adjust as per your app route
+                if (res.url) {
+                    router.push(res.url); // The `url` comes from the signIn callback in auth.js
+                  }
             }
         } catch (error) {
             alert(error)
