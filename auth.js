@@ -14,10 +14,6 @@ export const {
     providers: [
         Credentials({
             name: 'Credentials',
-            // credentials: {
-            //     email: {},
-            //     password: {},
-            // },
 
             async authorize(credentials) {
                 try {
@@ -28,6 +24,7 @@ export const {
                     const resp = res//.json();
                     if (resp.success == false) {
                         throw new Error("User not found.")
+                        //return { error: 'User not found' }
                     }
 
 
@@ -35,40 +32,39 @@ export const {
                         const passMatch = await verifyPassword(credentials.password, resp.data.password)
                         if (!passMatch) {
                             throw new Error("Invalid Email or Password")
+                           // return { error: 'Invalid Email or Password' }
                         }
-                        console.log('PASS MATCHED--')
+                        
 
                     }
                     const user = resp.data;
                     if (user) {
                         deleteGuestCookie();
-                        return user;
-                    } 
+                        return user
+                    }
                     return null;
                 } catch (error) {
-                    throw new Error(error)
+                   throw new Error(error)
                 }
             },
         }),
     ],
 
-    /*pages: {
-        signIn: "/login",
-    },*/
-    /*callbacks: {
-        async jwt({ token, user }) {
+
+    callbacks: {
+        jwt({ token, user }) {
             if (user) {
-                token.user = user;
                 token.role = user.user_type; // Adding user_type to the token
+                token.vendor = user?.vendor_id
             }
             return token;
         },
-        async session({ session, token }) {
-            session.user = token.user;
+        session({ session, token }) {
             session.user.role = token.role;  // Adding role (user_type) to the session
+            session.user.vendor = token.vendor
             return session;
         },
-        async signIn({ user }) {
+        /*signIn({ user }) {
             // Redirect based on user role
             if (user.user_type === "admin") {
                 return "/admin/dashboard"; // Redirect admins to admin dashboard
@@ -76,7 +72,7 @@ export const {
                 return `/vendor/${user.vendor_id}/dashboard`; // Redirect vendors to their dashboard
             }
             return false; // Fallback (optional)
-        },
-    },*/
+        }*/
+    },
 
 });
