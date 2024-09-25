@@ -1,17 +1,20 @@
 import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import Credentials from "next-auth/providers/credentials";
 import { deleteGuestCookie, getGuestCookie } from "@/services/guestCookies";
 import { verifyPassword } from "@/services/password"
 import { getItem } from "@/lib/dynamodb"
 
 export const {
-    handlers: { GET, POST },
-    auth,
+    handlers, signIn, signOut, auth
 } = NextAuth({
+    secret: process.env.NEXTAUTH_SECRET,
     providers: [
-        CredentialsProvider({
-            name: "credentials",
-            credentials: {},
+        Credentials({
+            name: 'Credentials',
+            // credentials: {
+            //     email: {},
+            //     password: {},
+            // },
             async authorize(credentials) {
                 const guestData = await getGuestCookie();
                 let guest = guestData ? guestData.value : null;
