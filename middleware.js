@@ -46,10 +46,10 @@ export async function middleware(req) {
 // Configure the matcher to apply this middleware to all admin/vendor pages and APIs
 export const config = {
   matcher: [
-    '/admin/:path*',             // Protect all admin pages
+    /*'/admin/:path*',             // Protect all admin pages
     '/vendor/:path*',            // Protect all vendor pages
     '/api/v1/admin/:path*',       // Protect all admin API routes
     '/api/v1/vendor/:path*',      // Protect all vendor API routes
-    '/'                          // Allow access to homepage
+    '/'   */                       // Allow access to homepage
   ],
 };
