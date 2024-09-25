@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';  // Use the NextAuth client-side helper
+//import { signIn } from 'next-auth/react';  // Use the NextAuth client-side helper
 import { useRouter } from "next/navigation";
+import { doLogIn } from '@/app/actions';
+
 
 export default function SignIn() {
     const [errorMessage, setErrorMessage] = useState('');  // Track error message
@@ -12,27 +14,27 @@ export default function SignIn() {
         e.preventDefault();
         setLoading(true);
         setErrorMessage('');
-
-        const formData = new FormData(e.target);
-        const email = formData.get('email');
-        const password = formData.get('password');
-
         try {
-            const res = await signIn("credentials", {
-                redirect: false,
-                email,
-                password,
-            });
+            const formData = new FormData(e.currentTarget);
+            const res = await doLogIn(formData)
             console.log(res)
-            if (!res.ok) {
-                setErrorMessage('Invalid email or password');
-            } else {
-                if (res.url) {
-                    router.push(res.url); // The `url` comes from the signIn callback in auth.js
-                  }
+
+            if(!!res.error) {
+                setErrorMessage(res.error)
+            }else {
+                if(res.url) {
+                    router.push(res.url)
+                }
             }
+            // if (!res.ok) {
+            //     setErrorMessage('Invalid email or password');
+            // } else {
+            //     if (res.url) {
+            //         router.push(res.url); // The `url` comes from the signIn callback in auth.js
+            //     }
+            // }
         } catch (error) {
-            alert(error)
+            setErrorMessage('Something went wrong')
         } finally {
             setLoading(false);
         }

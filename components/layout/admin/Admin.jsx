@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; // Use next/router to get the current path
-import { signOut } from 'next-auth/react'; // Assuming you're using NextAuth
-
+//import { signOut } from 'next-auth/react'; // Assuming you're using NextAuth
+import { doLogOut } from '@/app/actions';
 const AdminLayout = ({ children }) => {
   const router = useRouter();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
+  async function handleLogOut(e) {
+    e.preventDefault();
+    await doLogOut()
+  }
   // Toggle the dropdown
   const toggleProfileDropdown = () => {
     setProfileDropdownOpen(!profileDropdownOpen);
@@ -75,7 +79,7 @@ const AdminLayout = ({ children }) => {
                     Profile
                   </Link>
                   <button
-                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    onClick={handleLogOut}
                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
                   >
                     Sign Out

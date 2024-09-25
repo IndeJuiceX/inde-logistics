@@ -8,6 +8,9 @@ export const {
     handlers, signIn, signOut, auth
 } = NextAuth({
     secret: process.env.NEXTAUTH_SECRET,
+    session: {
+        strategy: 'jwt'
+    },
     providers: [
         Credentials({
             name: 'Credentials',
@@ -15,40 +18,44 @@ export const {
             //     email: {},
             //     password: {},
             // },
+
             async authorize(credentials) {
-                const guestData = await getGuestCookie();
-                let guest = guestData ? guestData.value : null;
+                try {
+                    const guestData = await getGuestCookie();
+                    let guest = guestData ? guestData.value : null;
 
-                const res = await getItem('USER#' + credentials.email, 'USER#' + credentials.email)
-                const resp = res//.json();
-                if (resp.success == false) {
-                    throw new Error("User not found.")
-                }
-
-
-                if (resp && resp.data) {
-                    const passMatch = await verifyPassword(credentials.password, resp.data.password)
-                    if (!passMatch) {
-                        throw new Error("Invalid Email or Password")
+                    const res = await getItem('USER#' + credentials.email, 'USER#' + credentials.email)
+                    const resp = res//.json();
+                    if (resp.success == false) {
+                        throw new Error("User not found.")
                     }
-                    console.log('PASS MATCHED--')
 
-                }
-                const user = resp.data;
-                if (user) {
-                    deleteGuestCookie();
-                    return user;
-                } else {
-                    throw new Error(error);
+
+                    if (resp && resp.data) {
+                        const passMatch = await verifyPassword(credentials.password, resp.data.password)
+                        if (!passMatch) {
+                            throw new Error("Invalid Email or Password")
+                        }
+                        console.log('PASS MATCHED--')
+
+                    }
+                    const user = resp.data;
+                    if (user) {
+                        deleteGuestCookie();
+                        return user;
+                    } 
+                    return null;
+                } catch (error) {
+                    throw new Error(error)
                 }
             },
         }),
     ],
 
-    pages: {
+    /*pages: {
         signIn: "/login",
-    },
-    callbacks: {
+    },*/
+    /*callbacks: {
         async jwt({ token, user }) {
             if (user) {
                 token.user = user;
@@ -70,6 +77,6 @@ export const {
             }
             return false; // Fallback (optional)
         },
-    },
+    },*/
 
 });

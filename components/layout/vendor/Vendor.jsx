@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { signOut } from 'next-auth/react';
+//import { signOut } from 'next-auth/react';
 import Link from 'next/link'; // Use Link for better navigation
-
+import { doLogOut } from '@/app/actions';
 export default function VendorLayout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/login' });
+    //await ({ callbackUrl: '/login' });
+    await doLogOut();
   };
 
   return (
