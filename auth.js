@@ -32,9 +32,9 @@ export const {
                         const passMatch = await verifyPassword(credentials.password, resp.data.password)
                         if (!passMatch) {
                             throw new Error("Invalid Email or Password")
-                           // return { error: 'Invalid Email or Password' }
+                            // return { error: 'Invalid Email or Password' }
                         }
-                        
+
 
                     }
                     const user = resp.data;
@@ -44,13 +44,15 @@ export const {
                     }
                     return null;
                 } catch (error) {
-                   throw new Error(error)
+                    throw new Error(error)
                 }
             },
         }),
     ],
 
-
+    pages: {
+        signIn: "/login", // Custom login page
+    },
     callbacks: {
         jwt({ token, user }) {
             if (user) {
@@ -64,15 +66,7 @@ export const {
             session.user.vendor = token.vendor
             return session;
         },
-        /*signIn({ user }) {
-            // Redirect based on user role
-            if (user.user_type === "admin") {
-                return "/admin/dashboard"; // Redirect admins to admin dashboard
-            } else if (user.user_type === "vendor" && user.vendor_id) {
-                return `/vendor/${user.vendor_id}/dashboard`; // Redirect vendors to their dashboard
-            }
-            return false; // Fallback (optional)
-        }*/
+
     },
 
 });
