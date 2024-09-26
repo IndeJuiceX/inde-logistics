@@ -2,6 +2,8 @@ import { getLoggedInUser } from "@/app/actions"; // Import auth directly from Ne
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import ProfileDropdown from "@/components/layout/Dropdown"; // Abstracted client-side profile and sign-out component
+import { getVendorById } from "@/services/data/vendor";
+
 
 export default async function VendorLayout({ children }) {
   // Get session using `auth()`
@@ -11,13 +13,14 @@ export default async function VendorLayout({ children }) {
   if (!user || user.role !== "vendor") {
     redirect("/login"); // Redirect to login
   }
-
+  const { data} = await getVendorById(user.vendor)
+  const vendorDetails = data
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar Menu */}
       <div className="w-64 bg-white shadow-lg h-screen">
         <div className="p-6 border-b-2 border-gray-300">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">{user?.vendor_name || "Vendor"}</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{vendorDetails?.company_name || "Vendor"}</h2>
         </div>
         <ul className="space-y-4 mt-4">
           <li>
