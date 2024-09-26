@@ -3,17 +3,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { doLogIn } from '@/app/actions';
-import { useSession } from 'next-auth/react';
+// import { useSession } from 'next-auth/react';
 
 export default function SignIn() {
-    const { data: session, status } = useSession();  // Capture both session and status
+    // const { data: session, status } = useSession();  // Capture both session and status
     const router = useRouter();
 
     const [errorMessage, setErrorMessage] = useState('');  // Track error message
     const [loading, setLoading] = useState(false);  // Track loading state
 
     // Handle redirection after the user logs in or if the session is active
-    useEffect(() => {
+    /*useEffect(() => {
         if (status === 'authenticated') { // The session is fully loaded
             const role = session?.user?.role;
             if (role === 'admin') {
@@ -22,7 +22,7 @@ export default function SignIn() {
                 router.replace(`/vendor/${session.user.vendor}/dashboard`);
             }
         }
-    }, [status, session, router]);
+    }, [status, session, router]);*/
 
     const handleSignIn = async (e) => {
         e.preventDefault();
@@ -51,14 +51,14 @@ export default function SignIn() {
     };
 
     // If the session is still loading, show a loading message
-    if (status === 'loading') {
-        return <div>Loading...</div>;
-    }
+    // if (status === 'loading') {
+    //     return <div>Loading...</div>;
+    // }
 
     // If the user is already logged in, show a redirect message
-    if (status === 'authenticated') {
-        return <div>Redirecting...</div>;
-    }
+    // if (status === 'authenticated') {
+    //     return <div>Redirecting...</div>;
+    // }
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
