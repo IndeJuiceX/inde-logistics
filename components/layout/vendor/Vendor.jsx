@@ -21,19 +21,22 @@ export default async function VendorLayout({ children }) {
         </div>
         <ul className="space-y-4 mt-4">
           <li>
-            <Link href="/vendor/products" className="block py-2 px-4 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition">
+            <Link
+              href={`/vendor/${user?.vendor}/products`}
+              className="block py-2 px-4 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition"
+            >
               Products
             </Link>
             <hr className="border-t border-gray-200" />
           </li>
           <li>
-            <Link href="/vendor/orders" className="block py-2 px-4 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition">
+            <Link href={`/vendor/${user?.vendor}/orders`} className="block py-2 px-4 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition">
               Orders
             </Link>
             <hr className="border-t border-gray-200" />
           </li>
           <li>
-            <Link href="/vendor/shipments" className="block py-2 px-4 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition">
+            <Link href={`/vendor/${user?.vendor}/stock-shipments`} className="block py-2 px-4 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition">
               Stock Shipments
             </Link>
             <hr className="border-t border-gray-200" />
