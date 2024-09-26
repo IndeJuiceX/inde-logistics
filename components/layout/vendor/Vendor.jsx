@@ -1,23 +1,23 @@
-'use client';
+import { auth } from "@/auth"; // Import auth directly from NextAuth
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import ProfileDropdown from "@/components/layout/Dropdown"; // Abstracted client-side profile and sign-out component
 
-import { useState } from 'react';
-//import { signOut } from 'next-auth/react';
-import Link from 'next/link'; // Use Link for better navigation
-import { doLogOut } from '@/app/actions';
-export default function VendorLayout({ children }) {
-  const [isOpen, setIsOpen] = useState(false);
+export default async function VendorLayout({ children }) {
+  // Get session using `auth()`
+  const session = await auth();
 
-  const handleSignOut = async () => {
-    //await ({ callbackUrl: '/login' });
-    await doLogOut();
-  };
+  // If no session or the user is not a vendor, redirect to the login page
+  if (!session || session.user.role !== "vendor") {
+    redirect("/login"); // Redirect to login
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar Menu */}
       <div className="w-64 bg-white shadow-lg h-screen">
         <div className="p-6 border-b-2 border-gray-300">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Vendor Name</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{session?.user?.vendor_name || "Vendor"}</h2>
         </div>
         <ul className="space-y-4 mt-4">
           <li>
@@ -43,28 +43,9 @@ export default function VendorLayout({ children }) {
 
       {/* Main Content Area */}
       <div className="flex-1 p-8 relative">
-        {/* Profile Button */}
+        {/* Profile Button (ProfileDropdown component) */}
         <div className="absolute top-4 right-4">
-          <div className="relative" onClick={() => setIsOpen(!isOpen)}>
-            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer">
-              <span role="img" aria-label="profile" className="text-2xl">👤</span>
-            </div>
-          </div>
-
-          {/* Profile Dropdown */}
-          {isOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-              <Link href="/vendor/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white transition">
-                Profile
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="w-full text-left block px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white transition"
-              >
-                Sign Out
-              </button>
-            </div>
-          )}
+          <ProfileDropdown /> {/* Reusable client-side profile dropdown */}
         </div>
 
         {/* Page-specific Content */}
