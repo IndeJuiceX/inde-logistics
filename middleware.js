@@ -1,55 +1,63 @@
-import { getToken } from 'next-auth/jwt';
-import { NextResponse } from 'next/server';
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
 
-export async function middleware(req) {
-  const secret = process.env.NEXTAUTH_SECRET;  // Get the secret from environment variables
-  const token = await getToken({ req, secret });  // Pass the secret to getToken
+export default auth((req) => {
+    const { pathname, origin } = req.nextUrl;
 
-  const { pathname } = req.nextUrl;
+    // Get the authenticated user and their role
+    const user = req.auth?.user;
 
-  // Allow access to the homepage for everyone
-  if (pathname === '/') {
+    // Unauthenticated user accessing protected routes
+    if (!user && pathname !== "/login" && pathname !== "/") {
+        const loginUrl = new URL("/login", origin);
+        return NextResponse.redirect(loginUrl);
+    }
+
+    // Admin-only access control
+    if (pathname.startsWith("/admin")) {
+        // If a non-admin (e.g., vendor) tries to access admin routes
+        if (user?.role !== "admin") {
+            // Redirect to their respective dashboard
+            const redirectUrl = user?.role === "vendor"
+                ? `/vendor/${user.vendor}/dashboard`
+                : "/login";
+            return NextResponse.redirect(new URL(redirectUrl, origin));
+        }
+    }
+
+    // Vendor-only access control
+    if (pathname.startsWith("/vendor")) {
+        // If a non-vendor (e.g., admin) tries to access vendor routes
+        if (user?.role !== "vendor") {
+            // Redirect to their respective dashboard
+            const redirectUrl = user?.role === "admin"
+                ? "/admin/dashboard"
+                : "/login";
+            return NextResponse.redirect(new URL(redirectUrl, origin));
+        }
+    }
+
+    // Redirect authenticated users trying to access /login to their appropriate dashboard
+    if (user && pathname === "/login") {
+        if (user.role === "admin") {
+            const adminUrl = new URL("/admin/dashboard", origin);
+            return NextResponse.redirect(adminUrl);
+        } else if (user.role === "vendor" && user.vendor) {
+            const vendorUrl = new URL(`/vendor/${user.vendor}/dashboard`, origin);
+            return NextResponse.redirect(vendorUrl);
+        }
+    }
+
+    // Allow access to homepage and all other unprotected routes
     return NextResponse.next();
-  }
+});
 
-  // If user is not authenticated and tries to access protected routes, redirect to login
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  // Admin-only routes: both pages and API
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/v1/admin')) {
-    if (token.role !== 'admin') {
-      if (pathname.startsWith('/api')) {
-        return NextResponse.json({ message: 'Access denied: Admins only' }, { status: 403 });
-      } else {
-        return NextResponse.redirect(new URL('/403', req.url)); // Redirect to a 403 page
-      }
-    }
-  }
-
-  // Vendor-only routes: both pages and API
-  if (pathname.startsWith('/vendor') || pathname.startsWith('/api/v1/vendor')) {
-    if (token.role !== 'vendor') {
-      if (pathname.startsWith('/api')) {
-        return NextResponse.json({ message: 'Access denied: Vendors only' }, { status: 403 });
-      } else {
-        return NextResponse.redirect(new URL('/403', req.url)); // Redirect to a 403 page
-      }
-    }
-  }
-
-  // Allow the request to continue for authorized users
-  return NextResponse.next();
-}
-
-// Configure the matcher to apply this middleware to all admin/vendor pages and APIs
+// Define which routes the middleware applies to
 export const config = {
-  matcher: [
-    /*'/admin/:path*',             // Protect all admin pages
-    '/vendor/:path*',            // Protect all vendor pages
-    '/api/v1/admin/:path*',       // Protect all admin API routes
-    '/api/v1/vendor/:path*',      // Protect all vendor API routes
-    '/'   */                       // Allow access to homepage
-  ],
+    matcher: [
+        "/admin/:path*",  // Protect all admin routes
+        "/vendor/:path*", // Protect all vendor routes
+        "/",              // Allow access to homepage
+        "/login",         // Allow access to login page
+    ],
 };

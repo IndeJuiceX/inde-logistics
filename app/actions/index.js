@@ -11,7 +11,10 @@ export async function doLogIn(formData) {
             password: formData.get('password'),
             redirect: false
         });
-       
+        if (result.error) {
+            return { error: result.error };
+        }
+
         return result;
     } catch (error) {
         switch (error.type) {

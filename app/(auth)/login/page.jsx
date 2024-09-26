@@ -1,44 +1,64 @@
 'use client';
 
-import { useState } from 'react';
-//import { signIn } from 'next-auth/react';  // Use the NextAuth client-side helper
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { doLogIn } from '@/app/actions';
-
+import { useSession } from 'next-auth/react';
 
 export default function SignIn() {
+    const { data: session, status } = useSession();  // Capture both session and status
+    const router = useRouter();
+
     const [errorMessage, setErrorMessage] = useState('');  // Track error message
     const [loading, setLoading] = useState(false);  // Track loading state
-    const router = useRouter();
+
+    // Handle redirection after the user logs in or if the session is active
+    useEffect(() => {
+        if (status === 'authenticated') { // The session is fully loaded
+            const role = session?.user?.role;
+            if (role === 'admin') {
+                router.replace('/admin/dashboard'); // Use replace to avoid login in browser history
+            } else if (role === 'vendor') {
+                router.replace(`/vendor/${session.user.vendor}/dashboard`);
+            }
+        }
+    }, [status, session, router]);
+
     const handleSignIn = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrorMessage('');
+
         try {
             const formData = new FormData(e.currentTarget);
-            const res = await doLogIn(formData)
-            console.log(res)
+            const res = await doLogIn(formData);
+            console.log(res);
 
-            if(!!res.error) {
-                setErrorMessage(res.error)
-            }else {
-                if(res.url) {
-                    router.push(res.url)
-                }
+            if (res.error) {
+                setErrorMessage(res.error);
+            } else {
+                // Force a refresh to update the session immediately
+                console.log('RELOADING---')
+                router.push('/login');
+                router.refresh()
             }
-            // if (!res.ok) {
-            //     setErrorMessage('Invalid email or password');
-            // } else {
-            //     if (res.url) {
-            //         router.push(res.url); // The `url` comes from the signIn callback in auth.js
-            //     }
-            // }
         } catch (error) {
-            setErrorMessage('Something went wrong')
+            console.log(error);
+            setErrorMessage('Something went wrong');
         } finally {
             setLoading(false);
         }
     };
+
+    // If the session is still loading, show a loading message
+    if (status === 'loading') {
+        return <div>Loading...</div>;
+    }
+
+    // If the user is already logged in, show a redirect message
+    if (status === 'authenticated') {
+        return <div>Redirecting...</div>;
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
