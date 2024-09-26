@@ -1,14 +1,14 @@
-import { auth } from "@/auth"; // Directly using auth() from NextAuth
+import { getLoggedInUser } from "@/app/actions"; // Directly using auth() from NextAuth
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import ProfileDropdown from "@/components/layout/Dropdown"; // Client-side profile and sign-out button
 
 export default async function AdminLayout({ children }) {
   // Get session using `auth()`
-  const session = await auth();
+  const user = await getLoggedInUser();
 
   // If no session or the user is not an admin, redirect to the login page
-  if (!session || session.user.role !== "admin") {
+  if (!user || user.role !== "admin") {
     redirect("/login"); // Redirect to login
   }
 

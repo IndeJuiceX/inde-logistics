@@ -1,14 +1,14 @@
-import { auth } from "@/auth"; // Import auth directly from NextAuth
+import { getLoggedInUser } from "@/app/actions"; // Import auth directly from NextAuth
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import ProfileDropdown from "@/components/layout/Dropdown"; // Abstracted client-side profile and sign-out component
 
 export default async function VendorLayout({ children }) {
   // Get session using `auth()`
-  const session = await auth();
+  const user = await getLoggedInUser();
 
   // If no session or the user is not a vendor, redirect to the login page
-  if (!session || session.user.role !== "vendor") {
+  if (!user || user.role !== "vendor") {
     redirect("/login"); // Redirect to login
   }
 
@@ -17,7 +17,7 @@ export default async function VendorLayout({ children }) {
       {/* Sidebar Menu */}
       <div className="w-64 bg-white shadow-lg h-screen">
         <div className="p-6 border-b-2 border-gray-300">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">{session?.user?.vendor_name || "Vendor"}</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{user?.vendor_name || "Vendor"}</h2>
         </div>
         <ul className="space-y-4 mt-4">
           <li>

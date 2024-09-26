@@ -1,6 +1,6 @@
 'use server'
 
-import { signIn, signOut } from "@/auth"
+import { signIn, signOut, auth } from "@/auth"
 import { AuthError } from "next-auth";
 
 
@@ -29,4 +29,9 @@ export async function doLogIn(formData) {
 
 export async function doLogOut() {
     await signOut({ redirectTo: '/' });
+}
+
+export async function getLoggedInUser() {
+    const session = await auth();
+    return session?.user;
 }
