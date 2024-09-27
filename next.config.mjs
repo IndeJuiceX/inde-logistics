@@ -9,6 +9,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'cdn.indejuice.com',
             },
+            {
+                protocol: 'https',
+                hostname: 'example.com',
+            },
         ],
     },
 };

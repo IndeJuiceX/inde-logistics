@@ -3,7 +3,7 @@ import SchemaValidation from '@/services/products/SchemaValidation';
 import { batchWriteItems, getItem } from '@/lib/dynamodb';
 import { generateSK } from '@/services/products/Helper';  // Import the generateSK function
 import { decodeToken } from '@/services/Helper';
-
+import  {authenticateAndAuthorize} from '@/services/utils'
 // Constants for validation
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 5MB in bytes
 const MAX_PRODUCTS = 5000;  // Max products allowed in a batch
@@ -12,19 +12,27 @@ export async function POST(request) {
   try {
     // Extract API token from headers
     console.log('POST REQUEST RECEIVED ON UPLOAD PRODUCTS ENDPOINT');
-    const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
-    if (!apiToken) {
-      return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
-    }
 
-    const decoded = decodeToken(apiToken);
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-    }
+    const { authorized, user } = await authenticateAndAuthorize(request);
 
-    console.log(decoded);
+    console.log(authorized)
+    console.log(user)
+    if (!authorized) {
+      const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
+      if (!apiToken) {
+        return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
+      }
+
+      const decoded = decodeToken(apiToken);
+      if (!decoded) {
+        return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+      }
+
+      console.log(decoded);
+    }
+    const vendorId = user?.vendor ? user.vendor : decoded.vendorId
     // Lookup vendor by API token
-    const result = await getItem(`VENDOR#${decoded.vendorId}`, `VENDOR#${decoded.vendorId}`);
+    const result = await getItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`);
     console.log(result);
     if (!result.success) {
       return NextResponse.json({ error: 'Vendor not found or inactive' }, { status: 403 });
@@ -35,8 +43,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Vendor is inactive or not found' }, { status: 403 });
     }
 
-    const vendorId = vendor.pk;
-    console.log('VENDOR ID IS ' + vendorId);
+    // const vendorIdPk = vendor.pk;
+    // console.log('VENDOR ID IS ' + vendorId);
     // Parse the request body
     const bodyText = await request.text();
     if (!bodyText) {
@@ -117,7 +125,7 @@ export async function POST(request) {
       errors = []
     } = dbWriteResponse.results || {};
 
-    
+
 
     return NextResponse.json({
       message: 'Products uploaded successfully',

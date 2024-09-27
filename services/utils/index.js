@@ -4,6 +4,7 @@ export async function authenticateAndAuthorize(request) {
   // Get the logged-in user session
   const user = await getLoggedInUser();
 
+  console.log(user)
   // Check if the user is authenticated
   if (!user) {
     return { authorized: false, status: 401 };  // Not authenticated
@@ -15,7 +16,8 @@ export async function authenticateAndAuthorize(request) {
   // Parse request to get the vendorId (if needed)
   const { searchParams } = new URL(request.url);
   const vendorId = searchParams.get('vendorId');
-
+  console.log('vendor in auth param')
+  console.log(vendorId)
   // Check if the user is an admin or if their vendorId matches the request vendorId
   if (role === 'admin' || sessionVendorId === vendorId) {
     return { authorized: true, user, status: 200 };  // User is authorized
