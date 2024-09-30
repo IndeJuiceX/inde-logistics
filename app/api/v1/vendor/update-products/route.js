@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import SchemaValidation from '@/services/products/SchemaValidation';
-import { getItem, updateItem, batchWriteItems } from '@/lib/dynamodb';  // Import necessary DynamoDB functions
-import { generateSK } from '@/services/products/Helper';  // Import the generateSK function
+import { updateItem } from '@/services/dynamo/wrapper';
+import { getProductByVendorSku } from '@/services/data/product';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
-import { uploadToS3 } from '@/services/S3Helper';  // Assuming this function helps you upload snapshots to S3
+import { uploadToS3 } from '@/services/S3Helper';
 
 export async function POST(request) {
   try {
@@ -38,6 +38,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid request format: Products field is required' }, { status: 400 });
     }
 
+    // Validate incoming product data
     const validatedProducts = SchemaValidation.validateProductUpdates(body.products);
     if (validatedProducts.validatedProducts.length === 0) {
       return NextResponse.json({
@@ -50,55 +51,72 @@ export async function POST(request) {
     for (const product of validatedProducts.validatedProducts) {
       const { vendor_sku, new_vendor_sku, ...updatedFields } = product;
 
-      // Retrieve the existing product by vendor_sku
-      const result = await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${vendor_sku}`);
+      // Fetch the existing product by vendor_sku
+      const result = await getProductByVendorSku(`VENDORPRODUCT#${vendorId}`, vendor_sku);
       if (!result.success || !result.data) {
         return NextResponse.json({ error: `Product with SKU ${vendor_sku} not found` }, { status: 404 });
       }
-
       const existingProduct = result.data;
       const productUUID = existingProduct.sk.split('PRODUCT#')[1];
 
-      // Create a snapshot of the current product and upload to S3
-      const snapshotLink = await uploadToS3(existingProduct, `vendor/${vendorId}/products/${productUUID}/snapshot.json`);
+      // Prepare history versioning logic
+      const historyArray = existingProduct.history || [];
+      const historyVersion = historyArray.length + 1;
+      const historyS3Key = `history/${vendorId}/product-${historyVersion}.json`;
 
-      // Add the snapshot to the history attribute
-      const productHistory = existingProduct.history || [];
-      productHistory.push({ date: new Date().toISOString(), snapshot: snapshotLink });
-
-      const updatedProduct = {
-        ...existingProduct,
-        ...updatedFields,
-        history: productHistory,
+      // Prepare history object for tracking changes
+      const historySnapshot = {
+        timestamp: new Date().toISOString(),
+        modified_by: user.email,
+        changes: {},
+        original_product: existingProduct,
       };
 
-      // If vendor_sku is changing, mark the old SKU as inactive and create a new product with the new SKU
-      if (new_vendor_sku && new_vendor_sku !== vendor_sku) {
-        // Mark the old product as inactive
-        const deactivateOldProduct = {
-          ...existingProduct,
-          status: 'Inactive',
-        };
-        await updateItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${vendor_sku}`, deactivateOldProduct);
+      const updateExpressions = [];
+      const expressionAttributeValues = {};
 
-        // Create a new product with the new SKU
-        const newSK = `PRODUCT#${new_vendor_sku}`;
-        updatedProduct.sk = newSK;
-        updatedProduct.vendor_sku = new_vendor_sku;
+      // Handle updates to fields other than vendor_sku
+      for (const [key, value] of Object.entries(updatedFields)) {
+        if (value !== existingProduct[key]) {
+          updateExpressions.push(`${key} = :${key}`);
+          expressionAttributeValues[`:${key}`] = value;
 
-        // Insert the new product with the updated SKU
-        updatedProducts.push(updatedProduct);
-      } else {
-        // Update the existing product
-        await updateItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${vendor_sku}`, updatedProduct);
-        updatedProducts.push(updatedProduct);
+          historySnapshot.changes[`old_${key}`] = existingProduct[key];
+          historySnapshot.changes[`new_${key}`] = value;
+        }
       }
-    }
 
-    // Batch insert updated products into DynamoDB
-    const dbWriteResponse = await batchWriteItems(updatedProducts, 'Put');
-    if (!dbWriteResponse.success) {
-      return NextResponse.json({ error: 'Failed to update products in the database' }, { status: 500 });
+      // If both vendor_sku and new_vendor_sku are present, update the SKU
+      if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
+        updateExpressions.push(`vendor_sku = :new_vendor_sku`);
+        expressionAttributeValues[`:new_vendor_sku`] = new_vendor_sku;
+
+        historySnapshot.changes.old_vendor_sku = vendor_sku;
+        historySnapshot.changes.new_vendor_sku = new_vendor_sku;
+      }
+
+      // Upload the history object to S3
+      await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
+
+      // Add the S3 link to the history array in DynamoDB
+      updateExpressions.push('SET #history = list_append(if_not_exists(#history, :empty_list), :history)');
+      expressionAttributeValues[':history'] = [historyS3Key];
+      expressionAttributeValues[':empty_list'] = [];
+
+      // Update the product in DynamoDB
+      const updateResult = await updateItem(
+        `VENDORPRODUCT#${vendorId}`,
+        `PRODUCT#${productUUID}`,
+        updateExpressions.join(', '),  // Update expression
+        expressionAttributeValues,  // Values to update
+        { '#history': 'history' }  // Expression attribute names to avoid reserved keywords
+      );
+
+      if (!updateResult.success) {
+        return NextResponse.json({ error: `Failed to update product ${vendor_sku}` }, { status: 500 });
+      }
+
+      updatedProducts.push(updatedProduct);
     }
 
     return NextResponse.json({

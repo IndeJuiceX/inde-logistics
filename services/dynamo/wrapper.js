@@ -403,6 +403,46 @@ const queryItemCount = async (pkValue, skPrefix = null) => {
     // Return the accumulated count
     return { success: true, count: totalCount };
 };
+// Generic function to update an item by pk, sk, and update fields
+const updateItem = async (pkVal, skVal, updatedFields) => {
+    const client = getClient();
+
+    // Dynamically construct the update expression
+    let UpdateExpression = 'SET';
+    const ExpressionAttributeValues = {};
+    const ExpressionAttributeNames = {};
+
+    Object.entries(updatedFields).forEach(([key, value], index) => {
+        const attrName = `#attr${index}`;
+        const attrValue = `:val${index}`;
+
+        // Append the attribute and value to the update expression
+        UpdateExpression += ` ${attrName} = ${attrValue},`;
+        ExpressionAttributeValues[attrValue] = value;
+        ExpressionAttributeNames[attrName] = key;
+    });
+
+    // Remove trailing comma from the UpdateExpression
+    UpdateExpression = UpdateExpression.slice(0, -1);
+
+    const params = {
+        TableName: TABLE_NAME,
+        Key: { pk: pkVal, sk: skVal },
+        UpdateExpression,
+        ExpressionAttributeValues,
+        ExpressionAttributeNames,
+        ReturnValues: 'ALL_NEW',  // Optionally return all new attributes after update
+    };
+
+    try {
+        const data = await client.send(new UpdateCommand(params));
+        return { success: true, data: data.Attributes };
+    } catch (error) {
+        console.error('DynamoDB UpdateItem Error:', error);
+        return { success: false, error };
+    }
+};
 
 
-export { putItem, getItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount };
+
+export { putItem, getItem,updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount };
