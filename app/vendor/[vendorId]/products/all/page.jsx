@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 export default function AllProducts() {
   const { vendorId } = useParams();  // Get the vendorId from the route
+  const router = useRouter();  // Use Next.js router for navigation
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +96,10 @@ export default function AllProducts() {
     }
   };
 
+  const handleEditProduct = (productId) => {
+    router.push(`/vendor/${vendorId}/product/${productId}/edit`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="container mx-auto px-4">
@@ -169,6 +174,12 @@ export default function AllProducts() {
                       </div>
                     )}
                   </div>
+                  <button
+                    onClick={() => handleEditProduct(product.sk.split('PRODUCT#')[1])}
+                    className="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md self-end"
+                  >
+                    Edit
+                  </button>
                 </li>
               ))}
             </ul>

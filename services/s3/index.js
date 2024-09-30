@@ -1,5 +1,5 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'; // Optional, for signed URLs
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+//import { streamToString } from './streamToString'; // Helper to convert stream to string
 
 // Initialize the S3 client
 const REGION = process.env.AWS_REGION || 'us-east-2'; // Replace with your preferred AWS region
@@ -42,19 +42,40 @@ export const uploadToS3 = async (s3Key, fileContent, contentType = 'application/
 };
 
 /**
- * Optionally, you can also add a function to generate a presigned URL for download purposes.
- * 
- * @param {string} s3Key - The key of the object you want to get a presigned URL for.
- * @param {number} [expiresIn=3600] - The number of seconds the URL is valid for (default is 1 hour).
- * @returns {Promise<string>} - The presigned URL.
+ * Retrieves an object from S3.
+ * @param {string} s3Key - The key of the object in S3.
+ * @returns {Promise<string | Buffer>} - The content of the file.
  */
-export const getPresignedUrl = async (s3Key, expiresIn = 3600) => {
+export const getFileFromS3 = async (s3Key) => {
     const params = {
         Bucket: BUCKET_NAME,
         Key: s3Key,
     };
 
-    const command = new GetObjectCommand(params);
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn });
-    return presignedUrl;
+    try {
+        const command = new GetObjectCommand(params);
+        const response = await s3Client.send(command);
+
+        // Convert the stream to a string (for JSON/text files)
+        const fileContent = await streamToString(response.Body);
+        return fileContent;
+    } catch (error) {
+        console.error('Error getting file from S3:', error);
+        throw new Error('Failed to retrieve file from S3');
+    }
 };
+
+/**
+ * Helper function to convert a readable stream to a string.
+ * @param {ReadableStream} stream - The readable stream from S3.
+ * @returns {Promise<string>} - The string content of the stream.
+ */
+export const streamToString = (stream) => {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
+};
+

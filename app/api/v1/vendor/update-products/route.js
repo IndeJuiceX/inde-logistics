@@ -4,15 +4,15 @@ import { updateItem } from '@/services/dynamo/wrapper';
 import { getProductByVendorSku } from '@/services/data/product';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
-import { uploadToS3 } from '@/services/S3Helper';
+import { uploadToS3 } from '@/services/s3';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export async function POST(request) {
+export async function PUT(request) {
   try {
     // Extract authentication details
     const { authorized, user } = await authenticateAndAuthorize(request);
-
+    
     if (!authorized) {
       const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
       if (!apiToken) {
