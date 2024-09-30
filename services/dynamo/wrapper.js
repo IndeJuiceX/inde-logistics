@@ -1,6 +1,6 @@
 // dynamoFunctions.js
 import { getClient } from './client';
-import { PutCommand, GetCommand, QueryCommand, DeleteCommand, BatchWriteCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, QueryCommand, DeleteCommand, BatchWriteCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = '3pl-v3'; // Replace with your actual table name
 

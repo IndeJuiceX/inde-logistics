@@ -12,7 +12,7 @@ export async function PUT(request) {
   try {
     // Extract authentication details
     const { authorized, user } = await authenticateAndAuthorize(request);
-    
+
     if (!authorized) {
       const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
       if (!apiToken) {
@@ -43,6 +43,8 @@ export async function PUT(request) {
     let body;
     try {
       body = JSON.parse(bodyText);
+      console.log('BODY IS---')
+      console.log(body)
     } catch (error) {
       return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
     }
@@ -57,6 +59,10 @@ export async function PUT(request) {
     const validatedProducts = validationResults.validatedProducts;
     const invalidProducts = validationResults.errors;
 
+    console.log('Vaidation RESULTS--')
+    console.log(validationResults.validatedProducts)
+    console.log('INVALID PRODUCTS')
+    console.log(validationResults.errors)
     // Early return if all products fail validation
     if (validatedProducts.length === 0) {
       return NextResponse.json({
@@ -73,6 +79,7 @@ export async function PUT(request) {
 
       // Fetch the existing product by vendor_sku
       const result = await getProductByVendorSku(vendorId, vendor_sku);
+      console.log(result)
       if (!result.success || !result.data) {
         failedUpdates.push({
           vendor_sku,
@@ -81,7 +88,7 @@ export async function PUT(request) {
         continue;  // Move to the next product
       }
 
-      const existingProduct = result.data;
+      const existingProduct = result.data[0];
       const productUUID = existingProduct.sk.split('PRODUCT#')[1];
 
       // Prepare history versioning logic
