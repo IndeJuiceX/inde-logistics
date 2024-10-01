@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 
 export default function AllProducts() {
   const { vendorId } = useParams();  // Get the vendorId from the route
@@ -100,6 +102,10 @@ export default function AllProducts() {
     router.push(`/vendor/${vendorId}/product/${productId}/edit`);
   };
 
+  const handleViewProduct = (productId) => {
+    router.push(`/vendor/${vendorId}/product/${productId}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="container mx-auto px-4">
@@ -174,12 +180,22 @@ export default function AllProducts() {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleEditProduct(product.sk.split('PRODUCT#')[1])}
-                    className="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md self-end"
-                  >
-                    Edit
-                  </button>
+
+                  {/* Action icons for Edit and View */}
+                  <div className="flex justify-end mt-4 space-x-4 w-full">
+                    <button
+                      onClick={() => handleEditProduct(product.sk.split('PRODUCT#')[1])}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      <FontAwesomeIcon icon={faPencilAlt} />
+                    </button>
+                    <button
+                      onClick={() => handleViewProduct(product.sk.split('PRODUCT#')[1])}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
