@@ -12,6 +12,10 @@ export default function EditProductPage() {
   const [error, setError] = useState(null);
   const [updatedFields, setUpdatedFields] = useState({}); // Track updated fields
 
+  // State for new attribute
+  const [newAttributeKey, setNewAttributeKey] = useState('');
+  const [newAttributeValue, setNewAttributeValue] = useState('');
+
   // Fetch product data
   useEffect(() => {
     const fetchProduct = async () => {
@@ -35,9 +39,16 @@ export default function EditProductPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Merge existing attributes with updated attributes
+    const combinedAttributes = {
+      ...product.attributes,
+      ...(updatedFields.attributes || {}),
+    };
+
     const updatedProduct = {
-      vendor_sku: product.vendor_sku,
-      ...updatedFields, // Only include the fields that have been updated
+      vendor_sku: product.vendor_sku, // Required identifier
+      ...updatedFields, // Include updated fields
+      attributes: combinedAttributes, // Include all attributes
     };
 
     const payload = {
@@ -77,15 +88,22 @@ export default function EditProductPage() {
     }));
   };
 
-  // Handle attributes update (if attributes are objects)
+  // Handle attributes update
   const handleAttributesChange = (e) => {
     const { name, value } = e.target;
+
+    let updatedValue = value;
+
+    if (name === 'nicotine') {
+      // If nicotine, convert the string to an array of strings
+      updatedValue = value.split(',').map((item) => item.trim());
+    }
 
     setUpdatedFields((prevFields) => ({
       ...prevFields,
       attributes: {
-        ...prevFields.attributes,
-        [name]: value,
+        ...(prevFields.attributes || {}),
+        [name]: updatedValue,
       },
     }));
 
@@ -93,9 +111,41 @@ export default function EditProductPage() {
       ...prevProduct,
       attributes: {
         ...prevProduct.attributes,
-        [name]: value,
+        [name]: updatedValue,
       },
     }));
+  };
+
+  // Handle adding a new attribute
+  const handleAddAttribute = () => {
+    if (newAttributeKey && newAttributeValue) {
+      let updatedValue = newAttributeValue;
+
+      if (newAttributeKey === 'nicotine') {
+        // If nicotine, convert the string to an array of strings
+        updatedValue = newAttributeValue.split(',').map((item) => item.trim());
+      }
+
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        attributes: {
+          ...prevProduct.attributes,
+          [newAttributeKey]: updatedValue,
+        },
+      }));
+
+      setUpdatedFields((prevFields) => ({
+        ...prevFields,
+        attributes: {
+          ...(prevFields.attributes || {}),
+          [newAttributeKey]: updatedValue,
+        },
+      }));
+
+      // Clear the input fields
+      setNewAttributeKey('');
+      setNewAttributeValue('');
+    }
   };
 
   if (loading) return <p>Loading product details...</p>;
@@ -131,37 +181,6 @@ export default function EditProductPage() {
             />
           </div>
 
-          {/* Attributes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Volume</label>
-            <input
-              name="volume"
-              value={product.attributes?.volume || ''}
-              onChange={handleAttributesChange}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">VG/PG</label>
-            <input
-              name="vgpg"
-              value={product.attributes?.vgpg || ''}
-              onChange={handleAttributesChange}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Nicotine</label>
-            <input
-              name="nicotine"
-              value={product.attributes?.nicotine?.join(', ') || ''}
-              onChange={handleAttributesChange}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
           {/* Stock */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Stock</label>
@@ -182,6 +201,7 @@ export default function EditProductPage() {
               value={product.vendor_sku || ''}
               onChange={handleInputChange}
               className="w-full mt-1 p-2 border border-gray-300 rounded-md"
+              readOnly // Make SKU read-only if necessary
             />
           </div>
 
@@ -229,6 +249,55 @@ export default function EditProductPage() {
               onChange={handleInputChange}
               className="w-full mt-1 p-2 border border-gray-300 rounded-md"
             />
+          </div>
+
+          {/* Attributes Section */}
+          <div className="border-t mt-6 pt-4">
+            <h2 className="text-xl font-semibold mb-4">Attributes</h2>
+
+            {/* Existing Attributes */}
+            {Object.entries(product.attributes || {}).map(([key, value]) => (
+              <div key={key} className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 capitalize">
+                  {key}
+                </label>
+                <input
+                  name={key}
+                  value={Array.isArray(value) ? value.join(', ') : value}
+                  onChange={handleAttributesChange}
+                  className="w-full mt-1 p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+            ))}
+
+            {/* Add New Attribute */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">New Attribute Key</label>
+              <input
+                name="newAttributeKey"
+                value={newAttributeKey}
+                onChange={(e) => setNewAttributeKey(e.target.value)}
+                className="w-full mt-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter attribute key"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">New Attribute Value</label>
+              <input
+                name="newAttributeValue"
+                value={newAttributeValue}
+                onChange={(e) => setNewAttributeValue(e.target.value)}
+                className="w-full mt-1 p-2 border border-gray-300 rounded-md"
+                placeholder="Enter attribute value"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleAddAttribute}
+              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+            >
+              Add Attribute
+            </button>
           </div>
 
           {/* Submit Button */}
