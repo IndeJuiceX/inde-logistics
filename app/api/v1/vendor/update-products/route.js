@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import SchemaValidation from '@/services/products/SchemaValidation';
-import { updateItem } from '@/services/dynamo/wrapper';
+import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
 import { getProductByVendorSku } from '@/services/data/product';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
@@ -159,24 +159,20 @@ export async function PUT(request) {
         const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
         console.log('Uploaded to S3:', fileUrl);
 
-        // Add the S3 link to the history array in DynamoDB
-        const historyUpdateFields = {
-          history: [historyS3Key],  // Add the S3 key to the history array
-        };
-
-        // Use the updated `updateItem` function to append the history S3 link
-        await updateItem(
+        const historyUpdateResult = await updateOrInsert(
           `VENDORPRODUCT#${vendorId}`,
           `PRODUCT#${productUUID}`,
-          {
-            '#history': 'history'
-          },  // ExpressionAttributeNames: use alias for reserved word
-          {
-            ':history': historyUpdateFields.history,
-            ':empty_list': []  // For appending in case history does not exist
-          },
-          'SET #history = list_append(if_not_exists(#history, :empty_list), :history)'
+          { history: [historyS3Key] },  // List append fields (like history)
+          { '#history': 'history' }  // Reserved keyword for 'history'
         );
+      
+        if (!historyUpdateResult.success) {
+          console.error('Failed to append history to DynamoDB:', historyUpdateResult.error);
+          failedUpdates.push({
+            vendor_sku,
+            error: 'Failed to upload history to S3',
+          });
+        }
         
       } catch (error) {
         console.error('Failed to upload history to S3:', error);

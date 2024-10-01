@@ -442,8 +442,55 @@ const updateItem = async (pkVal, skVal, updatedFields, expressionAttributeNames)
     }
 };
 
+/**
+ * Appends values to an existing list attribute (e.g., history), or creates the attribute if it doesn't exist.
+ * @param {string} pkVal - Partition key value
+ * @param {string} skVal - Sort key value
+ * @param {Object} listAppendFields - Fields to append to existing lists (for cases like appending history)
+ * @param {Object} expressionAttributeNames - Optional expression attribute names (for reserved keywords)
+ */
+const updateOrInsert = async (pkVal, skVal, listAppendFields = {}, expressionAttributeNames = {}) => {
+    const client = getClient();
+
+    let UpdateExpression = 'SET';
+    const ExpressionAttributeValues = {};
+
+    // Process list append fields (for attributes like history that need to append)
+    Object.entries(listAppendFields).forEach(([key, value], index) => {
+        const attrName = expressionAttributeNames[`#appendAttr${index}`] || `#${key}`;
+        const attrValue = `:appendVal${index}`;
+
+        UpdateExpression += ` ${attrName} = list_append(if_not_exists(${attrName}, :empty_list), ${attrValue}),`;
+        ExpressionAttributeValues[attrValue] = value;
+        ExpressionAttributeValues[':empty_list'] = [];  // Provide an empty list if the attribute doesn't exist
+        expressionAttributeNames[attrName] = key;
+    });
+
+    // Remove trailing comma from the UpdateExpression
+    UpdateExpression = UpdateExpression.slice(0, -1);
+
+    const params = {
+        TableName: TABLE_NAME,
+        Key: { pk: pkVal, sk: skVal },
+        UpdateExpression,
+        ExpressionAttributeValues,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ReturnValues: 'ALL_NEW',  // Optionally return all new attributes after the update
+    };
+
+    try {
+        const data = await client.send(new UpdateCommand(params));
+        return { success: true, data: data.Attributes };
+    } catch (error) {
+        console.error('DynamoDB updateOrInsert Error:', error);
+        return { success: false, error };
+    }
+};
+
+//export { updateOrInsert };
 
 
 
 
-export { putItem, getItem, updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount };
+
+export { putItem, getItem, updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount, updateOrInsert };
