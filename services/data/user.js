@@ -25,3 +25,23 @@ export const getAllVendorUsers = async() => {
     };
     return await queryItems(params);
 }
+
+export const getVendorUsers = async (vendorId) => {
+    // Base query parameters
+    const params = {
+      IndexName: 'gs1_vendor_index',
+      KeyConditionExpression: 'entity_type = :entityType',
+      ExpressionAttributeValues: {
+        ':entityType': 'User',
+      },
+    };
+  
+    // If vendorId is provided, add it to the KeyConditionExpression and ExpressionAttributeValues
+    if (vendorId) {
+      params.KeyConditionExpression += ' AND vendor_id = :vendorId';
+      params.ExpressionAttributeValues[':vendorId'] = vendorId;
+    }
+  
+    // Query the DynamoDB index
+    return await queryItems(params);
+  };
