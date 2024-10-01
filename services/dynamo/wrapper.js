@@ -150,9 +150,7 @@ const deleteItemBatch = async (items) => {
         const totalUnprocessed = results.unprocessedItems.length;
         const totalErrors = results.errors.length;
 
-        console.log(`Total deleted items: ${totalDeleted}`);
-        console.log(`Total unprocessed items: ${totalUnprocessed}`);
-        console.log(`Total errors: ${totalErrors}`);
+      
 
         return { success: true, totalDeleted, totalUnprocessed, totalErrors };
     } catch (error) {

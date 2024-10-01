@@ -120,7 +120,6 @@ export async function PUT(request) {
       );
 
 
-      console.log(updateResult)
       if (!updateResult.success) {
         failedUpdates.push({
           vendor_sku,
@@ -157,7 +156,6 @@ export async function PUT(request) {
       // Upload the history object to S3
       try {
         const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
-        console.log('Uploaded to S3:', fileUrl);
 
         const historyUpdateResult = await updateOrInsert(
           `VENDORPRODUCT#${vendorId}`,
@@ -196,7 +194,6 @@ export async function PUT(request) {
     }, { status: 200 });
 
   } catch (error) {
-    console.log('Error in update-products endpoint:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

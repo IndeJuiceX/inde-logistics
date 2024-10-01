@@ -83,7 +83,6 @@ export default function Vendors() {
 // Dummy function for handling vendor deletion (replace with actual logic)
 const handleDelete = (vendorId) => {
   if (confirm('Are you sure you want to delete this vendor?')) {
-    console.log('Vendor deleted:', vendorId);
     // Call delete API and refetch vendors
   }
 };

@@ -15,8 +15,6 @@ export async function POST(request) {
 
     const { authorized, user } = await authenticateAndAuthorize(request);
 
-    console.log(authorized)
-    console.log(user)
     if (!authorized) {
       const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
       if (!apiToken) {
@@ -28,7 +26,6 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
       }
 
-      console.log(decoded);
     }
     const vendorId = user?.vendor ? user.vendor : decoded.vendorId
     // Lookup vendor by API token

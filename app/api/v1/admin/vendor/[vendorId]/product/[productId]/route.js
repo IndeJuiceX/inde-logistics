@@ -6,8 +6,6 @@ export async function GET(request, { params }) {
 
     try {
         const result = await getProductById(vendorId, productId);
-        console.log('RESULT FROM QUERY---')
-        console.log(result)
         if (!result.success) {
             return NextResponse.json({ error: result.error }, { status: 404 });
         }

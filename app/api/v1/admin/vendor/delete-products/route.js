@@ -40,7 +40,6 @@ export async function DELETE(request) {
 
     console.log('ITEMS TO DELETE SIZE IS--' + itemsToDelete.length)
     console.log('ITEM TO DELETE IS')
-    console.log(itemsToDelete[0])
     // Batch delete the products
     const deleteResponse = await batchWriteItems(itemsToDelete, 'Delete');
     if (!deleteResponse.success) {

@@ -18,18 +18,15 @@ export default function SignIn() {
         try {
             const formData = new FormData(e.currentTarget);
             const res = await doLogIn(formData);
-            console.log(res);
 
             if (res.error) {
                 setErrorMessage(res.error);
             } else {
                 // Force a refresh to update the session immediately
-                console.log('RELOADING---')
                 router.push('/login');
                 router.refresh()
             }
         } catch (error) {
-            console.log(error);
             setErrorMessage('Something went wrong');
         } finally {
             setLoading(false);

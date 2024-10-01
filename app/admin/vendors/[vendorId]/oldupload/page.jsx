@@ -95,8 +95,6 @@ export default function Vendors() {
         alert(`Products uploaded successfully for vendor ${vendorId}`);
         setVendorProductsExist((prev) => ({ ...prev, [vendorId]: true }));
         setUploadResult(result); // Store the result for display
-        console.log('UPLOAD RESULT IS ')
-        console.log(result);
       } else if (response.status === 400 && result.invalidProducts) {
         // Handle the case where all products are invalid
         setUploadResult({

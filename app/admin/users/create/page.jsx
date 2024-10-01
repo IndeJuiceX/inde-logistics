@@ -38,7 +38,6 @@ const CreateUserPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Add user submit logic here
-    console.log(formData);
     // Call your API to save the user
     try {
       const res = await fetch("/api/auth/register", {

@@ -81,7 +81,6 @@ export default function Users() {
 // Dummy function for handling user deletion (replace with actual logic)
 const handleDelete = (userId) => {
   if (confirm('Are you sure you want to delete this user?')) {
-    console.log('User deleted:', userId);
     // Call delete API and refetch users
   }
 };
