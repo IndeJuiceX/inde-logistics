@@ -403,14 +403,13 @@ const queryItemCount = async (pkValue, skPrefix = null) => {
     // Return the accumulated count
     return { success: true, count: totalCount };
 };
-// Generic function to update an item by pk, sk, and update fields
-const updateItem = async (pkVal, skVal, updatedFields) => {
+
+const updateItem = async (pkVal, skVal, updatedFields, expressionAttributeNames) => {
     const client = getClient();
 
-    // Dynamically construct the update expression
     let UpdateExpression = 'SET';
     const ExpressionAttributeValues = {};
-    const ExpressionAttributeNames = {};
+    const ExpressionAttributeNames = expressionAttributeNames || {};
 
     Object.entries(updatedFields).forEach(([key, value], index) => {
         const attrName = `#attr${index}`;
@@ -445,4 +444,6 @@ const updateItem = async (pkVal, skVal, updatedFields) => {
 
 
 
-export { putItem, getItem,updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount };
+
+
+export { putItem, getItem, updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount };

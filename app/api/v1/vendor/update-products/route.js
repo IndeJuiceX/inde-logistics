@@ -43,8 +43,6 @@ export async function PUT(request) {
     let body;
     try {
       body = JSON.parse(bodyText);
-      console.log('BODY IS---')
-      console.log(body)
     } catch (error) {
       return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
     }
@@ -54,15 +52,11 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Invalid request format: Products field is required' }, { status: 400 });
     }
 
-    // Validate the products
+    // Validate the products (removing any "pk" or "sk" fields if passed)
     const validationResults = SchemaValidation.validateProductUpdates(body.products);
     const validatedProducts = validationResults.validatedProducts;
     const invalidProducts = validationResults.errors;
 
-    console.log('Vaidation RESULTS--')
-    console.log(validationResults.validatedProducts)
-    console.log('INVALID PRODUCTS')
-    console.log(validationResults.errors)
     // Early return if all products fail validation
     if (validatedProducts.length === 0) {
       return NextResponse.json({
@@ -73,13 +67,12 @@ export async function PUT(request) {
 
     const updatedProducts = [];
     const failedUpdates = [];
-    
+
     for (const product of validatedProducts) {
       const { vendor_sku, new_vendor_sku, ...updatedFields } = product;
 
       // Fetch the existing product by vendor_sku
       const result = await getProductByVendorSku(vendorId, vendor_sku);
-      console.log(result)
       if (!result.success || !result.data) {
         failedUpdates.push({
           vendor_sku,
@@ -91,44 +84,21 @@ export async function PUT(request) {
       const existingProduct = result.data[0];
       const productUUID = existingProduct.sk.split('PRODUCT#')[1];
 
-      // Prepare history versioning logic
-      const historyArray = existingProduct.history || [];
-      const historyVersion = historyArray.length + 1;
-      const historyS3Key = `${vendorId}/product-history/${productUUID}/product-${historyVersion}.json`;
-
-      // Prepare history object for tracking changes
-      const historySnapshot = {
-        timestamp: new Date().toISOString(),
-        modified_by: user?.email || 'Vendor API token',
-        changes: {},
-        original_product: existingProduct,
-      };
-
-      const updateExpressions = [];
-      const expressionAttributeValues = {};
-      const expressionAttributeNames = { '#history': 'history' }; // Use expression attribute name for 'history'
+      // Prepare update expressions for DynamoDB
+      const updateExpressions = {};
 
       let hasUpdates = false;
       // Handle updates to fields other than vendor_sku
       for (const [key, value] of Object.entries(updatedFields)) {
         if (value !== existingProduct[key]) {
-          updateExpressions.push(`#${key} = :${key}`);
-          expressionAttributeValues[`:${key}`] = value;
-          expressionAttributeNames[`#${key}`] = key;
-
-          historySnapshot.changes[`old_${key}`] = existingProduct[key];
-          historySnapshot.changes[`new_${key}`] = value;
+          updateExpressions[key] = value;
           hasUpdates = true;
         }
       }
 
       // If both vendor_sku and new_vendor_sku are present, update the SKU
       if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
-        updateExpressions.push('vendor_sku = :new_vendor_sku');
-        expressionAttributeValues[`:new_vendor_sku`] = new_vendor_sku;
-
-        historySnapshot.changes.old_vendor_sku = vendor_sku;
-        historySnapshot.changes.new_vendor_sku = new_vendor_sku;
+        updateExpressions.vendor_sku = new_vendor_sku;
         hasUpdates = true;
       }
 
@@ -141,37 +111,78 @@ export async function PUT(request) {
         continue;
       }
 
+      // Update the product in DynamoDB
+      // Call the updated updateItem function
+      const updateResult = await updateItem(
+        `VENDORPRODUCT#${vendorId}`,
+        `PRODUCT#${productUUID}`,
+        updateExpressions
+      );
+
+
+      console.log(updateResult)
+      if (!updateResult.success) {
+        failedUpdates.push({
+          vendor_sku,
+          error: `Failed to update product ${vendor_sku}`,
+        });
+        continue;
+      }
+
+      // If update is successful, then upload the history to S3
+      const historyArray = existingProduct.history || [];
+      const historyVersion = historyArray.length + 1;
+      const historyS3Key = `${vendorId}/product-history/${productUUID}/product-${historyVersion}.json`;
+
+      // Prepare history object for tracking changes
+      const historySnapshot = {
+        timestamp: new Date().toISOString(),
+        modified_by: user?.email || 'Vendor API token',
+        changes: {},
+        original_product: existingProduct,
+      };
+
+      // Capture the changes in history
+      for (const [key, value] of Object.entries(updatedFields)) {
+        if (value !== existingProduct[key]) {
+          historySnapshot.changes[`old_${key}`] = existingProduct[key];
+          historySnapshot.changes[`new_${key}`] = value;
+        }
+      }
+      if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
+        historySnapshot.changes.old_vendor_sku = vendor_sku;
+        historySnapshot.changes.new_vendor_sku = new_vendor_sku;
+      }
+
       // Upload the history object to S3
       try {
         const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
         console.log('Uploaded to S3:', fileUrl);
+
+        // Add the S3 link to the history array in DynamoDB
+        const historyUpdateFields = {
+          history: [historyS3Key],  // Add the S3 key to the history array
+        };
+
+        // Use the updated `updateItem` function to append the history S3 link
+        await updateItem(
+          `VENDORPRODUCT#${vendorId}`,
+          `PRODUCT#${productUUID}`,
+          {
+            '#history': 'history'
+          },  // ExpressionAttributeNames: use alias for reserved word
+          {
+            ':history': historyUpdateFields.history,
+            ':empty_list': []  // For appending in case history does not exist
+          },
+          'SET #history = list_append(if_not_exists(#history, :empty_list), :history)'
+        );
+        
       } catch (error) {
         console.error('Failed to upload history to S3:', error);
         failedUpdates.push({
           vendor_sku,
           error: 'Failed to upload history to S3',
-        });
-        continue;
-      }
-
-      // Add the S3 link to the history array in DynamoDB
-      updateExpressions.push('SET #history = list_append(if_not_exists(#history, :empty_list), :history)');
-      expressionAttributeValues[':history'] = [historyS3Key];
-      expressionAttributeValues[':empty_list'] = [];
-
-      // Update the product in DynamoDB
-      const updateResult = await updateItem(
-        `VENDORPRODUCT#${vendorId}`,
-        `PRODUCT#${productUUID}`,
-        updateExpressions.join(', '),  // Update expression
-        expressionAttributeValues,  // Values to update
-        expressionAttributeNames  // Expression attribute names to avoid reserved keywords
-      );
-
-      if (!updateResult.success) {
-        failedUpdates.push({
-          vendor_sku,
-          error: `Failed to update product ${vendor_sku}`,
         });
         continue;
       }

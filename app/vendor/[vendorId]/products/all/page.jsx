@@ -182,18 +182,20 @@ export default function AllProducts() {
                   </div>
 
                   {/* Action icons for Edit and View */}
-                  <div className="flex justify-end mt-4 space-x-4 w-full">
+                  <div className="flex justify-end mt-4 space-x-2 w-full">
                     <button
                       onClick={() => handleEditProduct(product.sk.split('PRODUCT#')[1])}
-                      className="text-blue-500 hover:text-blue-700"
+                      className="text-blue-500 hover:text-blue-700 flex items-center space-x-2"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
+                      <span className="sr-only">Edit</span>
                     </button>
                     <button
                       onClick={() => handleViewProduct(product.sk.split('PRODUCT#')[1])}
-                      className="text-blue-500 hover:text-blue-700"
+                      className="text-blue-500 hover:text-blue-700 flex items-center space-x-2"
                     >
                       <FontAwesomeIcon icon={faEye} />
+                      <span className="sr-only">View</span>
                     </button>
                   </div>
                 </li>

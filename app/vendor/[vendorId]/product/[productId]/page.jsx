@@ -14,7 +14,10 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`);
+        const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`, {
+          method: 'GET',
+          cache: 'no-store',  // Disable cache
+        });
         const data = await response.json();
         setProduct(data); // Populate product data
         setLoading(false);
