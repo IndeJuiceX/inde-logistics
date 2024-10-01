@@ -149,7 +149,7 @@ export default function AllProducts() {
             {/* Buttons */}
             <div className="flex space-x-4">
               <button
-                onClick={() => router.push(`/admin/vendors/${vendorId}/products/add`)}
+                onClick={() => router.push(`/admin/vendors/${vendorId}/products/upload`)}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
               >
                 Add New Product
