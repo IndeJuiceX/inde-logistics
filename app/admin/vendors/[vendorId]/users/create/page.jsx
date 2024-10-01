@@ -15,7 +15,7 @@ export default function CreateVendorUserPage() {
     email: '',
     phone: '',
     password: '',
-    userType: 'vendor_user', // Set default user type
+    userType: 'vendor', // Set default user type
     vendorId: vendorId, // Set vendorId from context
   });
   const [error, setError] = useState('');
