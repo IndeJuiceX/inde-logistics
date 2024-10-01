@@ -1,14 +1,10 @@
-import {auth} from '@/auth';
-
 export default async function HomePage() {
-  const session = await auth();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="text-center">
         {/* Heading Section */}
         <h1 className="text-4xl font-bold text-gray-800 mb-6">
           Welcome to IndeJuice Logistics
-          <pre>{JSON.stringify(session,null,2)}</pre>
         </h1>
 
         {/* Buttons Section */}
