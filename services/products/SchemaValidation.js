@@ -89,14 +89,16 @@ class SchemaValidation {
             ).optional().label('attributes'),
 
             // Define warehouse field (optional)
-            warehouse: Joi.alternatives().try(
+            /*warehouse: Joi.alternatives().try(
                 Joi.array().empty(),  // Allow empty array
                 Joi.object().pattern(Joi.string(), Joi.any()) // Allow object with any string keys and values
-            ).optional().label('warehouse'),
+            ).optional().label('warehouse'),*/
+
         }).or('new_vendor_sku', 'status', 'stock', 'name', 'cost_price', 'sale_price', 'brand_name', 'image', 'attributes', 'warehouse') // Ensure at least one field besides vendor_sku is present
-        .messages({
-            'object.missing': 'At least one field (e.g., status, stock, name, etc.) must be provided for the update.'
-        });
+            .unknown(false)  // Prevents unknown keys
+            .messages({
+                'object.missing': 'At least one field (e.g., status, stock, name, etc.) must be provided for the update.'
+            });
     }
 
     // Function to validate a single product update

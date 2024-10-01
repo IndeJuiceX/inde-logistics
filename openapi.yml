@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: >
     API documentation for the Vendor Product Catalogue system.
-    This API allows vendors to upload product batches
+    This API allows vendors to upload and update product batches
     with a maximum payload size of 2 MB.
 servers:
   - url: http://localhost:3000/api/v1
@@ -41,6 +41,38 @@ paths:
           description: Unauthorized - Missing or invalid API token
         '413':
           description: Payload exceeds the allowed size limit (5 MB)
+        '500':
+          description: Server error
+
+  /vendor/update-products:
+    put:
+      summary: Update existing products
+      description: >
+        Endpoint for vendors to update existing products in batches. The payload size must not exceed 2 MB. The `vendor_sku` is required, and any other attribute can be optionally updated. The request must contain at least one field to update in addition to `vendor_sku`.
+        Requires API token for authentication.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  maxItems: 5000
+                  items:
+                    $ref: '#/components/schemas/product_update'
+      responses:
+        '200':
+          description: Products updated successfully
+        '400':
+          description: Validation errors or request payload exceeds limits
+        '401':
+          description: Unauthorized - Missing or invalid API token
+        '413':
+          description: Payload exceeds the allowed size limit (2 MB)
         '500':
           description: Server error
 
@@ -96,3 +128,46 @@ components:
             color: "Red"
             size: "Medium"
             nicotine: ["0mg", "3mg"]
+
+    product_update:
+      type: object
+      required:
+        - vendor_sku
+      properties:
+        vendor_sku:
+          type: string
+          example: "12345678"
+        new_vendor_sku:
+          type: string
+          example: "987654321"
+        status:
+          type: string
+          enum: [Active, Inactive]
+          example: "Active"
+        stock:
+          type: integer
+          example: 100
+        name:
+          type: string
+          example: "Updated Product Name"
+        cost_price:
+          type: number
+          example: 80.99
+        sale_price:
+          type: number
+          example: 120.50
+        brand_name:
+          type: string
+          example: "Updated Brand"
+        image:
+          type: string
+          example: "https://cdn.indejuice.com/updated_image.jpg"
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            color: "Blue"
+            size: "Large"
+            nicotine: ["6mg", "12mg"]
+    
