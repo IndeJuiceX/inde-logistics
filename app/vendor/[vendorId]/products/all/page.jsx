@@ -64,18 +64,23 @@ export default function AllProducts() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${searchTerm}`);
+      // Include the `page` and `pageSize` in the API call
+      const response = await fetch(`/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${searchTerm}&page=${page}&pageSize=${pageSize}`);
       const data = await response.json();
-      setProducts(data);
+
+      // Set the products and any pagination data if needed
+      setProducts(data.products);  // Assuming data.products is where the product list is stored
+      //setTotalPages(Math.ceil(data.total / pageSize));  // Calculate total pages from the response
       setLoading(false);
     } catch (error) {
       console.error('Error searching products:', error);
       setLoading(false);
     }
   };
+
 
   const handleDeleteCatalogue = async () => {
     const confirmed = confirm("Are you sure you want to delete the entire catalogue? This action cannot be undone.");
