@@ -22,7 +22,7 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
     return await queryItems(params);
 };
 
-export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize = 10) => {
+export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize = 20) => {
     // Calculate the `from` value to skip the appropriate number of documents
     const from = (page - 1) * pageSize;
   

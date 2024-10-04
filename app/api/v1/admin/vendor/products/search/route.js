@@ -13,8 +13,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get('vendorId');
     const query = searchParams.get('q');
-    const page = parseInt(searchParams.get('page'), 10) || 1;
-    const pageSize = parseInt(searchParams.get('pageSize'), 10) || 10;
+    const page = parseInt(searchParams.get('page'), 20) || 1;
+    const pageSize = parseInt(searchParams.get('pageSize'), 20) || 20;
 
     if (!vendorId) {
       return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
@@ -22,7 +22,6 @@ export async function GET(request) {
 
     // Query paginated products
     const result = await searchProducts(query, vendorId, page, pageSize);
-    console.log(result)
     // Return the results along with pagination data
     return NextResponse.json({
       products: result.data,
