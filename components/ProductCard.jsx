@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
 
-export default function ProductCard({ product, actions, children }) {
+export default function ProductCard({ product, children }) { // Removed `actions` from props
   return (
     <li className="bg-white shadow-md rounded-lg p-6 flex flex-col items-start">
       <div className="flex justify-between items-center w-full">
@@ -24,22 +24,12 @@ export default function ProductCard({ product, actions, children }) {
         )}
       </div>
 
-      {/* Display additional children passed to the card, like the quantity input */}
-      <div className="mt-4 w-full">{children}</div>
-
-      {/* Render action buttons */}
-      <div className="flex justify-end mt-4 space-x-2 w-full">
-        {actions.map((action, index) => (
-          <button
-            key={index}
-            onClick={action.onClick}
-            className={`text-blue-500 hover:text-blue-700 flex items-center space-x-2 ${action.className}`}
-          >
-            {action.icon && <FontAwesomeIcon icon={action.icon} />}
-            <span>{action.text}</span>
-          </button>
-        ))}
+      {/* Children wrapper with flex layout */}
+      <div className="mt-4 w-full flex items-center space-x-2">
+        {children}
       </div>
+
+      {/* Removed the action buttons section */}
     </li>
   );
 }
