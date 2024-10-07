@@ -12,7 +12,7 @@ export const searchIndex = async (index = '3pl-v3', query, from = 0, size = 10) 
             }
         });
 
-        return result.body.hits.hits;  // Return only the search hits
+        return result.body;  // Return only the search hits
     } catch (error) {
         console.error('OpenSearch search error:', error);
         throw error;

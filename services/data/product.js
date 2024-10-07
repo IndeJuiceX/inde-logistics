@@ -25,30 +25,43 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
 export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize = 20) => {
     // Calculate the `from` value to skip the appropriate number of documents
     const from = (page - 1) * pageSize;
-  
-    const results = await searchIndex('3pl-v3', {
-      bool: {
-        must: [
-          { term: { 'entity_type.keyword': 'Product' } },           // Match the exact entity_type
-          { match: { name: searchQuery } },                         // Full-text search on name
-          { term: { 'pk.keyword': 'VENDORPRODUCT#' + vendorId } }   // Exact match for the vendor's product ID (pk)
-        ]
-      }
+
+    // Build the base must array with the common filters
+    const must = [
+        { term: { 'entity_type.keyword': 'Product' } },           // Match the exact entity_type
+        { term: { 'pk.keyword': 'VENDORPRODUCT#' + vendorId } }   // Exact match for the vendor's product ID (pk)
+    ];
+
+    // Add full-text search on name only if the searchQuery is provided
+    if (searchQuery) {
+        must.push({ match: { name: searchQuery } });
+    }
+
+    // Perform the search without the "query" wrapping
+    const response = await searchIndex('3pl-v3', {
+        bool: {
+            must: must
+        }
     }, from, pageSize);  // Pass pagination parameters
-  
+
+    // Extract the results and total hits
+    const results = response.hits.hits;
+    const totalHits = response.hits.total.value;  // Total number of matched records
+
     // Extract only the _source field
     const sources = results.map(item => item._source);
-  
+
     return {
-      success: true,
-      data: sources,
-      pagination: {
-        page,
-        pageSize,
-        total: results.length  // You might want to use total hits count instead
-      }
+        success: true,
+        data: sources,
+        pagination: {
+            page,
+            pageSize,
+            total: totalHits  // Use total hits for pagination, not results length
+        }
     };
-  };
-  
+};
+
+
 
 

@@ -25,9 +25,9 @@ export async function GET(request) {
     // Return the results along with pagination data
     return NextResponse.json({
       products: result.data,
-      total: result.pagination.total,  // Total number of products found
-      page,
-      pageSize
+      pagination: result.pagination,  // Total number of products found
+     /* page,
+      pageSize*/
     }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Unexpected server error', details: error.message }, { status: 500 });
