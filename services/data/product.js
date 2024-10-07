@@ -42,7 +42,7 @@ export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize =
         bool: {
             must: must
         }
-    }, from, size);  // Pass pagination parameters
+    },{}, from, size);  // Pass pagination parameters
 
     // Extract the results and total hits
     const results = response.hits.hits;
