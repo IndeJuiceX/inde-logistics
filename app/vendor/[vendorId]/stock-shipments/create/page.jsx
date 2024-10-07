@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ProductCard from '@/components/ProductCard';  // Import the reusable ProductCard component
 
 export default function CreateStockShipmentPage() {
   const [products, setProducts] = useState([]);  // For displaying vendor products
@@ -9,6 +10,7 @@ export default function CreateStockShipmentPage() {
   const [brandFilter, setBrandFilter] = useState('');  // Filter by brand
   const [brands, setBrands] = useState([]);  // Vendor brands for filtering
   const [isConfirming, setIsConfirming] = useState(false); // Track confirmation step
+  const [selectedQuantity, setSelectedQuantity] = useState({});  // Track quantity for each product
 
   // Dummy products and brands
   useEffect(() => {
@@ -56,6 +58,14 @@ export default function CreateStockShipmentPage() {
     setIsConfirming(true);
   };
 
+  // Handle quantity input change for each product
+  const handleQuantityChange = (product, quantity) => {
+    setSelectedQuantity((prev) => ({
+      ...prev,
+      [product.id]: quantity,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="container mx-auto px-4">
@@ -90,26 +100,28 @@ export default function CreateStockShipmentPage() {
         </div>
 
         {/* Product List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((product) => (
-            <div
+            <ProductCard
               key={product.id}
-              className="bg-white shadow-md rounded-lg p-6 flex flex-col items-start"
+              product={product}
+              actions={[
+                {
+                  text: 'Add',
+                  onClick: () => handleSelectProduct(product, selectedQuantity[product.id] || 1),
+                },
+              ]}
             >
-              <h3 className="text-lg font-semibold text-gray-700">
-                {product.name}
-              </h3>
-              <p className="text-gray-500 mb-2">Brand: {product.brand}</p>
-              <p className="text-gray-700 mb-2">Stock: {product.stock}</p>
               <input
                 type="number"
                 placeholder="Enter quantity"
-                onChange={(e) => handleSelectProduct(product, e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-md mt-4"
+                value={selectedQuantity[product.id] || ''}
+                onChange={(e) => handleQuantityChange(product, e.target.value)}
               />
-            </div>
+            </ProductCard>
           ))}
-        </div>
+        </ul>
 
         {/* Items in Shipment */}
         {selectedItems.length > 0 && (
