@@ -20,7 +20,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
     }
 
-    console.log(' API CALL page is '+page+' SIZE IS '+pageSize)
+    console.log(' API CALL page is '+page+' SIZE IS '+pageSize +' Quer is '+query)
     // Query paginated products
     const result = await searchProducts(query, vendorId, page, pageSize);
     // Return the results along with pagination data

@@ -26,7 +26,6 @@ export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize =
     // Calculate the `from` value to skip the appropriate number of documents
     const from = (page - 1) * pageSize;
     const size = pageSize;
-    console.log('FROM '+from+' SIZE IS '+size)
     // Build the base must array with the common filters
     const must = [
         { term: { 'entity_type.keyword': 'Product' } },           // Match the exact entity_type
