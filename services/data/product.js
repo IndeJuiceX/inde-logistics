@@ -25,7 +25,8 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
 export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize = 20) => {
     // Calculate the `from` value to skip the appropriate number of documents
     const from = (page - 1) * pageSize;
-
+    const size = pageSize;
+    console.log('FROM '+from+' SIZE IS '+size)
     // Build the base must array with the common filters
     const must = [
         { term: { 'entity_type.keyword': 'Product' } },           // Match the exact entity_type
@@ -42,7 +43,7 @@ export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize =
         bool: {
             must: must
         }
-    }, from, pageSize);  // Pass pagination parameters
+    }, from, size);  // Pass pagination parameters
 
     // Extract the results and total hits
     const results = response.hits.hits;

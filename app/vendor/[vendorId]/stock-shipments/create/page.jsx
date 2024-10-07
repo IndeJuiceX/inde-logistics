@@ -18,7 +18,7 @@ export default function CreateStockShipmentPage() {
   const [page, setPage] = useState(1);  // Pagination current page
   const [totalPages, setTotalPages] = useState(0);  // Total number of pages
   const [totalResults, setTotalResults] = useState(0);  // Total number of results
-  const pageSize = 20;  // Number of products per page
+  const pageSize = 10;  // Number of products per page
 
   // Fetch vendor products with pagination and search
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function CreateStockShipmentPage() {
           const data = await response.json();
           console.log(data)
           setProducts(data.products || []);  // Set products from response
-          setBrands(data.brands || []);  // Assuming brands are fetched from API as well
+          //setBrands(data.brands || []);  // Assuming brands are fetched from API as well
           setTotalResults(data.pagination.total || 0);  // Total number of results
           setTotalPages(Math.ceil(data.pagination.total / pageSize));  // Total number of pages
         } catch (error) {

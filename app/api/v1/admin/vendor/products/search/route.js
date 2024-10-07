@@ -13,13 +13,14 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get('vendorId');
     const query = searchParams.get('q');
-    const page = parseInt(searchParams.get('page'), 20) || 1;
-    const pageSize = parseInt(searchParams.get('pageSize'), 20) || 20;
+    const page = parseInt(searchParams.get('page')) || 1;
+    const pageSize = parseInt(searchParams.get('pageSize')) || 20;
 
     if (!vendorId) {
       return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
     }
 
+    console.log(' API CALL page is '+page+' SIZE IS '+pageSize)
     // Query paginated products
     const result = await searchProducts(query, vendorId, page, pageSize);
     // Return the results along with pagination data
