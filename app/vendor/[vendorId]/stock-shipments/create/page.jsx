@@ -98,9 +98,9 @@ export default function CreateStockShipmentPage() {
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="container mx-auto px-4">
         {/* Header and Search */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Create Stock Shipment</h1>
-          <div className="flex space-x-4">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+          <h1 className="text-3xl font-bold mb-4 md:mb-0">Create Stock Shipment</h1>
+          <div className="flex space-x-2">
             <input
               type="text"
               value={searchTerm}
@@ -111,12 +111,24 @@ export default function CreateStockShipmentPage() {
             <button
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
               onClick={() => {
-                setPage(1);            // Reset to first page on new search
-                setQuery(searchTerm);  // Set the search query to trigger API call
+                setPage(1);            // Reset to first page
+                setQuery(searchTerm);  // Set the query to trigger API call
               }}
             >
               Search
             </button>
+            {searchTerm && (
+              <button
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md"
+                onClick={() => {
+                  setSearchTerm('');     // Clear the search input
+                  setPage(1);            // Reset to first page
+                  setQuery('');          // Clear the query to fetch all products
+                }}
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
 
@@ -138,6 +150,13 @@ export default function CreateStockShipmentPage() {
             ))}
           </select>
         </div>
+
+        {/* Display "Results for 'SearchTerm'" */}
+        {query && (
+          <p className="mb-4 text-gray-700">
+              Results for &quot;<span className="font-semibold">{query}</span>&quot;
+          </p>
+        )}
 
         {/* Product List or Loading/Error Messages */}
         {loading ? (
