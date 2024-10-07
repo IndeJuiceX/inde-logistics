@@ -29,6 +29,7 @@ export default function CreateStockShipmentPage() {
 
   // Handle product selection
   const handleSelectProduct = (product, quantity) => {
+    if (quantity <= 0) return; // Ensure quantity is greater than 0
     setSelectedItems((prev) => {
       const existingItem = prev.find((item) => item.id === product.id);
       if (existingItem) {
@@ -62,7 +63,7 @@ export default function CreateStockShipmentPage() {
   const handleQuantityChange = (product, quantity) => {
     setSelectedQuantity((prev) => ({
       ...prev,
-      [product.id]: quantity,
+      [product.id]: Math.max(1, quantity), // Ensure minimum value is 1
     }));
   };
 
@@ -109,16 +110,20 @@ export default function CreateStockShipmentPage() {
                 {
                   text: 'Add',
                   onClick: () => handleSelectProduct(product, selectedQuantity[product.id] || 1),
+                  className: 'px-2 py-1 bg-green-500 text-white rounded-md',  // Styling for Add button
                 },
               ]}
             >
-              <input
-                type="number"
-                placeholder="Enter quantity"
-                className="px-4 py-2 border border-gray-300 rounded-md mt-4"
-                value={selectedQuantity[product.id] || ''}
-                onChange={(e) => handleQuantityChange(product, e.target.value)}
-              />
+              <div className="flex items-center space-x-2 mt-2">
+                <input
+                  type="number"
+                  min="1"
+                  className="w-20 px-2 py-1 border border-gray-300 rounded-md"
+                  placeholder="Qty"
+                  value={selectedQuantity[product.id] || 1}
+                  onChange={(e) => handleQuantityChange(product, Number(e.target.value))}
+                />
+              </div>
             </ProductCard>
           ))}
         </ul>
