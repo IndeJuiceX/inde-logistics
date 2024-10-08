@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import ProductCard from '@/components/ProductCard';  // Import the reusable ProductCard component
+
+import SearchBar from '@/components/SearchBar';
+import Filters from '@/components/Filters';
+import ProductList from '@/components/ProductList';
+import PaginationControls from '@/components/PaginationControls';
 
 export default function CreateStockShipmentPage() {
   const router = useRouter();
@@ -13,8 +17,9 @@ export default function CreateStockShipmentPage() {
   const [selectedItems, setSelectedItems] = useState([]);        // Selected products with quantities
   const [searchTerm, setSearchTerm] = useState('');              // User input for search
   const [query, setQuery] = useState('');                        // Actual search query used for API
-  const [brandFilter, setBrandFilter] = useState('');            // Filter by brand
   const [brands, setBrands] = useState([]);                      // Available brands for filtering
+  const [selectedBrands, setSelectedBrands] = useState([]);      // Selected brands for filtering
+  const [brandSearchTerm, setBrandSearchTerm] = useState('');    // Search term for brands
   const [selectedQuantity, setSelectedQuantity] = useState({});  // Quantity for each product
   const [loading, setLoading] = useState(true);                  // Loading state for products
   const [error, setError] = useState(null);                      // Error state for products
@@ -30,9 +35,19 @@ export default function CreateStockShipmentPage() {
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(
-            `/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}&brand=${encodeURIComponent(brandFilter)}`
-          );
+          // Generate brand query parameters
+          let brandQuery = '';
+          if (selectedBrands.length > 0) {
+            brandQuery = selectedBrands.map(brand => `brand=${encodeURIComponent(brand)}`).join('&');
+            brandQuery = '&' + brandQuery;
+          }
+
+          // Only include the 'q' parameter if 'query' is not empty
+          const qParam = query ? `&q=${encodeURIComponent(query)}` : '';
+
+          const url = `/api/v1/admin/vendor/products/search?vendorId=${vendorId}${qParam}&page=${page}&pageSize=${pageSize}${brandQuery}`;
+          console.log('Fetching products with URL:', url);
+          const response = await fetch(url);
           const data = await response.json();
           console.log(data);
 
@@ -49,26 +64,27 @@ export default function CreateStockShipmentPage() {
 
       fetchProducts();
     }
-  }, [vendorId, query, page, brandFilter]);  // Fetch products when vendorId, query, page, or brandFilter changes
+  }, [vendorId, query, page, selectedBrands]);
 
-  // Fetch brands when the page loads
+  // Fetch brands when the page loads or when brandSearchTerm changes
   useEffect(() => {
     if (vendorId) {
       const fetchBrands = async () => {
         try {
-          const response = await fetch(`/api/v1/admin/vendor/products/brands?vendorId=${vendorId}`);
+          const response = await fetch(
+            `/api/v1/admin/vendor/products/brands?vendorId=${vendorId}&searchTerm=${encodeURIComponent(brandSearchTerm)}`
+          );
           const data = await response.json();
           console.log('Fetched brands:', data);
           setBrands(data.brands || []);
         } catch (error) {
           console.error('Error fetching brands:', error);
-          // Optionally set an error state for brands if needed
         }
       };
 
       fetchBrands();
     }
-  }, [vendorId]);  // Fetch brands when vendorId changes (i.e., on mount)
+  }, [vendorId, brandSearchTerm]);
 
   // Handle quantity input change
   const handleQuantityChange = (product, quantity) => {
@@ -99,6 +115,33 @@ export default function CreateStockShipmentPage() {
     setSelectedItems((prev) => prev.filter((item) => item.vendor_sku !== vendor_sku));
   };
 
+  // Handle brand checkbox change
+  const handleBrandCheckboxChange = (brand) => {
+    setPage(1); // Reset to first page when filter changes
+    setSelectedBrands((prevSelectedBrands) => {
+      if (prevSelectedBrands.includes(brand)) {
+        // Remove brand from selectedBrands
+        return prevSelectedBrands.filter((b) => b !== brand);
+      } else {
+        // Add brand to selectedBrands
+        return [...prevSelectedBrands, brand];
+      }
+    });
+  };
+
+  // Handle product search
+  const handleProductSearch = () => {
+    setPage(1);            // Reset to first page
+    setQuery(searchTerm);  // Set the query to trigger API call
+  };
+
+  // Handle clearing the search
+  const handleClearSearch = () => {
+    setSearchTerm('');  // Clear the search input
+    setQuery('');       // Clear the query to fetch all products
+    setPage(1);         // Reset to first page
+  };
+
   // Save the shipment and redirect for final submission
   const handleSaveShipment = () => {
     // Implement save shipment logic here (e.g., API call)
@@ -110,184 +153,127 @@ export default function CreateStockShipmentPage() {
     <div className="min-h-screen bg-gray-100 py-10">
       <div className="container mx-auto px-4">
         {/* Header and Search */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-          <h1 className="text-3xl font-bold mb-4 md:mb-0">Create Stock Shipment</h1>
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search products..."
-              className="px-4 py-2 border border-gray-300 rounded-md"
-            />
-            <button
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
-              onClick={() => {
-                setPage(1);            // Reset to first page
-                setQuery(searchTerm);  // Set the query to trigger API call
-              }}
-            >
-              Search
-            </button>
-            {searchTerm && (
-              <button
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md"
-                onClick={() => {
-                  setSearchTerm('');     // Clear the search input
-                  setPage(1);            // Reset to first page
-                  setQuery('');          // Clear the query to fetch all products
-                }}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+          <h1 className="text-3xl font-bold">Create Stock Shipment</h1>
+          <SearchBar
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onSearch={handleProductSearch}
+            onClear={handleClearSearch}
+          />
+        </div>
+
+        {/* Applied Filters */}
+        {selectedBrands.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center">
+            <span className="mr-2 font-semibold">Filters Applied:</span>
+            {selectedBrands.map((brand) => (
+              <div
+                key={brand}
+                className="flex items-center mr-2 mb-2 bg-blue-100 px-3 py-1 rounded-full"
               >
-                Clear
-              </button>
+                <span className="text-blue-700">{brand}</span>
+                <button
+                  onClick={() => handleBrandCheckboxChange(brand)}
+                  className="ml-2 text-blue-700 hover:text-blue-900 font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Main Content with Filters Column */}
+        <div className="mt-6 flex flex-col md:flex-row">
+          {/* Filters Column */}
+          <Filters
+            brands={brands}
+            selectedBrands={selectedBrands}
+            handleBrandCheckboxChange={handleBrandCheckboxChange}
+            brandSearchTerm={brandSearchTerm}
+            setBrandSearchTerm={setBrandSearchTerm}
+          />
+
+          {/* Main Content */}
+          <div className="md:w-3/4">
+            {/* Display "Results for 'SearchTerm'" */}
+            {query && (
+              <p className="mb-4 text-gray-700">
+                Results for &quot;<span className="font-semibold">{query}</span>&quot;
+              </p>
+            )}
+
+            {/* Product List or Loading/Error Messages */}
+            {loading ? (
+              <p>Loading products...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : products.length === 0 ? (
+              <p>No products found. Try adjusting your search or filters.</p>
+            ) : (
+              <>
+                {/* Product List */}
+                <ProductList
+                  products={products}
+                  selectedQuantity={selectedQuantity}
+                  handleQuantityChange={handleQuantityChange}
+                  handleSelectProduct={handleSelectProduct}
+                />
+
+                {/* Pagination Controls */}
+                <PaginationControls
+                  page={page}
+                  totalPages={totalPages}
+                  setPage={setPage}
+                  totalResults={totalResults}
+                />
+
+                {/* Selected Items in Shipment */}
+                {selectedItems.length > 0 && (
+                  <div className="mt-10">
+                    <h2 className="text-2xl font-bold mb-4">Items in Shipment</h2>
+                    <table className="min-w-full bg-white shadow-md rounded-lg">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2 border">Product</th>
+                          <th className="px-4 py-2 border">Quantity</th>
+                          <th className="px-4 py-2 border">Remove</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedItems.map((item) => (
+                          <tr key={item.vendor_sku}>
+                            <td className="px-4 py-2 border">{item.name}</td>
+                            <td className="px-4 py-2 border">{item.quantity}</td>
+                            <td className="px-4 py-2 border">
+                              <button
+                                onClick={() => handleRemoveProduct(item.vendor_sku)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Save Shipment Button */}
+                <div className="flex justify-end mt-8">
+                  <button
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                    onClick={handleSaveShipment}
+                  >
+                    Save
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
-
-        {/* Brand Filter */}
-        <div className="flex space-x-4 mb-6">
-          <select
-            value={brandFilter}
-            onChange={(e) => {
-              setBrandFilter(e.target.value);
-              setPage(1); // Reset to first page when filter changes
-            }}
-            className="px-4 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="">All Brands</option>
-            {brands.map((brand) => (
-              <option key={brand} value={brand}>
-                {brand}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Display "Results for 'SearchTerm'" */}
-        {query && (
-          <p className="mb-4 text-gray-700">
-              Results for &quot;<span className="font-semibold">{query}</span>&quot;
-          </p>
-        )}
-
-        {/* Product List or Loading/Error Messages */}
-        {loading ? (
-          <p>Loading products...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : products.length === 0 ? (
-          <p>No products found. Try adjusting your search or filters.</p>
-        ) : (
-          <>
-            {/* Product Cards */}
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <ProductCard key={product.vendor_sku} product={product}>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <input
-                      type="number"
-                      min="1"
-                      className="w-20 px-2 py-1 border border-gray-300 rounded-md"
-                      placeholder="Qty"
-                      value={selectedQuantity[product.vendor_sku] || 1}
-                      onChange={(e) =>
-                        handleQuantityChange(product, Number(e.target.value))
-                      }
-                    />
-                    <button
-                      onClick={() =>
-                        handleSelectProduct(
-                          product,
-                          selectedQuantity[product.vendor_sku] || 1
-                        )
-                      }
-                      className="px-2 py-1 bg-green-500 text-white rounded-md"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </ProductCard>
-              ))}
-            </ul>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex justify-between items-center mt-6">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Showing page {page} of {totalPages}, total results: {totalResults}
-                  </p>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setPage((prevPage) => Math.max(prevPage - 1, 1))}
-                    disabled={page === 1}
-                    className={`px-4 py-2 bg-gray-300 text-gray-700 rounded-md ${
-                      page === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-400'
-                    }`}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() =>
-                      setPage((prevPage) => Math.min(prevPage + 1, totalPages))
-                    }
-                    disabled={page === totalPages}
-                    className={`px-4 py-2 bg-gray-300 text-gray-700 rounded-md ${
-                      page === totalPages
-                        ? 'cursor-not-allowed opacity-50'
-                        : 'hover:bg-gray-400'
-                    }`}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Selected Items in Shipment */}
-            {selectedItems.length > 0 && (
-              <div className="mt-10">
-                <h2 className="text-2xl font-bold mb-4">Items in Shipment</h2>
-                <table className="min-w-full bg-white shadow-md rounded-lg">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-2 border">Product</th>
-                      <th className="px-4 py-2 border">Quantity</th>
-                      <th className="px-4 py-2 border">Remove</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedItems.map((item) => (
-                      <tr key={item.vendor_sku}>
-                        <td className="px-4 py-2 border">{item.name}</td>
-                        <td className="px-4 py-2 border">{item.quantity}</td>
-                        <td className="px-4 py-2 border">
-                          <button
-                            onClick={() => handleRemoveProduct(item.vendor_sku)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Save Shipment Button */}
-            <div className="flex justify-end mt-8">
-              <button
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                onClick={handleSaveShipment}
-              >
-                Save
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
