@@ -136,7 +136,9 @@ export default function StockShipmentUploadPage() {
                                             <strong>Vendor SKU:</strong> {error.item}
                                         </p>
                                         <p>
-                                            <strong>Errors:</strong> {error.errors.join(', ')}
+                                            <strong>Errors:</strong>{' '}
+                                            {Array.isArray(error.errors) ? error.errors.join(', ') : error.error}
+
                                         </p>
                                     </div>
                                 ))}

@@ -15,7 +15,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
             const result = await getProductByVendorSku(vendorId, vendor_sku);
             if (!result.success || !result.data || result.data.length === 0) {
                 invalidItems.push({
-                    vendor_sku,
+                    item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
                 });
             } /*else {
