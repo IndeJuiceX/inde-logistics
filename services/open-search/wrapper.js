@@ -1,7 +1,8 @@
 import osClient from './client';
 
+const index = '3pl-v3';
 // Function to search the index
-export const searchIndex = async (index = '3pl-v3', query = {}, aggs = {}, from = 0, size = 10) => {
+export const searchIndex = async ( query = {}, aggs = {}, from = 0, size = 10) => {
     try {
         const body = {};
 

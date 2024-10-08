@@ -38,7 +38,7 @@ export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize =
     }
 
     // Perform the search without the "query" wrapping
-    const response = await searchIndex('3pl-v3', {
+    const response = await searchIndex( {
         bool: {
             must: must
         }

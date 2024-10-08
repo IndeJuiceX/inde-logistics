@@ -16,8 +16,8 @@ export default function CreateStockShipmentPage() {
   const [brandFilter, setBrandFilter] = useState('');            // Filter by brand
   const [brands, setBrands] = useState([]);                      // Available brands for filtering
   const [selectedQuantity, setSelectedQuantity] = useState({});  // Quantity for each product
-  const [loading, setLoading] = useState(true);                  // Loading state
-  const [error, setError] = useState(null);                      // Error state
+  const [loading, setLoading] = useState(true);                  // Loading state for products
+  const [error, setError] = useState(null);                      // Error state for products
   const [page, setPage] = useState(1);                           // Current page for pagination
   const [totalPages, setTotalPages] = useState(0);               // Total number of pages
   const [totalResults, setTotalResults] = useState(0);           // Total number of results
@@ -31,14 +31,12 @@ export default function CreateStockShipmentPage() {
         setError(null);
         try {
           const response = await fetch(
-            `/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}`
+            `/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${encodeURIComponent(query)}&page=${page}&pageSize=${pageSize}&brand=${encodeURIComponent(brandFilter)}`
           );
           const data = await response.json();
           console.log(data);
 
           setProducts(data.products || []);
-          // If brands are returned by the API, set them for filtering
-          // setBrands(data.brands || []);
           setTotalResults(data.pagination.total || 0);
           setTotalPages(Math.ceil(data.pagination.total / pageSize));
         } catch (error) {
@@ -51,7 +49,26 @@ export default function CreateStockShipmentPage() {
 
       fetchProducts();
     }
-  }, [vendorId, query, page]);  // Fetch products when vendorId, query, or page changes
+  }, [vendorId, query, page, brandFilter]);  // Fetch products when vendorId, query, page, or brandFilter changes
+
+  // Fetch brands when the page loads
+  useEffect(() => {
+    if (vendorId) {
+      const fetchBrands = async () => {
+        try {
+          const response = await fetch(`/api/v1/admin/vendor/products/brands?vendorId=${vendorId}`);
+          const data = await response.json();
+          console.log('Fetched brands:', data);
+          setBrands(data.brands || []);
+        } catch (error) {
+          console.error('Error fetching brands:', error);
+          // Optionally set an error state for brands if needed
+        }
+      };
+
+      fetchBrands();
+    }
+  }, [vendorId]);  // Fetch brands when vendorId changes (i.e., on mount)
 
   // Handle quantity input change
   const handleQuantityChange = (product, quantity) => {
@@ -81,11 +98,6 @@ export default function CreateStockShipmentPage() {
   const handleRemoveProduct = (vendor_sku) => {
     setSelectedItems((prev) => prev.filter((item) => item.vendor_sku !== vendor_sku));
   };
-
-  // Filter products by brand
-  const filteredProducts = products.filter(
-    (product) => !brandFilter || product.brand === brandFilter
-  );
 
   // Save the shipment and redirect for final submission
   const handleSaveShipment = () => {
@@ -163,13 +175,13 @@ export default function CreateStockShipmentPage() {
           <p>Loading products...</p>
         ) : error ? (
           <p className="text-red-500">{error}</p>
-        ) : filteredProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <p>No products found. Try adjusting your search or filters.</p>
         ) : (
           <>
             {/* Product Cards */}
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
+              {products.map((product) => (
                 <ProductCard key={product.vendor_sku} product={product}>
                   <div className="flex items-center space-x-2 mt-2">
                     <input
