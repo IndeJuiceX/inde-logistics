@@ -1,6 +1,6 @@
 // dynamoFunctions.js
 import { getClient } from './client';
-import { PutCommand, GetCommand, QueryCommand, DeleteCommand, BatchWriteCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, QueryCommand, DeleteCommand, BatchWriteCommand, ScanCommand, UpdateCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
 
 const TABLE_NAME = '3pl-v3'; // Replace with your actual table name
 
@@ -150,7 +150,7 @@ const deleteItemBatch = async (items) => {
         const totalUnprocessed = results.unprocessedItems.length;
         const totalErrors = results.errors.length;
 
-      
+
 
         return { success: true, totalDeleted, totalUnprocessed, totalErrors };
     } catch (error) {
@@ -483,12 +483,45 @@ const updateOrInsert = async (pkVal, skVal, listAppendFields = {}, expressionAtt
         console.error('DynamoDB updateOrInsert Error:', error);
         return { success: false, error };
     }
+
 };
 
+// Execute a DynamoDB transaction
+const transactWriteItems = async (transactionItems) => {
+    const client = getClient();
+
+    // Map through each TransactItem and add TableName if not present
+    const updatedTransactionItems = transactionItems.map(item => {
+        // Extract the operation (e.g., 'Put', 'Update', 'Delete')
+        const operation = Object.keys(item)[0];
+        const operationParams = item[operation];
+
+        // Add TableName if not present
+        
+        operationParams.TableName = TABLE_NAME;
+
+
+        return {
+            [operation]: operationParams
+        };
+    });
+
+    const params = {
+        TransactItems: updatedTransactionItems,
+    };
+
+    try {
+        await client.send(new TransactWriteCommand(params));
+        return { success: true };
+    } catch (error) {
+        console.error('DynamoDB TransactWrite Error:', error);
+        return { success: false, error };
+    }
+};
 //export { updateOrInsert };
 
 
 
 
 
-export { putItem, getItem, updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount, updateOrInsert };
+export { putItem, getItem, updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount, updateOrInsert, transactWriteItems };
