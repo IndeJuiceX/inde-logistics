@@ -144,10 +144,51 @@ export default function CreateStockShipmentPageManual() {
   };
 
   // Save the shipment and redirect for final submission
-  const handleSaveShipment = () => {
-    // Implement save shipment logic here (e.g., API call)
-    const shipmentId = 'generated_shipment_id'; // Replace with actual shipment ID
-    router.push(`/vendor/stockshipments/${shipmentId}`); // Redirect to shipment page
+  const handleSaveShipment = async () => {
+    if (selectedItems.length === 0) {
+        alert('No items selected for shipment.');
+        return;
+      }
+    
+      // Form the stock_shipment array from selectedItems
+      const stock_shipment = selectedItems.map((item) => ({
+        vendor_sku: item.vendor_sku,
+        stock_in: item.quantity,
+        // Include other necessary fields if any
+      }));
+      const requestBody = {
+        stock_shipment,
+        // Include other necessary data, e.g., shipment metadata
+      };
+    
+      try {
+        // Send the POST request to the backend
+        const response = await fetch(
+          `/api/v1/vendor/stock-shipments/create?vendorId=${vendorId}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          // Assuming the backend returns the shipment ID
+          const shipmentId = result.shipmentId;
+          alert('Stock shipment saved successfully.');
+          // Redirect to the shipment page
+          router.push(`/vendor/${vendorId}/stock-shipments/${shipmentId}`);
+        } else {
+          alert(`Failed to save shipment: ${result.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error saving shipment:', error);
+        alert('An error occurred while saving the shipment.');
+      }
   };
 
   return (
