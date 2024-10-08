@@ -1,6 +1,6 @@
 import { getProductByVendorSku } from '@/services/data/product';
 import { v4 as uuidv4 } from 'uuid';
-import { transactWriteItems } from '@/services/dynamo/dynamoFunctions';
+import { transactWriteItems } from '@/services/dynamo/wrapper';
 
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {

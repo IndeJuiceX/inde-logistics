@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-products": "node ./scripts/generate-dummy-products.js"
+    "generate-products": "node ./scripts/generate-dummy-products.js",
+    "generate-stock-shipment": "node ./scripts/generate-dummy-stock-shipment.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.645.0",
