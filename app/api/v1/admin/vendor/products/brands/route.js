@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getUniqueBrandNames } from '@/services/data/brand';  // Your DynamoDB helper
+import { getUniqueBrandNames } from '@/services/data/brand';  // Import the updated function
 import { authenticateAndAuthorize } from '@/services/utils';  // Auth helper
 
 export async function GET(request) {
   try {
-    // Use the helper to authenticate and authorize the user
+    // Authenticate and authorize the user
     const { authorized, user, status } = await authenticateAndAuthorize(request);
 
     // If not authorized, return an appropriate response
@@ -14,26 +14,26 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get('vendorId');
-    const page = parseInt(searchParams.get('page'), 10) || 1;
-    const pageSize = parseInt(searchParams.get('pageSize'), 10) || 5;
+    const searchTerm = searchParams.get('searchTerm') || '';
+    const size = 20;  // Limit to 20 brands
 
     if (!vendorId) {
       return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
     }
 
-    // Query items for the given vendor
-    const result = await getUniqueBrandNames(vendorId);
-    
+    // Fetch unique brand names
+    const result = await getUniqueBrandNames(vendorId, size, searchTerm);
+
     // If query failed, return an error
     if (!result.success) {
-      return NextResponse.json({ error: 'Failed to fetch Brands', details: result.error }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch brands', details: result.error }, { status: 500 });
     }
 
-    // Paginate results
-    const startIndex = (page - 1) * pageSize;
-    const paginatedData = result.data.slice(startIndex, startIndex + pageSize);
-
-    return NextResponse.json(paginatedData, { status: 200 });
+    // Return the brand names and whether more brands are available
+    return NextResponse.json({
+      brands: result.data,
+      hasMoreBrands: result.hasMoreBrands,
+    }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Unexpected server error', details: error.message }, { status: 500 });
   }
