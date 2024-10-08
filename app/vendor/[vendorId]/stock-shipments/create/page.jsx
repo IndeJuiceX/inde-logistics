@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 
 import SearchBar from '@/components/SearchBar';
 import Filters from '@/components/Filters';
+import ItemsInShipment from '@/components/ItemsInShipment';
 import ProductList from '@/components/ProductList';
 import PaginationControls from '@/components/PaginationControls';
 
@@ -184,16 +185,25 @@ export default function CreateStockShipmentPage() {
           </div>
         )}
 
-        {/* Main Content with Filters Column */}
+        {/* Main Content with Filters and Items in Shipment Column */}
         <div className="mt-6 flex flex-col md:flex-row">
-          {/* Filters Column */}
-          <Filters
-            brands={brands}
-            selectedBrands={selectedBrands}
-            handleBrandCheckboxChange={handleBrandCheckboxChange}
-            brandSearchTerm={brandSearchTerm}
-            setBrandSearchTerm={setBrandSearchTerm}
-          />
+          {/* Left Column: Filters and Items in Shipment */}
+          <div className="md:w-1/4 md:pr-4 mb-6 md:mb-0">
+            {/* Filters */}
+            <Filters
+              brands={brands}
+              selectedBrands={selectedBrands}
+              handleBrandCheckboxChange={handleBrandCheckboxChange}
+              brandSearchTerm={brandSearchTerm}
+              setBrandSearchTerm={setBrandSearchTerm}
+            />
+
+            {/* Items in Shipment */}
+            <ItemsInShipment
+              selectedItems={selectedItems}
+              handleRemoveProduct={handleRemoveProduct}
+            />
+          </div>
 
           {/* Main Content */}
           <div className="md:w-3/4">
@@ -228,38 +238,6 @@ export default function CreateStockShipmentPage() {
                   setPage={setPage}
                   totalResults={totalResults}
                 />
-
-                {/* Selected Items in Shipment */}
-                {selectedItems.length > 0 && (
-                  <div className="mt-10">
-                    <h2 className="text-2xl font-bold mb-4">Items in Shipment</h2>
-                    <table className="min-w-full bg-white shadow-md rounded-lg">
-                      <thead>
-                        <tr>
-                          <th className="px-4 py-2 border">Product</th>
-                          <th className="px-4 py-2 border">Quantity</th>
-                          <th className="px-4 py-2 border">Remove</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedItems.map((item) => (
-                          <tr key={item.vendor_sku}>
-                            <td className="px-4 py-2 border">{item.name}</td>
-                            <td className="px-4 py-2 border">{item.quantity}</td>
-                            <td className="px-4 py-2 border">
-                              <button
-                                onClick={() => handleRemoveProduct(item.vendor_sku)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                Remove
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
 
                 {/* Save Shipment Button */}
                 <div className="flex justify-end mt-8">
