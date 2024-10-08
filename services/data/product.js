@@ -22,7 +22,7 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
     return await queryItems(params);
 };
 
-export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize = 20) => {
+export const searchProducts = async (vendorId, searchQuery, brands,  page = 1, pageSize = 20) => {
     // Calculate the `from` value to skip the appropriate number of documents
     const from = (page - 1) * pageSize;
     const size = pageSize;
@@ -36,6 +36,11 @@ export const searchProducts = async (searchQuery, vendorId, page = 1, pageSize =
     if (searchQuery) {
         must.push({ match: { name: searchQuery } });
     }
+    if (brands.length > 0) {
+        must.push({
+          terms: { 'brand_name.keyword': brands },
+        });
+      }
 
     // Perform the search without the "query" wrapping
     const response = await searchIndex( {

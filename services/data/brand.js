@@ -15,7 +15,8 @@ export async function getUniqueBrandNames(vendorId, size = 20, searchTerm = '') 
 
     // Include a filter for the searchTerm if provided
     if (searchTerm) {
-        aggs.unique_brands.terms.include = `.*${searchTerm}.*`; // Use regex to include matching brands
+        const caseInsensitiveRegex = `.*${toCaseInsensitiveRegex(searchTerm)}.*`;
+        aggs.unique_brands.terms.include = caseInsensitiveRegex;
     }
 
     // Define the query to filter documents by entity_type and pk (vendorId)
@@ -49,4 +50,18 @@ export async function getUniqueBrandNames(vendorId, size = 20, searchTerm = '') 
         console.error('Error fetching unique brand names:', error);
         return { success: false, data: [], error: error.message };
     }
+}
+
+function toCaseInsensitiveRegex(str) {
+    // Escape special regex characters
+    const escapedStr = str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+    // Transform each character into a case-insensitive character class
+    return escapedStr.split('').map(c => {
+        if (/[a-zA-Z]/.test(c)) {
+            return `[${c.toLowerCase()}${c.toUpperCase()}]`;
+        } else {
+            return c;
+        }
+    }).join('');
 }
