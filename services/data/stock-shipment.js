@@ -1,7 +1,7 @@
 import { getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
 import { transactWriteItems } from '@/services/dynamo/wrapper';
-
+import { searchIndex } from '../open-search/wrapper';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
         // Second-tier validation: Check if vendor_sku exists in the database
@@ -102,4 +102,37 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
         console.error('Unhandled error in createStockShipment:', error);
         return { success: false, error: 'Server error', details: error.message };
     }
+}
+
+export async function getAllStockShipments(vendorId, page=1 , pageSize=20) {
+    const from = (page - 1) * pageSize;
+    const size = pageSize;
+    const must = [
+        { term: { 'entity_type.keyword': 'StockShipment' } },           // Match the exact entity_type
+        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENT#' + vendorId } }   // Exact match for the vendor's product ID (pk)
+    ];
+
+    // Perform the search without the "query" wrapping
+    const response = await searchIndex({
+        bool: {
+            must: must
+        }
+    }, {}, from, size);  // Pass pagination parameters
+
+    // Extract the results and total hits
+    const results = response.hits.hits;
+    const totalHits = response.hits.total.value;  // Total number of matched records
+
+    // Extract only the _source field
+    const sources = results.map(item => item._source);
+
+    return {
+        success: true,
+        data: sources,
+        pagination: {
+            page,
+            pageSize,
+            total: totalHits  // Use total hits for pagination, not results length
+        }
+    };
 }

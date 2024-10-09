@@ -1,0 +1,404 @@
+{
+  "stock_shipment": [
+    {
+      "vendor_sku": "SKU1",
+      "stock_in": 7
+    },
+    {
+      "vendor_sku": "SKU2",
+      "stock_in": 42
+    },
+    {
+      "vendor_sku": "SKU3",
+      "stock_in": 6
+    },
+    {
+      "vendor_sku": "SKU4",
+      "stock_in": 7
+    },
+    {
+      "vendor_sku": "SKU5",
+      "stock_in": 1
+    },
+    {
+      "vendor_sku": "SKU6",
+      "stock_in": 27
+    },
+    {
+      "vendor_sku": "SKU7",
+      "stock_in": 75
+    },
+    {
+      "vendor_sku": "SKU8",
+      "stock_in": 3
+    },
+    {
+      "vendor_sku": "SKU9",
+      "stock_in": 82
+    },
+    {
+      "vendor_sku": "SKU10",
+      "stock_in": 36
+    },
+    {
+      "vendor_sku": "SKU11",
+      "stock_in": 22
+    },
+    {
+      "vendor_sku": "SKU12",
+      "stock_in": 82
+    },
+    {
+      "vendor_sku": "SKU13",
+      "stock_in": 62
+    },
+    {
+      "vendor_sku": "SKU14",
+      "stock_in": 13
+    },
+    {
+      "vendor_sku": "SKU15",
+      "stock_in": 28
+    },
+    {
+      "vendor_sku": "SKU16",
+      "stock_in": 17
+    },
+    {
+      "vendor_sku": "SKU17",
+      "stock_in": 21
+    },
+    {
+      "vendor_sku": "SKU18",
+      "stock_in": 15
+    },
+    {
+      "vendor_sku": "SKU19",
+      "stock_in": 94
+    },
+    {
+      "vendor_sku": "SKU20",
+      "stock_in": 40
+    },
+    {
+      "vendor_sku": "SKU21",
+      "stock_in": 22
+    },
+    {
+      "vendor_sku": "SKU22",
+      "stock_in": 38
+    },
+    {
+      "vendor_sku": "SKU23",
+      "stock_in": 1
+    },
+    {
+      "vendor_sku": "SKU24",
+      "stock_in": 55
+    },
+    {
+      "vendor_sku": "SKU25",
+      "stock_in": 53
+    },
+    {
+      "vendor_sku": "SKU26",
+      "stock_in": 35
+    },
+    {
+      "vendor_sku": "SKU27",
+      "stock_in": 96
+    },
+    {
+      "vendor_sku": "SKU28",
+      "stock_in": 43
+    },
+    {
+      "vendor_sku": "SKU29",
+      "stock_in": 20
+    },
+    {
+      "vendor_sku": "SKU30",
+      "stock_in": 19
+    },
+    {
+      "vendor_sku": "SKU31",
+      "stock_in": 34
+    },
+    {
+      "vendor_sku": "SKU32",
+      "stock_in": 67
+    },
+    {
+      "vendor_sku": "SKU33",
+      "stock_in": 50
+    },
+    {
+      "vendor_sku": "SKU34",
+      "stock_in": 85
+    },
+    {
+      "vendor_sku": "SKU35",
+      "stock_in": 29
+    },
+    {
+      "vendor_sku": "SKU36",
+      "stock_in": 89
+    },
+    {
+      "vendor_sku": "SKU37",
+      "stock_in": 47
+    },
+    {
+      "vendor_sku": "SKU38",
+      "stock_in": 61
+    },
+    {
+      "vendor_sku": "SKU39",
+      "stock_in": 48
+    },
+    {
+      "vendor_sku": "SKU40",
+      "stock_in": 57
+    },
+    {
+      "vendor_sku": "SKU41",
+      "stock_in": 65
+    },
+    {
+      "vendor_sku": "SKU42",
+      "stock_in": 89
+    },
+    {
+      "vendor_sku": "SKU43",
+      "stock_in": 14
+    },
+    {
+      "vendor_sku": "SKU44",
+      "stock_in": 55
+    },
+    {
+      "vendor_sku": "SKU45",
+      "stock_in": 82
+    },
+    {
+      "vendor_sku": "SKU46",
+      "stock_in": 59
+    },
+    {
+      "vendor_sku": "SKU47",
+      "stock_in": 18
+    },
+    {
+      "vendor_sku": "SKU48",
+      "stock_in": 53
+    },
+    {
+      "vendor_sku": "SKU49",
+      "stock_in": 29
+    },
+    {
+      "vendor_sku": "SKU50",
+      "stock_in": 62
+    },
+    {
+      "vendor_sku": "SKU51",
+      "stock_in": 4
+    },
+    {
+      "vendor_sku": "SKU52",
+      "stock_in": 32
+    },
+    {
+      "vendor_sku": "SKU53",
+      "stock_in": 48
+    },
+    {
+      "vendor_sku": "SKU54",
+      "stock_in": 34
+    },
+    {
+      "vendor_sku": "SKU55",
+      "stock_in": 81
+    },
+    {
+      "vendor_sku": "SKU56",
+      "stock_in": 20
+    },
+    {
+      "vendor_sku": "SKU57",
+      "stock_in": 72
+    },
+    {
+      "vendor_sku": "SKU58",
+      "stock_in": 38
+    },
+    {
+      "vendor_sku": "SKU59",
+      "stock_in": 14
+    },
+    {
+      "vendor_sku": "SKU60",
+      "stock_in": 70
+    },
+    {
+      "vendor_sku": "SKU61",
+      "stock_in": 72
+    },
+    {
+      "vendor_sku": "SKU62",
+      "stock_in": 43
+    },
+    {
+      "vendor_sku": "SKU63",
+      "stock_in": 76
+    },
+    {
+      "vendor_sku": "SKU64",
+      "stock_in": 92
+    },
+    {
+      "vendor_sku": "SKU65",
+      "stock_in": 91
+    },
+    {
+      "vendor_sku": "SKU66",
+      "stock_in": 77
+    },
+    {
+      "vendor_sku": "SKU67",
+      "stock_in": 58
+    },
+    {
+      "vendor_sku": "SKU68",
+      "stock_in": 20
+    },
+    {
+      "vendor_sku": "SKU69",
+      "stock_in": 39
+    },
+    {
+      "vendor_sku": "SKU70",
+      "stock_in": 5
+    },
+    {
+      "vendor_sku": "SKU71",
+      "stock_in": 19
+    },
+    {
+      "vendor_sku": "SKU72",
+      "stock_in": 13
+    },
+    {
+      "vendor_sku": "SKU73",
+      "stock_in": 83
+    },
+    {
+      "vendor_sku": "SKU74",
+      "stock_in": 96
+    },
+    {
+      "vendor_sku": "SKU75",
+      "stock_in": 68
+    },
+    {
+      "vendor_sku": "SKU76",
+      "stock_in": 84
+    },
+    {
+      "vendor_sku": "SKU77",
+      "stock_in": 36
+    },
+    {
+      "vendor_sku": "SKU78",
+      "stock_in": 93
+    },
+    {
+      "vendor_sku": "SKU79",
+      "stock_in": 32
+    },
+    {
+      "vendor_sku": "SKU80",
+      "stock_in": 97
+    },
+    {
+      "vendor_sku": "SKU81",
+      "stock_in": 26
+    },
+    {
+      "vendor_sku": "SKU82",
+      "stock_in": 39
+    },
+    {
+      "vendor_sku": "SKU83",
+      "stock_in": 28
+    },
+    {
+      "vendor_sku": "SKU84",
+      "stock_in": 72
+    },
+    {
+      "vendor_sku": "SKU85",
+      "stock_in": 25
+    },
+    {
+      "vendor_sku": "SKU86",
+      "stock_in": 9
+    },
+    {
+      "vendor_sku": "SKU87",
+      "stock_in": 32
+    },
+    {
+      "vendor_sku": "SKU88",
+      "stock_in": 86
+    },
+    {
+      "vendor_sku": "SKU89",
+      "stock_in": 72
+    },
+    {
+      "vendor_sku": "SKU90",
+      "stock_in": 1
+    },
+    {
+      "vendor_sku": "SKU91",
+      "stock_in": 17
+    },
+    {
+      "vendor_sku": "SKU92",
+      "stock_in": 43
+    },
+    {
+      "vendor_sku": "SKU93",
+      "stock_in": 94
+    },
+    {
+      "vendor_sku": "SKU94",
+      "stock_in": 65
+    },
+    {
+      "vendor_sku": "SKU95",
+      "stock_in": 7
+    },
+    {
+      "vendor_sku": "SKU96",
+      "stock_in": 99
+    },
+    {
+      "vendor_sku": "SKU97",
+      "stock_in": 49
+    },
+    {
+      "vendor_sku": "SKU98",
+      "stock_in": 66
+    },
+    {
+      "vendor_sku": "SKU99",
+      "stock_in": 19
+    },
+    {
+      "vendor_sku": "SKU100",
+      "stock_in": 58
+    }
+  ]
+}

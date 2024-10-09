@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import SchemaValidation from '@/services/products/SchemaValidation';
-import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
-import { getProductByVendorSku } from '@/services/data/product';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
-import { uploadToS3 } from '@/services/s3';
 import { createStockShipment } from '@/services/data/stock-shipment';
 
 
