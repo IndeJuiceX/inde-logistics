@@ -47,10 +47,8 @@ export default function CreateStockShipmentPageManual() {
           const qParam = query ? `&q=${encodeURIComponent(query)}` : '';
 
           const url = `/api/v1/admin/vendor/products/search?vendorId=${vendorId}${qParam}&page=${page}&pageSize=${pageSize}${brandQuery}`;
-          console.log('Fetching products with URL:', url);
           const response = await fetch(url);
           const data = await response.json();
-          console.log(data);
 
           setProducts(data.products || []);
           setTotalResults(data.pagination.total || 0);

@@ -24,3 +24,13 @@ export async function authenticateAndAuthorize(request) {
   // Return false if not authorized
   return { authorized: false, status: 403 };  // Access denied
 }
+
+export function generateShipmentId(vendorId) {
+  const timestamp = Date.now().toString(36);  // Convert timestamp to a base36 string (more compact)
+  const randomPart = Math.random().toString(36).substring(2, 4);  // Generate 2 random characters
+
+  // Combine vendorId (shortened), timestamp, and random part to get an 8-char ID
+  const shipmentId = (vendorId.substring(0, 3) + timestamp + randomPart).substring(0, 8);
+
+  return shipmentId;
+}

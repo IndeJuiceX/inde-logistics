@@ -1,5 +1,5 @@
 import { getProductByVendorSku } from '@/services/data/product';
-import { v4 as uuidv4 } from 'uuid';
+import { generateShipmentId } from '@/services/utils';
 import { transactWriteItems } from '@/services/dynamo/wrapper';
 
 export async function createStockShipment(vendorId, stockShipmentItems) {
@@ -38,7 +38,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
         // All validations passed, proceed with transaction
         const transactionItems = [];
 
-        const shipmentId = uuidv4();
+        const shipmentId = generateShipmentId(vendorId) //uuidv4();
         const createdAt = new Date().toISOString();
 
         // Prepare the StockShipment entry
@@ -51,7 +51,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
                     shipment_id: shipmentId,
                     vendor_id: vendorId,
                     created_at: createdAt,
-                    status: 'Pending',  // Or any initial status you want to set
+                    status: 'Submitted',  // Or any initial status you want to set
                     // Add other necessary fields here
                 },
             },
@@ -70,8 +70,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
                         sk: `STOCKSHIPMENTITEM#${itemId}`,
                         entity_type: 'StockShipmentItem',
                         shipment_id: shipmentId,
-                        item_id: itemId,
-                        vendor_sku: item.vendor_sku,
+                        vendor_sku: itemId,
                         //product_id: productId,
                         stock_in: item.stock_in,
                         created_at: createdAt,
