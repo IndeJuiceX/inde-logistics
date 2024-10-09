@@ -45,11 +45,11 @@ export default function StockShipmentsPage() {
   }, [vendorId, page, pageSize]);
 
   const handleViewShipment = (shipmentId) => {
-    router.push(`/vendor/${vendorId}/stock-shipment/${shipmentId}`);
+    router.push(`/vendor/${vendorId}/stock-shipments/${shipmentId}`);
   };
 
   const handleEditShipment = (shipmentId) => {
-    router.push(`/vendor/${vendorId}/stock-shipment/${shipmentId}/edit`);
+    router.push(`/vendor/${vendorId}/stock-shipments/${shipmentId}/edit`);
   };
 
   const handleCreateShipment = () => {

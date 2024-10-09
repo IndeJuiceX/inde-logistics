@@ -104,7 +104,35 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
     }
 }
 
-export async function getAllStockShipments(vendorId, page=1 , pageSize=20) {
+export async function getStockShipmentById(vendorId, stockShipmentId) {
+    const must = [
+        { term: { 'entity_type.keyword': 'StockShipment' } },           // Match the exact entity_type
+        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENT#' + vendorId } },
+        { term: { 'sk.keyword': 'STOCKSHIPMENT#' + stockShipmentId } }
+    ];
+    const response = await searchIndex({
+        bool: {
+            must: must
+        }
+    }, {}, 0, 1);
+
+    const results = response.hits.hits;
+    const totalHits = response.hits.total.value;  // Total number of matched records
+
+    // Extract only the _source field
+    const sources = results.map(item => item._source);
+    return {
+        success: true,
+        data: sources,
+        pagination: {
+            page: 1,
+            pageSize: 1,
+            total: totalHits  // Use total hits for pagination, not results length
+        }
+    };
+}
+
+export async function getAllStockShipments(vendorId, page = 1, pageSize = 20) {
     const from = (page - 1) * pageSize;
     const size = pageSize;
     const must = [
@@ -136,3 +164,108 @@ export async function getAllStockShipments(vendorId, page=1 , pageSize=20) {
         }
     };
 }
+
+export async function getStockShipmentDetails(vendorId, stockShipmentId) {
+   // const from = (page - 1) * pageSize;
+   // const size = pageSize;
+  
+    // Get the stock shipment data
+    const stockShipmentData = await getStockShipmentById(vendorId, stockShipmentId);
+  
+    // Extract the shipment object
+    const stockShipmentArray = stockShipmentData.data;
+    if (!stockShipmentArray || stockShipmentArray.length === 0) {
+      // Handle case where shipment is not found
+      return {
+        success: false,
+        error: 'Stock shipment not found.',
+      };
+    }
+    const stockShipment = stockShipmentArray[0]; // Get the shipment object
+    
+  
+    // Build the query for shipment items
+    const shipmentItemsMust = [
+      { term: { 'entity_type.keyword': 'StockShipmentItem' } },
+      { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#'+vendorId } },
+      { term: { 'shipment_id.keyword': stockShipmentId } },
+    ];
+  
+    // Fetch shipment items with pagination
+    const shipmentItemsResponse = await searchIndex(
+      {
+        bool: {
+          must: shipmentItemsMust,
+        },
+      },
+      {},
+      0,
+      10000
+    );
+  
+    console.log('SHIPMENT ITEMS RESPOSNE----')
+    console.log(shipmentItemsResponse)
+    const shipmentItemsHits = shipmentItemsResponse.hits.hits;
+  
+    // Get total number of shipment items for pagination
+    const totalHits = shipmentItemsResponse.hits.total.value;
+  
+    // If no shipment items found
+    if (shipmentItemsHits.length === 0) {
+      return {
+        success: true,
+        data: [],
+      };
+    }
+  
+    // Step 2: Extract Vendor SKUs from current page of items
+    const vendorSkus = shipmentItemsHits.map((hit) => hit._source.vendor_sku);
+    const uniqueVendorSkus = [...new Set(vendorSkus)];
+  
+    // Step 3: Fetch Product Data
+    const productsMust = [
+      { term: { 'entity_type.keyword': 'Product' } },
+      { term: { 'pk.keyword': 'VENDORPRODUCT#'+vendorId } },
+      { terms: { 'vendor_sku.keyword': uniqueVendorSkus } },
+    ];
+  
+    const productsResponse = await searchIndex(
+      {
+        bool: {
+          must: productsMust,
+        },
+      },
+      {},
+      0,
+      uniqueVendorSkus.length
+    );
+
+    // Create a map of vendor_sku to product data
+    const productDataMap = {};
+    productsResponse.hits.hits.forEach((hit) => {
+      const product = hit._source;
+      productDataMap[product.vendor_sku] = {
+        name: product.name,
+        image: product.image,
+        brand_name: product.brand_name,
+      };
+    });
+
+    // Step 4: Merge Shipment Items with Product Data
+    const shipmentItems = shipmentItemsHits.map((hit) => {
+      const item = hit._source;
+      const productInfo = productDataMap[item.vendor_sku] || {};
+  
+      return {
+        vendor_sku: item.vendor_sku,
+        quantity: item.stock_in,
+        ...productInfo,
+      };
+    });
+  
+    // Return the final data in the desired format
+    return {
+      success: true,
+      data: {stock_shipment:stockShipment,stock_shipment_items:shipmentItems}, // Shipment items as data
+    };
+  }
