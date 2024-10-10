@@ -188,7 +188,7 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
                         pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
                         sk: `STOCKSHIPMENTITEM#${sku}`,
                     },
-                    ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)', // Ensure pk and sk are unique
+                    ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)', // Ensure pk and sk are unique
                 },
             };
             transactionItems.push(deleteItem);

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import SchemaValidation from '@/services/products/SchemaValidation';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
-import {getStockShipmentById } from '@/services/data/stock-shipment';
+import {checkShipmentExists } from '@/services/data/stock-shipment';
 import { addItemsToStockShipment } from '@/services/data/stock-shipment-item';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
@@ -102,7 +102,3 @@ export async function POST(request) {
   }
 }
 
-async function checkShipmentExists(vendorId, stock_shipment_id) {
-    const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
-    return shipmentData.success && shipmentData.data.length > 0;
-}

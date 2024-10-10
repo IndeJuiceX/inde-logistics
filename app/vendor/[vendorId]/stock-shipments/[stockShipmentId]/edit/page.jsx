@@ -251,7 +251,7 @@ export default function EditStockShipmentPage() {
   const handleRemoveProduct = async (vendor_sku) => {
     const requestBody = {
       stock_shipment: {
-        shipment_id: stockShipmentId,
+        stock_shipment_id: stockShipmentId,
         items: [vendor_sku],
       },
     };
@@ -260,7 +260,7 @@ export default function EditStockShipmentPage() {
       const response = await fetch(
         `/api/v1/vendor/stock-shipments/${stockShipmentId}/remove-item?vendorId=${vendorId}`,
         {
-          method: 'POST', // Assuming POST for remove, adjust if needed
+          method: 'DELETE', // Assuming POST for remove, adjust if needed
           headers: {
             'Content-Type': 'application/json',
           },

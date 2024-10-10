@@ -399,3 +399,8 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
         data: { stock_shipment: stockShipment, stock_shipment_items: shipmentItems }, // Shipment items as data
     };
 }
+
+export async function checkShipmentExists(vendorId, stock_shipment_id) {
+    const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
+    return shipmentData.success && shipmentData.data.length > 0;
+}
