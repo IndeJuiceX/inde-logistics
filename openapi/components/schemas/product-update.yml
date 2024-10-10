@@ -1,0 +1,44 @@
+type: object
+required:
+  - vendor_sku
+properties:
+  vendor_sku:
+    type: string
+    example: "12345678"
+  new_vendor_sku:
+    type: string
+    example: "987654321"
+  status:
+    type: string
+    enum:
+      - Active
+      - Inactive
+    example: "Active"
+  stock:
+    type: integer
+    example: 100
+  name:
+    type: string
+    example: "Updated Product Name"
+  cost_price:
+    type: number
+    example: 80.99
+  sale_price:
+    type: number
+    example: 120.50
+  brand_name:
+    type: string
+    example: "Updated Brand"
+  image:
+    type: string
+    example: "https://cdn.example.com/updated_image.jpg"
+  attributes:
+    type: object
+    additionalProperties:
+      type: string
+    example:
+      color: "Blue"
+      size: "Large"
+      nicotine:
+        - "6mg"
+        - "12mg"
