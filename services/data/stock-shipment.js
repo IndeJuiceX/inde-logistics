@@ -50,9 +50,9 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
                     entity_type: 'StockShipment',
                     shipment_id: shipmentId,
                     vendor_id: vendorId,
+                    status: 'Submitted',
                     created_at: createdAt,
-                    status: 'Submitted',  // Or any initial status you want to set
-                    // Add other necessary fields here
+                    updated_at: createdAt,
                 },
             },
         };
@@ -106,133 +106,133 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
 
 export async function updateStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
     try {
-      
-  
-      // Step 2: Validate the new items
-      const invalidItems = [];
-      const validItems = [];
-  
-      for (const item of stockShipmentItems) {
-        const { vendor_sku } = item;
-  
-        // Fetch the existing product by vendor_sku
-        const result = await getProductByVendorSku(vendorId, vendor_sku);
-        if (!result.success || !result.data || result.data.length === 0) {
-          invalidItems.push({
-            item: vendor_sku,
-            error: `Product with SKU ${vendor_sku} not found in the system`,
-          });
-        } else {
-          validItems.push(item);
+
+
+        // Step 2: Validate the new items
+        const invalidItems = [];
+        const validItems = [];
+
+        for (const item of stockShipmentItems) {
+            const { vendor_sku } = item;
+
+            // Fetch the existing product by vendor_sku
+            const result = await getProductByVendorSku(vendorId, vendor_sku);
+            if (!result.success || !result.data || result.data.length === 0) {
+                invalidItems.push({
+                    item: vendor_sku,
+                    error: `Product with SKU ${vendor_sku} not found in the system`,
+                });
+            } else {
+                validItems.push(item);
+            }
         }
-      }
-  
-      if (invalidItems.length > 0) {
-        return {
-          success: false,
-          error: 'Some items could not be found, please correct or remove these',
-          invalidItems,
-        };
-      }
-  
-      // Step 3: Prepare DynamoDB transaction items
-  
-      // Fetch existing shipment items to delete
-      const existingItemsResponse = await searchIndex(
-        {
-          bool: {
-            must: [
-              { term: { 'entity_type.keyword': 'StockShipmentItem' } },
-              { term: { 'vendor_id.keyword': vendorId } },
-              { term: { 'shipment_id.keyword': stockShipmentId } },
-            ],
-          },
-        },
-        {},
-        0,
-        1000 // Adjust size as needed
-      );
-  
-      const existingItemsHits = existingItemsResponse.hits.hits || [];
-      const existingItemKeys = existingItemsHits.map((hit) => {
-        const item = hit._source;
-        return {
-          pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-          sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
-        };
-      });
-  
-      const transactionItems = [];
-  
-      // Add Delete requests for existing items
-      for (const key of existingItemKeys) {
-        transactionItems.push({
-          Delete: {
-            Key: key,
-          },
-        });
-      }
-  
-      // Add Put requests for new items
-      const updatedAt = new Date().toISOString();
-  
-      for (const item of validItems) {
-        const itemEntry = {
-          Put: {
-            Item: {
-              pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-              sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
-              entity_type: 'StockShipmentItem',
-              vendor_id: vendorId,
-              shipment_id: stockShipmentId,
-              vendor_sku: item.vendor_sku,
-              quantity: item.quantity,
-              updated_at: updatedAt,
+
+        if (invalidItems.length > 0) {
+            return {
+                success: false,
+                error: 'Some items could not be found, please correct or remove these',
+                invalidItems,
+            };
+        }
+
+        // Step 3: Prepare DynamoDB transaction items
+
+        // Fetch existing shipment items to delete
+        const existingItemsResponse = await searchIndex(
+            {
+                bool: {
+                    must: [
+                        { term: { 'entity_type.keyword': 'StockShipmentItem' } },
+                        { term: { 'vendor_id.keyword': vendorId } },
+                        { term: { 'shipment_id.keyword': stockShipmentId } },
+                    ],
+                },
             },
-          },
+            {},
+            0,
+            1000 // Adjust size as needed
+        );
+
+        const existingItemsHits = existingItemsResponse.hits.hits || [];
+        const existingItemKeys = existingItemsHits.map((hit) => {
+            const item = hit._source;
+            return {
+                pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
+            };
+        });
+
+        const transactionItems = [];
+
+        // Add Delete requests for existing items
+        for (const key of existingItemKeys) {
+            transactionItems.push({
+                Delete: {
+                    Key: key,
+                },
+            });
+        }
+
+        // Add Put requests for new items
+        const updatedAt = new Date().toISOString();
+
+        for (const item of validItems) {
+            const itemEntry = {
+                Put: {
+                    Item: {
+                        pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                        sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
+                        entity_type: 'StockShipmentItem',
+                        vendor_id: vendorId,
+                        shipment_id: stockShipmentId,
+                        vendor_sku: item.vendor_sku,
+                        quantity: item.quantity,
+                        updated_at: updatedAt,
+                    },
+                },
+            };
+            transactionItems.push(itemEntry);
+        }
+
+        // Optionally update the StockShipment entity's metadata (e.g., updated_at)
+        const shipmentUpdate = {
+            Put: {
+                Item: {
+                    pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
+                    sk: `STOCKSHIPMENT#${stockShipmentId}`,
+                    entity_type: 'StockShipment',
+                    shipment_id: stockShipmentId,
+                    vendor_id: vendorId,
+                    updated_at: updatedAt,
+                    // Include other fields as needed
+                },
+            },
         };
-        transactionItems.push(itemEntry);
-      }
-  
-      // Optionally update the StockShipment entity's metadata (e.g., updated_at)
-      const shipmentUpdate = {
-        Put: {
-          Item: {
-            pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
-            sk: `STOCKSHIPMENT#${stockShipmentId}`,
-            entity_type: 'StockShipment',
-            shipment_id: stockShipmentId,
-            vendor_id: vendorId,
-            updated_at: updatedAt,
-            // Include other fields as needed
-          },
-        },
-      };
-      transactionItems.push(shipmentUpdate);
-  
-      // Step 4: Execute the transaction
-      const transactionResult = await transactWriteItems(transactionItems);
-  
-      if (!transactionResult.success) {
-        console.error('Transaction failed:', transactionResult.error);
+        transactionItems.push(shipmentUpdate);
+
+        // Step 4: Execute the transaction
+        const transactionResult = await transactWriteItems(transactionItems);
+
+        if (!transactionResult.success) {
+            console.error('Transaction failed:', transactionResult.error);
+            return {
+                success: false,
+                error: 'Failed to update stock shipment',
+                details: transactionResult.error.message,
+            };
+        }
+
+        // Return success response
         return {
-          success: false,
-          error: 'Failed to update stock shipment',
-          details: transactionResult.error.message,
+            success: true,
+            shipment_id: stockShipmentId,
+            message: 'Stock shipment updated successfully',
         };
-      }
-  
-      // Return success response
-      return {
-        success: true,
-        shipment_id: stockShipmentId,
-        message: 'Stock shipment updated successfully',
-      };
     } catch (error) {
-      console.error('Unhandled error in updateStockShipment:', error);
-      return { success: false, error: 'Server error', details: error.message };
+        console.error('Unhandled error in updateStockShipment:', error);
+        return { success: false, error: 'Server error', details: error.message };
     }
-  }
+}
 
 export async function getStockShipmentById(vendorId, stockShipmentId) {
     const must = [
@@ -296,106 +296,106 @@ export async function getAllStockShipments(vendorId, page = 1, pageSize = 20) {
 }
 
 export async function getStockShipmentDetails(vendorId, stockShipmentId) {
-   // const from = (page - 1) * pageSize;
-   // const size = pageSize;
-  
+    // const from = (page - 1) * pageSize;
+    // const size = pageSize;
+
     // Get the stock shipment data
     const stockShipmentData = await getStockShipmentById(vendorId, stockShipmentId);
-  
+
     // Extract the shipment object
     const stockShipmentArray = stockShipmentData.data;
     if (!stockShipmentArray || stockShipmentArray.length === 0) {
-      // Handle case where shipment is not found
-      return {
-        success: false,
-        error: 'Stock shipment not found.',
-      };
+        // Handle case where shipment is not found
+        return {
+            success: false,
+            error: 'Stock shipment not found.',
+        };
     }
     const stockShipment = stockShipmentArray[0]; // Get the shipment object
-    
-  
+
+
     // Build the query for shipment items
     const shipmentItemsMust = [
-      { term: { 'entity_type.keyword': 'StockShipmentItem' } },
-      { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#'+vendorId } },
-      { term: { 'shipment_id.keyword': stockShipmentId } },
+        { term: { 'entity_type.keyword': 'StockShipmentItem' } },
+        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#' + vendorId } },
+        { term: { 'shipment_id.keyword': stockShipmentId } },
     ];
-  
+
     // Fetch shipment items with pagination
     const shipmentItemsResponse = await searchIndex(
-      {
-        bool: {
-          must: shipmentItemsMust,
+        {
+            bool: {
+                must: shipmentItemsMust,
+            },
         },
-      },
-      {},
-      0,
-      10000
+        {},
+        0,
+        10000
     );
-  
+
     console.log('SHIPMENT ITEMS RESPOSNE----')
     console.log(shipmentItemsResponse)
     const shipmentItemsHits = shipmentItemsResponse.hits.hits;
-  
+
     // Get total number of shipment items for pagination
     const totalHits = shipmentItemsResponse.hits.total.value;
-  
+
     // If no shipment items found
     if (shipmentItemsHits.length === 0) {
-      return {
-        success: true,
-        data: [],
-      };
+        return {
+            success: true,
+            data: [],
+        };
     }
-  
+
     // Step 2: Extract Vendor SKUs from current page of items
     const vendorSkus = shipmentItemsHits.map((hit) => hit._source.vendor_sku);
     const uniqueVendorSkus = [...new Set(vendorSkus)];
-  
+
     // Step 3: Fetch Product Data
     const productsMust = [
-      { term: { 'entity_type.keyword': 'Product' } },
-      { term: { 'pk.keyword': 'VENDORPRODUCT#'+vendorId } },
-      { terms: { 'vendor_sku.keyword': uniqueVendorSkus } },
+        { term: { 'entity_type.keyword': 'Product' } },
+        { term: { 'pk.keyword': 'VENDORPRODUCT#' + vendorId } },
+        { terms: { 'vendor_sku.keyword': uniqueVendorSkus } },
     ];
-  
+
     const productsResponse = await searchIndex(
-      {
-        bool: {
-          must: productsMust,
+        {
+            bool: {
+                must: productsMust,
+            },
         },
-      },
-      {},
-      0,
-      uniqueVendorSkus.length
+        {},
+        0,
+        uniqueVendorSkus.length
     );
 
     // Create a map of vendor_sku to product data
     const productDataMap = {};
     productsResponse.hits.hits.forEach((hit) => {
-      const product = hit._source;
-      productDataMap[product.vendor_sku] = {
-        name: product.name,
-        image: product.image,
-        brand_name: product.brand_name,
-      };
+        const product = hit._source;
+        productDataMap[product.vendor_sku] = {
+            name: product.name,
+            image: product.image,
+            brand_name: product.brand_name,
+        };
     });
 
     // Step 4: Merge Shipment Items with Product Data
     const shipmentItems = shipmentItemsHits.map((hit) => {
-      const item = hit._source;
-      const productInfo = productDataMap[item.vendor_sku] || {};
-  
-      return {
-        vendor_sku: item.vendor_sku,
-        quantity: item.stock_in,
-        ...productInfo,
-      };
+        const item = hit._source;
+        const productInfo = productDataMap[item.vendor_sku] || {};
+
+        return {
+            vendor_sku: item.vendor_sku,
+            quantity: item.stock_in,
+            ...productInfo,
+        };
     });
-  
+
     // Return the final data in the desired format
     return {
-      success: true,
-      data: {stock_shipment:stockShipment,stock_shipment_items:shipmentItems}, // Shipment items as data
+        success: true,
+        data: { stock_shipment: stockShipment, stock_shipment_items: shipmentItems }, // Shipment items as data
     };
-  }
+}

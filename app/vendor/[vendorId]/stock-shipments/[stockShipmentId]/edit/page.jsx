@@ -11,24 +11,24 @@ import PaginationControls from '@/components/PaginationControls';
 
 export default function EditStockShipmentPage() {
   const router = useRouter();
-  const { vendorId, stockShipmentId } = useParams();  // Get vendorId and stockShipmentId from route
+  const { vendorId, stockShipmentId } = useParams(); // Get vendorId and stockShipmentId from route
 
   // State variables
-  const [products, setProducts] = useState([]);                  // Products to display
-  const [selectedItems, setSelectedItems] = useState([]);        // Selected products with quantities
-  const [searchTerm, setSearchTerm] = useState('');              // User input for search
-  const [query, setQuery] = useState('');                        // Actual search query used for API
-  const [brands, setBrands] = useState([]);                      // Available brands for filtering
-  const [selectedBrands, setSelectedBrands] = useState([]);      // Selected brands for filtering
-  const [brandSearchTerm, setBrandSearchTerm] = useState('');    // Search term for brands
-  const [selectedQuantity, setSelectedQuantity] = useState({});  // Quantity for each product
-  const [loading, setLoading] = useState(true);                  // Loading state for products
-  const [error, setError] = useState(null);                      // Error state for products
-  const [page, setPage] = useState(1);                           // Current page for pagination
-  const [totalPages, setTotalPages] = useState(0);               // Total number of pages
-  const [totalResults, setTotalResults] = useState(0);           // Total number of results
-  const pageSize = 30;                                           // Products per page
-  const [loadingShipment, setLoadingShipment] = useState(true);  // Loading state for shipment data
+  const [products, setProducts] = useState([]); // Products to display
+  const [selectedItems, setSelectedItems] = useState([]); // Selected products with quantities
+  const [searchTerm, setSearchTerm] = useState(''); // User input for search
+  const [query, setQuery] = useState(''); // Actual search query used for API
+  const [brands, setBrands] = useState([]); // Available brands for filtering
+  const [selectedBrands, setSelectedBrands] = useState([]); // Selected brands for filtering
+  const [brandSearchTerm, setBrandSearchTerm] = useState(''); // Search term for brands
+  const [selectedQuantity, setSelectedQuantity] = useState({}); // Quantity for each product
+  const [loading, setLoading] = useState(true); // Loading state for products
+  const [error, setError] = useState(null); // Error state for products
+  const [page, setPage] = useState(1); // Current page for pagination
+  const [totalPages, setTotalPages] = useState(0); // Total number of pages
+  const [totalResults, setTotalResults] = useState(0); // Total number of results
+  const pageSize = 30; // Products per page
+  const [loadingShipment, setLoadingShipment] = useState(true); // Loading state for shipment data
 
   // Fetch existing shipment data on mount
   useEffect(() => {
@@ -82,8 +82,11 @@ export default function EditStockShipmentPage() {
           // Generate brand query parameters
           let brandQuery = '';
           if (selectedBrands.length > 0) {
-            brandQuery = selectedBrands.map(brand => `brand=${encodeURIComponent(brand)}`).join('&');
-            brandQuery = '&' + brandQuery;
+            brandQuery =
+              '&' +
+              selectedBrands
+                .map((brand) => `brand=${encodeURIComponent(brand)}`)
+                .join('&');
           }
 
           // Only include the 'q' parameter if 'query' is not empty
@@ -114,7 +117,9 @@ export default function EditStockShipmentPage() {
       const fetchBrands = async () => {
         try {
           const response = await fetch(
-            `/api/v1/admin/vendor/products/brands?vendorId=${vendorId}&searchTerm=${encodeURIComponent(brandSearchTerm)}`
+            `/api/v1/admin/vendor/products/brands?vendorId=${vendorId}&searchTerm=${encodeURIComponent(
+              brandSearchTerm
+            )}`
           );
           const data = await response.json();
           console.log('Fetched brands:', data);
@@ -129,37 +134,161 @@ export default function EditStockShipmentPage() {
   }, [vendorId, brandSearchTerm]);
 
   // Handle quantity input change
-  const handleQuantityChange = (product, quantity) => {
+  const handleQuantityChange = async (product, quantity) => {
+    const newQuantity = Math.max(1, quantity); // Ensure minimum value is 1
+
+    // Update quantity in selectedQuantity state
     setSelectedQuantity((prev) => ({
       ...prev,
-      [product.vendor_sku]: Math.max(1, quantity), // Ensure minimum value is 1
+      [product.vendor_sku]: newQuantity,
     }));
-  };
 
-  // Handle product selection
-  const handleSelectProduct = (product, quantity) => {
-    if (quantity <= 0) return; // Ensure quantity is greater than 0
-    setSelectedItems((prev) => {
-      const existingItem = prev.find((item) => item.vendor_sku === product.vendor_sku);
-      if (existingItem) {
-        // Update the quantity if product already selected
-        return prev.map((item) =>
-          item.vendor_sku === product.vendor_sku ? { ...item, quantity } : item
+    // Check if the item exists in the selectedItems
+    const existingItem = selectedItems.find(
+      (item) => item.vendor_sku === product.vendor_sku
+    );
+
+    if (existingItem) {
+      // Make API call to update quantity
+      try {
+        const requestBody = {
+          stock_shipment: {
+            shipment_id: stockShipmentId,
+            items: [
+              {
+                vendor_sku: product.vendor_sku,
+                stock_in: newQuantity,
+              },
+            ],
+          },
+        };
+
+        const response = await fetch(
+          `/api/v1/vendor/stock-shipments/${stockShipmentId}/update-item?vendorId=${vendorId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+          }
         );
+
+        const result = await response.json();
+
+        if (response.ok) {
+          // Update the quantity in selectedItems state
+          setSelectedItems((prev) =>
+            prev.map((item) =>
+              item.vendor_sku === product.vendor_sku
+                ? { ...item, quantity: newQuantity }
+                : item
+            )
+          );
+        } else {
+          alert(`Failed to update quantity: ${result.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error updating quantity:', error);
+        alert('An error occurred while updating the quantity.');
       }
-      // Add new product to the selected items
-      return [...prev, { ...product, quantity }];
-    });
+    }
   };
 
-  // Handle product removal
-  const handleRemoveProduct = (vendor_sku) => {
-    setSelectedItems((prev) => prev.filter((item) => item.vendor_sku !== vendor_sku));
-    setSelectedQuantity((prev) => {
-      const newQuantities = { ...prev };
-      delete newQuantities[vendor_sku];
-      return newQuantities;
-    });
+  // Handle product selection (Add Item)
+  const handleSelectProduct = async (product, quantity) => {
+    if (quantity <= 0) return; // Ensure quantity is greater than 0
+
+    // Form the request payload
+    const requestBody = {
+      stock_shipment: {
+        stock_shipment_id: stockShipmentId,
+        items: [
+          {
+            vendor_sku: product.vendor_sku,
+            stock_in: quantity,
+          },
+        ],
+      },
+    };
+
+    try {
+      const response = await fetch(
+        `/api/v1/vendor/stock-shipments/${stockShipmentId}/add-item?vendorId=${vendorId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Add new product to the selected items
+        setSelectedItems((prev) => [
+          ...prev,
+          { ...product, quantity },
+        ]);
+
+        // Update selectedQuantity state
+        setSelectedQuantity((prev) => ({
+          ...prev,
+          [product.vendor_sku]: quantity,
+        }));
+      } else {
+        alert(`Failed to add item: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error adding item:', error);
+      alert('An error occurred while adding the item.');
+    }
+  };
+
+  // Handle product removal (Remove Item)
+  const handleRemoveProduct = async (vendor_sku) => {
+    const requestBody = {
+      stock_shipment: {
+        shipment_id: stockShipmentId,
+        items: [vendor_sku],
+      },
+    };
+
+    try {
+      const response = await fetch(
+        `/api/v1/vendor/stock-shipments/${stockShipmentId}/remove-item?vendorId=${vendorId}`,
+        {
+          method: 'POST', // Assuming POST for remove, adjust if needed
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Remove product from selectedItems state
+        setSelectedItems((prev) =>
+          prev.filter((item) => item.vendor_sku !== vendor_sku)
+        );
+
+        // Update selectedQuantity state
+        setSelectedQuantity((prev) => {
+          const newQuantities = { ...prev };
+          delete newQuantities[vendor_sku];
+          return newQuantities;
+        });
+      } else {
+        alert(`Failed to remove item: ${result.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+      alert('An error occurred while removing the item.');
+    }
   };
 
   // Handle brand checkbox change
@@ -178,62 +307,15 @@ export default function EditStockShipmentPage() {
 
   // Handle product search
   const handleProductSearch = () => {
-    setPage(1);            // Reset to first page
-    setQuery(searchTerm);  // Set the query to trigger API call
+    setPage(1); // Reset to first page
+    setQuery(searchTerm); // Set the query to trigger API call
   };
 
   // Handle clearing the search
   const handleClearSearch = () => {
-    setSearchTerm('');  // Clear the search input
-    setQuery('');       // Clear the query to fetch all products
-    setPage(1);         // Reset to first page
-  };
-
-  // Save the shipment and redirect for final submission
-  const handleSaveShipment = async () => {
-    if (selectedItems.length === 0) {
-      alert('No items selected for shipment.');
-      return;
-    }
-
-    // Form the stock_shipment_items array from selectedItems
-    const stock_shipment_items = selectedItems.map((item) => ({
-      vendor_sku: item.vendor_sku,
-      quantity: item.quantity,
-      // Include other necessary fields if any
-    }));
-
-    const requestBody = {
-      stock_shipment_items,
-      // Include other necessary data, e.g., shipment metadata
-    };
-
-    try {
-      // Send the PATCH request to the backend
-      const response = await fetch(
-        `/api/v1/vendor/stock-shipments/${stockShipmentId}?vendorId=${vendorId}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert('Stock shipment updated successfully.');
-        // Redirect to the shipment page
-        router.push(`/vendor/${vendorId}/stock-shipments/${stockShipmentId}`);
-      } else {
-        alert(`Failed to update shipment: ${result.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error updating shipment:', error);
-      alert('An error occurred while updating the shipment.');
-    }
+    setSearchTerm(''); // Clear the search input
+    setQuery(''); // Clear the query to fetch all products
+    setPage(1); // Reset to first page
   };
 
   // If the shipment data is still loading, show a loading indicator
@@ -253,7 +335,8 @@ export default function EditStockShipmentPage() {
           <div>
             <h1 className="text-3xl font-bold">Edit Stock Shipment</h1>
             <p className="text-gray-600 mt-2">
-              Editing Shipment ID: <span className="font-semibold">{stockShipmentId}</span>
+              Editing Shipment ID:{' '}
+              <span className="font-semibold">{stockShipmentId}</span>
             </p>
           </div>
           <SearchBar
@@ -310,7 +393,8 @@ export default function EditStockShipmentPage() {
             {/* Display "Results for 'SearchTerm'" */}
             {query && (
               <p className="mb-4 text-gray-700">
-                Results for &quot;<span className="font-semibold">{query}</span>&quot;
+                Results for &quot;<span className="font-semibold">{query}</span>
+                &quot;
               </p>
             )}
 
@@ -342,14 +426,15 @@ export default function EditStockShipmentPage() {
             )}
 
             {/* Save Shipment Button */}
-            <div className="flex justify-end mt-8">
+            {/* You can remove the Save Changes button if all operations are immediate */}
+            {/* <div className="flex justify-end mt-8">
               <button
                 className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
                 onClick={handleSaveShipment}
               >
                 Save Changes
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
