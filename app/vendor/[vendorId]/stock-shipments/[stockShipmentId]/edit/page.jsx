@@ -150,7 +150,7 @@ export default function EditStockShipmentPage() {
       // Item exists, update the quantity
       try {
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/${stockShipmentId}/update-stock?vendorId=${vendorId}`,
+          `/api/v1/vendor/stock-shipments/${stockShipmentId}/update-item?vendorId=${vendorId}`,
           {
             method: 'PATCH',
             headers: {

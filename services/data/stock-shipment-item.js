@@ -1,5 +1,5 @@
 import { getProductByVendorSku } from '@/services/data/product';
-import { transactWriteItems } from '@/services/dynamo/wrapper';
+import { transactWriteItems,updateItem } from '@/services/dynamo/wrapper';
 import { searchIndex } from '@/services/open-search/wrapper';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
@@ -9,7 +9,7 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
         const validItems = [];
 
         for (const item of stockShipmentItems) {
-            const { vendor_sku} = item;
+            const { vendor_sku } = item;
 
             // Fetch the existing product by vendor_sku
             const result = await getProductByVendorSku(vendorId, vendor_sku);
@@ -146,7 +146,7 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
                 bool: {
                     must: [
                         { term: { 'entity_type.keyword': 'StockShipmentItem' } },
-                        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#'+vendorId } },
+                        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#' + vendorId } },
                         { term: { 'shipment_id.keyword': stockShipmentId } },
                         { terms: { 'vendor_sku.keyword': vendorSkusToRemove } },
                     ],
@@ -236,6 +236,131 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
     }
 }
 
-export async function updateItemsStockInStockShipment(vendorId, stockShipmentId,shipmentItemsToUpdate) {
+export async function updateItemsStockInStockShipment(
+    vendorId,
+    stockShipmentId,
+    shipmentItemsToUpdate
+) {
+    try {
+        const vendorSkusToUpdate = shipmentItemsToUpdate.map((item) => item.vendor_sku);
 
+        // Fetch existing shipment items
+        const existingItemsResponse = await searchIndex(
+            {
+                bool: {
+                    must: [
+                        { term: { 'entity_type.keyword': 'StockShipmentItem' } },
+                        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#' + vendorId } },
+                        { term: { 'shipment_id.keyword': stockShipmentId } },
+                        { terms: { 'vendor_sku.keyword': vendorSkusToUpdate } },
+                    ],
+                },
+            },
+            {},
+            0,
+            vendorSkusToUpdate.length
+        );
+
+        const existingItemsHits = existingItemsResponse.hits.hits || [];
+        const existingVendorSkus = new Set(
+            existingItemsHits.map((hit) => hit._source.vendor_sku)
+        );
+
+        // Identify items that do not exist
+        const nonExistingSkus = vendorSkusToUpdate.filter(
+            (vendor_sku) => !existingVendorSkus.has(vendor_sku)
+        );
+
+        if (nonExistingSkus.length > 0) {
+            return {
+                success: false,
+                error: 'Some items to update were not found in the shipment',
+                invalidItems: nonExistingSkus.map((sku) => ({
+                    vendor_sku: sku,
+                    error: `Item with SKU ${sku} not found in the shipment`,
+                })),
+            };
+        }
+
+        const updatedAt = new Date().toISOString();
+
+        // Prepare update promises using your updateItem function
+        const updatePromises = shipmentItemsToUpdate.map((item) => {
+            const { vendor_sku, stock_in } = item;
+
+            // Find the existing item to get pk and sk
+            const existingItem = existingItemsHits.find(
+                (hit) => hit._source.vendor_sku === vendor_sku
+            )._source;
+
+            // Prepare the updated fields
+            const updatedFields = {
+                updated_at: updatedAt,
+                stock_in: stock_in,
+            };
+
+            // Call your updateItem function
+            return updateItem(
+                existingItem.pk,
+                existingItem.sk,
+                updatedFields
+            );
+        });
+
+        // Process updates in batches of 25
+        const batchSize = 25;
+        const errors = [];
+
+        for (let i = 0; i < updatePromises.length; i += batchSize) {
+            const batchPromises = updatePromises.slice(i, i + batchSize);
+
+            // Execute batch in parallel
+            const batchResults = await Promise.all(batchPromises);
+
+            // Collect errors
+            batchResults.forEach((result, index) => {
+                if (!result.success) {
+                    errors.push({
+                        vendor_sku: shipmentItemsToUpdate[i + index].vendor_sku,
+                        error: result.error.message,
+                    });
+                }
+            });
+        }
+
+        if (errors.length > 0) {
+            return {
+                success: false,
+                error: 'Failed to update some items in stock shipment',
+                invalidItems: errors,
+            };
+        }
+
+
+        // Update the stock shipment's updated_at field
+        const shipmentUpdateResult = await updateItem(
+            'VENDORSTOCKSHIPMENT#' + vendorId,
+            'STOCKSHIPMENT#' + stockShipmentId,
+            { updated_at: updatedAt }
+        );
+
+        if (!shipmentUpdateResult.success) {
+            console.error('Failed to update StockShipment item:', shipmentUpdateResult.error);
+            return {
+                success: false,
+                error: 'Failed to update stock shipment metadata',
+                details: shipmentUpdateResult.error.message,
+            };
+        }
+
+        // Return success response
+        return {
+            success: true,
+            shipment_id: stockShipmentId,
+            message: 'Items updated in stock shipment successfully',
+        };
+    } catch (error) {
+        console.error('Unhandled error in updateItemsStockInStockShipment:', error);
+        return { success: false, error: 'Server error', details: error.message };
+    }
 }
