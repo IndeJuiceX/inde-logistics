@@ -1,5 +1,5 @@
 import { getProductByVendorSku } from '@/services/data/product';
-import { transactWriteItems,updateItem } from '@/services/dynamo/wrapper';
+import { transactWriteItems, updateItem, batchWriteItems } from '@/services/dynamo/wrapper';
 import { searchIndex } from '@/services/open-search/wrapper';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
@@ -31,7 +31,7 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
             };
         }
 
-        // Step 2: Fetch existing shipment items
+        // Step 2: Fetch existing shipment items to check for duplicates
         const existingItemsResponse = await searchIndex(
             {
                 bool: {
@@ -75,55 +75,73 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
             };
         }
 
-        // Step 4: Prepare DynamoDB transaction items
-        const transactionItems = [];
+        // Step 4: Prepare items for batch write
+        const itemsToPut = [];
         const createdAt = new Date().toISOString();
 
-        // Add Put requests for new items
         for (const item of newItems) {
-            const itemEntry = {
-                Put: {
-                    Item: {
-                        pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-                        sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
-                        entity_type: 'StockShipmentItem',
-                        shipment_id: stockShipmentId,
-                        vendor_sku: item.vendor_sku,
-                        stock_in: item.stock_in,
-                        created_at: createdAt,
-                        updated_at: createdAt
-                    },
-                    ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)', // Ensure pk and sk are unique
-                },
+            const itemToPut = {
+                pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
+                entity_type: 'StockShipmentItem',
+                shipment_id: stockShipmentId,
+                vendor_sku: item.vendor_sku,
+                stock_in: item.stock_in,
+                created_at: createdAt,
+                updated_at: createdAt,
             };
-            transactionItems.push(itemEntry);
+            itemsToPut.push(itemToPut);
         }
 
-        // Optionally update the StockShipment entity's metadata (e.g., updated_at)
-        const shipmentUpdate = {
-            Update: {
-                Key: {
-                    pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
-                    sk: `STOCKSHIPMENT#${stockShipmentId}`,
-                },
-                UpdateExpression: 'SET updated_at = :updatedAt',
-                ExpressionAttributeValues: {
-                    ':updatedAt': createdAt,  // Only update the updated_at field
-                },
-                ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)',  // Ensure item exists
-            },
-        };
-        transactionItems.push(shipmentUpdate);
+        // Step 5: Use batchWriteItems to add new items
+        const batchWriteResult = await batchWriteItems(itemsToPut, 'Put');
 
-        // Step 5: Execute the transaction
-        const transactionResult = await transactWriteItems(transactionItems);
-
-        if (!transactionResult.success) {
-            console.error('Transaction failed:', transactionResult.error);
+        if (!batchWriteResult.success) {
+            console.error('Batch write failed:', batchWriteResult.error);
             return {
                 success: false,
                 error: 'Failed to add items to stock shipment',
-                details: transactionResult.error.message,
+                details: batchWriteResult.error.message,
+            };
+        }
+
+        // Handle any errors (duplicates or unprocessed items)
+        const errors = [];
+        if (batchWriteResult.results.errors.length > 0) {
+            errors.push(...batchWriteResult.results.errors);
+        }
+
+        if (batchWriteResult.results.unprocessedItems.length > 0) {
+            errors.push(
+                ...batchWriteResult.results.unprocessedItems.map((item) => ({
+                    item: item.PutRequest.Item.vendor_sku,
+                    error: 'Unprocessed item',
+                }))
+            );
+        }
+
+        if (errors.length > 0) {
+            return {
+                success: false,
+                error: 'Failed to add some items to stock shipment',
+                invalidItems: errors,
+            };
+        }
+
+        // Step 6: Update the StockShipment's updated_at field
+        const updatedAt = createdAt; // Use the same timestamp
+        const updateShipmentResult = await updateItem(
+            `VENDORSTOCKSHIPMENT#${vendorId}`,
+            `STOCKSHIPMENT#${stockShipmentId}`,
+            { updated_at: updatedAt }
+        );
+
+        if (!updateShipmentResult.success) {
+            console.error('Failed to update StockShipment item:', updateShipmentResult.error);
+            return {
+                success: false,
+                error: 'Failed to update stock shipment metadata',
+                details: updateShipmentResult.error.message,
             };
         }
 
@@ -138,6 +156,7 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
         return { success: false, error: 'Server error', details: error.message };
     }
 }
+
 export async function removeItemsFromStockShipment(vendorId, stockShipmentId, vendorSkusToRemove) {
     try {
         // Step 1: Fetch existing shipment items
@@ -178,49 +197,67 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
             };
         }
 
-        // Prepare transaction items to delete
-        const transactionItems = [];
+        // Step 2: Prepare items for batch delete
+        const itemsToDelete = [];
 
         for (const sku of vendorSkusToRemove) {
             const deleteItem = {
-                Delete: {
-                    Key: {
-                        pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-                        sk: `STOCKSHIPMENTITEM#${sku}`,
-                    },
-                    ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)', // Ensure pk and sk are unique
-                },
+                pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                sk: `STOCKSHIPMENTITEM#${sku}`,
             };
-            transactionItems.push(deleteItem);
+            itemsToDelete.push(deleteItem);
         }
 
-        // Optionally update the StockShipment entity's metadata (e.g., updated_at)
-        const createdAt = new Date().toISOString();
+        // Step 3: Use batchWriteItems to delete items
+        const batchDeleteResult = await batchWriteItems(itemsToDelete, 'Delete');
 
-        const shipmentUpdate = {
-            Update: {
-                Key: {
-                    pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
-                    sk: `STOCKSHIPMENT#${stockShipmentId}`,
-                },
-                UpdateExpression: 'SET updated_at = :updatedAt',
-                ExpressionAttributeValues: {
-                    ':updatedAt': createdAt,  // Only update the updated_at field
-                },
-                ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)',  // Ensure item exists
-            },
-        };
-        transactionItems.push(shipmentUpdate);
-
-        // Step 2: Execute transaction
-        const transactionResult = await transactWriteItems(transactionItems);
-
-        if (!transactionResult.success) {
-            console.error('Transaction failed:', transactionResult.error);
+        if (!batchDeleteResult.success) {
+            console.error('Batch delete failed:', batchDeleteResult.error);
             return {
                 success: false,
                 error: 'Failed to remove items from stock shipment',
-                details: transactionResult.error.message,
+                details: batchDeleteResult.error.message,
+            };
+        }
+
+        // Handle any errors
+        const errors = [];
+        if (batchDeleteResult.results.errors.length > 0) {
+            errors.push(...batchDeleteResult.results.errors);
+        }
+
+        if (batchDeleteResult.results.unprocessedItems.length > 0) {
+            errors.push(
+                ...batchDeleteResult.results.unprocessedItems.map((item) => ({
+                    item: item.DeleteRequest.Key.sk.replace('STOCKSHIPMENTITEM#', ''),
+                    error: 'Unprocessed item during delete',
+                }))
+            );
+        }
+
+        if (errors.length > 0) {
+            return {
+                success: false,
+                error: 'Failed to remove some items from stock shipment',
+                invalidItems: errors,
+            };
+        }
+
+        // Step 4: Update the StockShipment's updated_at field
+        const updatedAt = new Date().toISOString();
+
+        const updateShipmentResult = await updateItem(
+            `VENDORSTOCKSHIPMENT#${vendorId}`,
+            `STOCKSHIPMENT#${stockShipmentId}`,
+            { updated_at: updatedAt }
+        );
+
+        if (!updateShipmentResult.success) {
+            console.error('Failed to update StockShipment item:', updateShipmentResult.error);
+            return {
+                success: false,
+                error: 'Failed to update stock shipment metadata',
+                details: updateShipmentResult.error.message,
             };
         }
 
