@@ -265,6 +265,7 @@ export default function CreateStockShipmentPageManual() {
                 {/* Product List */}
                 <ProductList
                   products={products}
+                  selectedItems={selectedItems}
                   selectedQuantity={selectedQuantity}
                   handleQuantityChange={handleQuantityChange}
                   handleSelectProduct={handleSelectProduct}
