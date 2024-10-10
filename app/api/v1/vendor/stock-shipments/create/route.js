@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import SchemaValidation from '@/services/products/SchemaValidation';
+// import SchemaValidation from '@/services/products/SchemaValidation';
+import { validateStockShipmentItems } from '@/services/schema';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { createStockShipment } from '@/services/data/stock-shipment';
@@ -52,7 +53,7 @@ export async function POST(request) {
         }
 
         // Validate the stock shipment items
-        const validationResult = SchemaValidation.validateStockShipmentItems(body.stock_shipment);
+        const validationResult = /*SchemaValidation.*/validateStockShipmentItems(body.stock_shipment);
 
         if (!validationResult.success) {
             return NextResponse.json(

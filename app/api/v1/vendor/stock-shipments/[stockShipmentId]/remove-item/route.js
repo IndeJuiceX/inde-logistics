@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import SchemaValidation from '@/services/products/SchemaValidation';
+// import SchemaValidation from '@/services/products/SchemaValidation';
+
+import { validateVendorSkuArray } from '@/services/schema';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
 import {checkShipmentExists } from '@/services/data/stock-shipment';
@@ -70,7 +72,7 @@ export async function DELETE(request) {
     }
 
     // Validate the stock shipment items
-    const validationResult = SchemaValidation.validateVendorSkuArray(items);
+    const validationResult = /*SchemaValidation.*/validateVendorSkuArray(items);
 
     if (!validationResult.success) {
       return NextResponse.json(

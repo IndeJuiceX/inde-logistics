@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import SchemaValidation from '@/services/products/SchemaValidation';
+//import SchemaValidation from '@/services/products/SchemaValidation';
+import { validateProducts } from '@/services/schema';
 import { batchWriteItems, getItem } from '@/lib/dynamodb';
 import { generateSK } from '@/services/products/Helper';  // Import the generateSK function
 import { decodeToken } from '@/services/Helper';
@@ -75,7 +76,9 @@ export async function POST(request) {
     // }
 
     // Validate the products
-    const validationResults = SchemaValidation.validateProducts(body.products);
+    //const validationResults = SchemaValidation.validateProducts(body.products);
+    const validationResults = validateProducts(body.products);
+
     // if (!validationResults.success) {
     //   return NextResponse.json(
     //     { error: 'Validation failed for some products', details: validationResults.errors },

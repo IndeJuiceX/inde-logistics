@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import SchemaValidation from '@/services/products/SchemaValidation';
+// import SchemaValidation from '@/services/products/SchemaValidation';
+import { validateProductUpdates } from '@/services/schema';
 import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
 import { getProductByVendorSku } from '@/services/data/product';
 import { decodeToken } from '@/services/Helper';
@@ -53,7 +54,7 @@ export async function PUT(request) {
     }
 
     // Validate the products (removing any "pk" or "sk" fields if passed)
-    const validationResults = SchemaValidation.validateProductUpdates(body.products);
+    const validationResults = /*SchemaValidation.*/validateProductUpdates(body.products);
     const validatedProducts = validationResults.validatedProducts;
     const invalidProducts = validationResults.errors;
 
