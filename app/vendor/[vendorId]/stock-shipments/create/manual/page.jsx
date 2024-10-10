@@ -176,7 +176,7 @@ export default function CreateStockShipmentPageManual() {
     
         if (response.ok) {
           // Assuming the backend returns the shipment ID
-          const shipmentId = result.shipmentId;
+          const shipmentId = result.shipment_id;
           alert('Stock shipment saved successfully.');
           // Redirect to the shipment page
           router.push(`/vendor/${vendorId}/stock-shipments/${shipmentId}`);
