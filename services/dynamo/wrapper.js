@@ -10,7 +10,7 @@ const putItem = async (item) => {
     const params = {
         TableName: TABLE_NAME,
         Item: item,
-        ConditionExpression: 'attribute_not_exists(pk)'
+        ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)', // Ensure both pk and sk are unique
     };
 
     try {
@@ -497,7 +497,7 @@ const transactWriteItems = async (transactionItems) => {
         const operationParams = item[operation];
 
         // Add TableName if not present
-        
+
         operationParams.TableName = TABLE_NAME;
 
 

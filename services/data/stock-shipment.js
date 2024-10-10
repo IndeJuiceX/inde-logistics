@@ -1,12 +1,12 @@
 import { getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
-import { transactWriteItems } from '@/services/dynamo/wrapper';
+import { transactWriteItems,putItem,batchWriteItems } from '@/services/dynamo/wrapper';
 import { searchIndex } from '../open-search/wrapper';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
         // Second-tier validation: Check if vendor_sku exists in the database
         const invalidItems = [];
-        const validItemsWithProductData = [];
+        const validItems = [];
 
         for (const item of stockShipmentItems) {
             const { vendor_sku } = item;
@@ -18,77 +18,98 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
                     item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
                 });
-            } /*else {
-                // Add the item along with product data to validItemsWithProductData
-                validItemsWithProductData.push({
-                    ...item,
-                    product: result.data[0],
-                });
-            }*/
+            } else {
+                validItems.push(item);
+            }
         }
 
         if (invalidItems.length > 0) {
             return {
                 success: false,
                 error: 'Some items could not be found, please correct or remove these',
-                invalidItems
+                invalidItems,
             };
         }
 
-        // All validations passed, proceed with transaction
-        const transactionItems = [];
-
-        const shipmentId = generateShipmentId(vendorId) //uuidv4();
+        // All validations passed, proceed to create the StockShipment
+        const shipmentId = generateShipmentId(vendorId);
         const createdAt = new Date().toISOString();
 
         // Prepare the StockShipment entry
-        const shipmentItem = {
-            Put: {
-                Item: {
-                    pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
-                    sk: `STOCKSHIPMENT#${shipmentId}`,
-                    entity_type: 'StockShipment',
-                    shipment_id: shipmentId,
-                    vendor_id: vendorId,
-                    status: 'Submitted',
-                    created_at: createdAt,
-                    updated_at: createdAt,
-                },
-            },
+        const stockShipmentItem = {
+            pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
+            sk: `STOCKSHIPMENT#${shipmentId}`,
+            entity_type: 'StockShipment',
+            shipment_id: shipmentId,
+            vendor_id: vendorId,
+            status: 'Submitted',
+            created_at: createdAt,
+            updated_at: createdAt,
         };
-        transactionItems.push(shipmentItem);
 
-        // Prepare the StockShipmentItem entries
-        for (const item of stockShipmentItems) {
-            const itemId = item.vendor_sku//uuidv4();
-            //const productId = item.product.sk.split('PRODUCT#')[1];  // Extract product ID from 'sk'
+        // Use putItem to insert the StockShipment entry with condition to prevent overwriting
+        const putShipmentResult = await putItem(stockShipmentItem);
 
-            const shipmentItemEntry = {
-                Put: {
-                    Item: {
-                        pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-                        sk: `STOCKSHIPMENTITEM#${itemId}`,
-                        entity_type: 'StockShipmentItem',
-                        shipment_id: shipmentId,
-                        vendor_sku: itemId,
-                        //product_id: productId,
-                        stock_in: item.stock_in,
-                        created_at: createdAt,
-                    },
-                },
-            };
-            transactionItems.push(shipmentItemEntry);
-        }
-
-        // Execute the transaction
-        const transactionResult = await transactWriteItems(transactionItems);
-
-        if (!transactionResult.success) {
-            console.error('Transaction failed:', transactionResult.error);
+        if (!putShipmentResult.success) {
+            console.error('Failed to create StockShipment:', putShipmentResult.error);
             return {
                 success: false,
                 error: 'Failed to create stock shipment',
-                details: transactionResult.error.message
+                details: putShipmentResult.error.message,
+            };
+        }
+
+        // Prepare the StockShipmentItem entries
+        const itemsToPut = [];
+
+        for (const item of validItems) {
+            const itemId = item.vendor_sku;
+
+            const shipmentItemEntry = {
+                pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                sk: `STOCKSHIPMENTITEM#${itemId}`,
+                entity_type: 'StockShipmentItem',
+                shipment_id: shipmentId,
+                vendor_sku: itemId,
+                stock_in: item.stock_in,
+                created_at: createdAt,
+                updated_at: createdAt,
+            };
+            itemsToPut.push(shipmentItemEntry);
+        }
+
+        // Use batchWriteItems to add the StockShipmentItem entries
+        const batchWriteResult = await batchWriteItems(itemsToPut, 'Put');
+
+        if (!batchWriteResult.success) {
+            console.error('Batch write failed:', batchWriteResult.error);
+            return {
+                success: false,
+                error: 'Failed to create stock shipment items',
+                details: batchWriteResult.error.message,
+            };
+        }
+
+        // Handle any errors or unprocessed items
+        const errors = [];
+        if (batchWriteResult.results.errors.length > 0) {
+            errors.push(...batchWriteResult.results.errors);
+        }
+
+        if (batchWriteResult.results.unprocessedItems.length > 0) {
+            errors.push(
+                ...batchWriteResult.results.unprocessedItems.map((item) => ({
+                    item: item.PutRequest.Item.vendor_sku || 'Unknown SKU',
+                    error: 'Unprocessed item during batch write',
+                }))
+            );
+        }
+
+        if (errors.length > 0) {
+            return {
+                success: false,
+                error: 'Failed to create some stock shipment items',
+                invalidItems: errors,
             };
         }
 
