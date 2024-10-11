@@ -195,7 +195,7 @@ paths:
   /vendor/stock-shipments/{stockShipmentId}:
     get:
       summary: Get a specific stock shipment
-      description: Retrieve the details of a specific stock shipment by its ID.
+      description: Retrieve the details of a specific stock shipment by its ID and vendor ID.
       parameters:
         - name: stockShipmentId
           in: path
@@ -204,6 +204,13 @@ paths:
           schema:
             type: string
             example: "b71m23da"
+        - name: vendorId
+          in: query
+          required: true
+          description: The ID of the vendor that owns the stock shipment
+          schema:
+            type: string
+            example: "b71812ec"
       responses:
         '200':
           description: Stock shipment retrieved successfully
@@ -212,27 +219,55 @@ paths:
               schema:
                 type: object
                 properties:
-                  shipment_id:
-                    type: string
-                    example: "b71m23da"
-                  status:
-                    type: string
-                    example: "Submitted"
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/StockShipmentItem'
-                  vendor_id:
-                    type: string
-                    example: "b71812ec"
-                  created_at:
-                    type: string
-                    format: date-time
-                    example: "2024-10-10T14:01:40.631Z"
-                  updated_at:
-                    type: string
-                    format: date-time
-                    example: "2024-10-10T17:40:57.213Z"
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      stock_shipment:
+                        type: object
+                        properties:
+                          entity_type:
+                            type: string
+                            example: "StockShipment"
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: "2024-10-10T17:40:57.213Z"
+                          vendor_id:
+                            type: string
+                            example: "b71812ec"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2024-10-10T14:01:40.631Z"
+                          shipment_id:
+                            type: string
+                            example: "b71m23da"
+                          status:
+                            type: string
+                            example: "Submitted"
+                      stock_shipment_items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            vendor_sku:
+                              type: string
+                              example: "35438"
+                            quantity:
+                              type: integer
+                              example: 12
+                            name:
+                              type: string
+                              example: "Classic Caramel Tobacco"
+                            image:
+                              type: string
+                              example: "https://cdn.indejuice.com/images/poP_small.jpg"
+                            brand_name:
+                              type: string
+                              example: "Soda King"
         '404':
           description: Stock shipment not found
         '500':
