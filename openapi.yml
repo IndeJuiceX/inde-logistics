@@ -405,8 +405,13 @@ paths:
 
   /vendor/stock-shipments/{stockShipmentId}/remove-item:
     delete:
-      summary: Remove an item from a stock shipment
-      description: Remove a specific item from the stock shipment identified by the stockShipmentId.
+      summary: Remove items from a stock shipment
+      description: >
+        Removes items from the specified stock shipment for the vendor. The request body should include 
+        the `stock_shipment_id` and an array of `vendor_sku` items to be removed.
+        Requires API token for authentication.
+      security:
+        - BearerAuth: []
       parameters:
         - name: stockShipmentId
           in: path
@@ -414,20 +419,77 @@ paths:
           description: The ID of the stock shipment
           schema:
             type: string
-        - name: vendor_sku
-          in: query
-          required: true
-          description: The SKU of the item to remove
-          schema:
-            type: string
-            example: "12345678"
+            example: "b71m23da"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - stock_shipment
+              properties:
+                stock_shipment:
+                  type: object
+                  required:
+                    - stock_shipment_id
+                    - items
+                  properties:
+                    stock_shipment_id:
+                      type: string
+                      description: The ID of the stock shipment
+                      example: "b71m23da"
+                    items:
+                      type: array
+                      description: The array of `vendor_sku` strings to remove from the stock shipment
+                      items:
+                        type: string
+                        example: "12345678"
       responses:
         '200':
-          description: Item removed from the stock shipment successfully
+          description: Items successfully removed from the stock shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Items successfully removed from stock shipment"
+                  shipment_id:
+                    type: string
+                    example: "b71m23da"
+        '400':
+          description: Validation error or bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Validation failed for some items"
+                  invalidItems:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        item:
+                          type: string
+                          example: "12345678"
+                        errors:
+                          type: array
+                          items:
+                            type: string
+        '401':
+          description: Unauthorized - Missing or invalid API token
         '404':
-          description: Stock shipment or item not found
+          description: Shipment not found or does not belong to the vendor
+        '413':
+          description: Payload exceeds the allowed size limit (2 MB)
         '500':
           description: Internal server error
+
 
   /vendor/stock-shipments/{stockShipmentId}/update-item:
     put:
@@ -590,3 +652,10 @@ components:
           description: A list of stock shipment items
           items:
             $ref: '#/components/schemas/StockShipmentItem'
+
+    VendorSkuArray:
+      type: array
+      description: Array of vendor_sku strings to be removed from the stock shipment
+      items:
+        type: string
+        example: "12345678"        
