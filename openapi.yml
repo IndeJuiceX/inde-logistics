@@ -492,9 +492,14 @@ paths:
 
 
   /vendor/stock-shipments/{stockShipmentId}/update-item:
-    put:
-      summary: Update an item in a stock shipment
-      description: Update the details of a specific item in the stock shipment identified by the stockShipmentId.
+    patch:
+      summary: Update items in a stock shipment
+      description: >
+        Updates the quantity (`stock_in`) of items in the specified stock shipment for the vendor. The request body should include 
+        the `stock_shipment_id` and an array of `items` where each item has `vendor_sku` and `stock_in` values.
+        Requires API token for authentication.
+      security:
+        - BearerAuth: []
       parameters:
         - name: stockShipmentId
           in: path
@@ -502,33 +507,88 @@ paths:
           description: The ID of the stock shipment
           schema:
             type: string
-        - name: vendor_sku
-          in: query
-          required: true
-          description: The SKU of the item to update
-          schema:
-            type: string
-            example: "12345678"
+            example: "b71m23da"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - stock_shipment
               properties:
-                stock_in:
-                  type: integer
-                  example: 200
-                  description: Updated stock quantity
+                stock_shipment:
+                  type: object
+                  required:
+                    - stock_shipment_id
+                    - items
+                  properties:
+                    stock_shipment_id:
+                      type: string
+                      description: The ID of the stock shipment
+                      example: "b71m23da"
+                    items:
+                      type: array
+                      description: An array of items where `vendor_sku` and `stock_in` are required to update the quantity
+                      items:
+                        type: object
+                        required:
+                          - vendor_sku
+                          - stock_in
+                        properties:
+                          vendor_sku:
+                            type: string
+                            description: SKU of the item whose stock quantity is to be updated
+                            example: "12345678"
+                          stock_in:
+                            type: integer
+                            description: New quantity of stock for the item
+                            example: 100
       responses:
         '200':
-          description: Item updated successfully
+          description: Items successfully updated in the stock shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Items successfully updated in stock shipment"
+                  shipment_id:
+                    type: string
+                    example: "b71m23da"
         '400':
-          description: Validation error
+          description: Validation error or bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Validation failed for some items"
+                  invalidItems:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        item:
+                          type: string
+                          example: "12345678"
+                        errors:
+                          type: array
+                          items:
+                            type: string
+        '401':
+          description: Unauthorized - Missing or invalid API token
         '404':
-          description: Stock shipment or item not found
+          description: Shipment not found or does not belong to the vendor
+        '413':
+          description: Payload exceeds the allowed size limit (2 MB)
         '500':
           description: Internal server error
+
 
 
 components:
@@ -653,9 +713,24 @@ components:
           items:
             $ref: '#/components/schemas/StockShipmentItem'
 
-    VendorSkuArray:
+    StockShipmentItemDelete:
       type: array
       description: Array of vendor_sku strings to be removed from the stock shipment
       items:
         type: string
         example: "12345678"        
+
+    StockShipmentItemUpdate:
+      type: object
+      required:
+        - vendor_sku
+        - stock_in
+      properties:
+        vendor_sku:
+          type: string
+          example: "12345678"
+          description: The SKU for the product in the stock shipment
+        stock_in:
+          type: integer
+          example: 100
+          description: The new quantity of stock for the shipment item    
