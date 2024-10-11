@@ -14,9 +14,6 @@ properties:
     example: "12345678"
   status:
     type: string
-    enum:
-      - Active
-      - Inactive
     example: "Active"
   stock:
     type: integer
@@ -35,7 +32,7 @@ properties:
     example: "Brand 1"
   image:
     type: string
-    example: "https://cdn.example.com/image1.jpg"
+    example: "https://cdn.indejuice.com/image1.jpg"
   attributes:
     type: object
     additionalProperties:
@@ -43,6 +40,4 @@ properties:
     example:
       color: "Red"
       size: "Medium"
-      nicotine:
-        - "0mg"
-        - "3mg"
+      nicotine: ["0mg", "3mg"]

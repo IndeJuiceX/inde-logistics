@@ -21,7 +21,7 @@ put:
               type: array
               maxItems: 5000
               items:
-                $ref: '../../../components/schemas/product-update.yml'
+                $ref: '#/components/schemas/product-update'
   responses:
     '200':
       description: Products updated successfully
