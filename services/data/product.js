@@ -22,7 +22,7 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
     return await queryItems(params);
 };
 
-export const searchProducts = async (vendorId, searchQuery, brands,  page = 1, pageSize = 20) => {
+export const searchProducts = async (vendorId, searchQuery, brands, page = 1, pageSize = 20) => {
     // Calculate the `from` value to skip the appropriate number of documents
     const from = (page - 1) * pageSize;
     const size = pageSize;
@@ -38,16 +38,16 @@ export const searchProducts = async (vendorId, searchQuery, brands,  page = 1, p
     }
     if (brands.length > 0) {
         must.push({
-          terms: { 'brand_name.keyword': brands },
+            terms: { 'brand_name.keyword': brands },
         });
-      }
+    }
 
     // Perform the search without the "query" wrapping
-    const response = await searchIndex( {
+    const response = await searchIndex({
         bool: {
             must: must
         }
-    },{}, from, size);  // Pass pagination parameters
+    }, {}, from, size);  // Pass pagination parameters
 
     // Extract the results and total hits
     const results = response.hits.hits;
@@ -67,6 +67,78 @@ export const searchProducts = async (vendorId, searchQuery, brands,  page = 1, p
     };
 };
 
+export const checkProductExists = async (vendorId, vendor_sku) => {
+    try {
+        const result = await getProductByVendorSku(vendorId, vendor_sku);
+        if (result && result.Items && result.Items.length > 0) {
+            // Product exists
+            return {
+                exists: true,
+                product: result.Items[0],
+            };
+        } else {
+            // Product does not exist
+            return {
+                exists: false,
+                message: `Product with vendor_sku "${vendor_sku}" does not exist.`,
+            };
+        }
+    } catch (error) {
+        console.error(`Error checking product existence for vendor_sku "${vendor_sku}":`, error);
+        throw new Error(`Error checking product existence for vendor_sku "${vendor_sku}": ${error.message}`);
+    }
+};
 
+export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity) => {
+    try {
+      // Retrieve the product
+      const productResult = await getProductByVendorSku(vendorId, vendor_sku);
+      if (!productResult || !productResult.Items || productResult.Items.length === 0) {
+        // Product does not exist
+        return {
+          exists: false, // Product does not exist
+          success: false,
+          message: `Product with vendor_sku "${vendor_sku}" does not exist.`,
+        };
+      }
+  
+      const product = productResult.Items[0];
+  
+      // Extract the available stock from the product data
+      // Adjust the field name based on how you store the stock levels
+      let availableStock = product.available_stock || product.stock_level || 0;
+  
+      // Ensure availableStock is a number
+      availableStock = Number(availableStock);
+  
+      if (isNaN(availableStock)) {
+        // Handle cases where stock information is missing or invalid
+        return {
+          exists: true,
+          success: false,
+          message: `Stock information for vendor_sku "${vendor_sku}" is unavailable or invalid.`,
+        };
+      }
+  
+      if (availableStock >= requestedQuantity) {
+        // Sufficient stock available
+        return {
+          exists: true,
+          success: true,
+          availableStock: availableStock,
+        };
+      } else {
+        // Insufficient stock
+        return {
+          exists: true,
+          success: false,
+          message: `Insufficient stock for vendor_sku "${vendor_sku}". Requested: ${requestedQuantity}, Available: ${availableStock}`,
+        };
+      }
+    } catch (error) {
+      console.error(`Error checking stock for vendor_sku "${vendor_sku}":`, error);
+      throw new Error(`Error checking stock for vendor_sku "${vendor_sku}": ${error.message}`);
+    }
+  };
 
 
