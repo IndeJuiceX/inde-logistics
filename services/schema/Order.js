@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { getOrderItemSchema } from './OrderItem';
+import { validateOrderItems } from './OrderItem';
 
 // Define the order schema
 export const getOrderSchema = () => Joi.object({
@@ -7,113 +7,112 @@ export const getOrderSchema = () => Joi.object({
         .required()
         .label('vendor_order_id'),
 
-    // // Status field with specified allowed values
-    // status: Joi.string()
-    //     .valid('accepted', 'cancelled', 'held', 'dispatched', 'delivered')
-    //     .required()
-    //     .label('status'),
-
-    // Expected delivery date (ISO 8601 date string)
     expected_delivery_date: Joi.date()
         .iso()
         .required()
         .label('expected_delivery_date'),
 
-    // Shipping cost as a number
     shipping_cost: Joi.number()
         .required()
         .label('shipping_cost'),
 
-    // Buyer object with specified fields
     buyer: Joi.object({
-        name: Joi.string()
-            .required()
-            .label('name'),
+        name: Joi.string().required().label('name'),
+        phone: Joi.string().required().label('phone'),
+        email: Joi.string().email().required().label('email'),
+        address_line_1: Joi.string().required().label('address_line_1'),
+        address_line_2: Joi.string().required().label('address_line_2'),
+        address_line_3: Joi.string().allow('', null).label('address_line_3'),
+        address_line_4: Joi.string().allow('', null).label('address_line_4'),
+        city: Joi.string().required().label('city'),
+        postcode: Joi.string().required().label('postcode'),
+        country: Joi.string().required().label('country'),
+    }).required().label('buyer'),
 
-        phone: Joi.string()
-            .required()
-            .label('phone'),
-
-        email: Joi.string()
-            .email()
-            .required()
-            .label('email'),
-
-        address_line_1: Joi.string()
-            .required()
-            .label('address_line_1'),
-
-        address_line_2: Joi.string()
-            .required()
-            .label('address_line_2'),
-
-        address_line_3: Joi.string()
-            .allow('', null) // Optional field
-            .label('address_line_3'),
-
-        address_line_4: Joi.string()
-            .allow('', null) // Optional field
-            .label('address_line_4'),
-
-        city: Joi.string()
-            .required()
-            .label('city'),
-
-        postcode: Joi.string()
-            .required()
-            .label('postcode'),
-
-        country: Joi.string()
-            .required()
-            .label('country'),
-    })
-        .required()
-        .label('buyer'),
-
-    // Items array
-    items: Joi.array()
-        .items(getOrderItemSchema())
-        .min(1)
-        .required()
-        .label('items'),
+    // Basic validation: items array exists with at least 1 item
+    items: Joi.array().min(1).required().label('items'), // Does not do detailed validation here
 });
 
-// Function to validate a single stock shipment item
-export const validateOrder = (item) => {
-    const schema = getOrderSchema();
-    const { error, value } = schema.validate(item, { abortEarly: false });
+
+// Function to validate the entire order, including basic validation and detailed item-level validation
+export const validateOrder = (order) => {
+    const orderSchema = getOrderSchema();
+    const { error, value } = orderSchema.validate(order, { abortEarly: false });
 
     if (error) {
+        // Return order-level validation errors (e.g. missing fields like vendor_order_id, buyer)
         return {
             success: false,
             errors: error.details.map((err) => err.message),
         };
     }
 
-    return { success: true, value };
+    // Now that basic validation has passed, validate the items in detail
+    const itemValidationResult = validateOrderItems(order.items);
+
+    if (!itemValidationResult.success) {
+        return {
+            success: false,
+            errors: [
+                'Order is valid but one or more items failed validation.',
+                ...itemValidationResult.errors.map((err) => `Item ${err.item}: ${err.errors.join(', ')}`)
+            ]
+        };
+    }
+
+    return {
+        success: true,
+        value: {
+            ...value, // Include the order data
+            items: itemValidationResult.validatedItems // Include validated items
+        }
+    };
 };
 
-// Function to validate multiple stock shipment items
-export const validateOrders = (items) => {
+
+// Function to validate multiple orders and return entire order with validation errors if it fails
+export const validateOrders = (orders) => {
     const validatedItems = [];
     const invalidItems = [];
 
-    items.forEach((item) => {
-        const result = validateOrder(item);
+    orders.forEach((order) => {
+        const result = validateOrder(order);
+
         if (result.success) {
             validatedItems.push(result.value);
         } else {
+            const itemErrors = [];
+            let hasItemLevelError = false;
+
+            // Check if any of the errors are related to items
+            result.errors.forEach((error) => {
+                if (error.includes('items')) {
+                    hasItemLevelError = true;
+                }
+                itemErrors.push(error);
+            });
+
+            // If there is an item-level error, set a custom message
+            let errorMessage = hasItemLevelError
+                ? 'One or more items failed validation.'
+                : 'Order failed validation.';
+
+            // Add the entire order and the custom error message to invalidItems
             invalidItems.push({
-                errors: result.errors,
-                item: item.vendor_sku || item,
+                order, // Include the full order data
+                errors: itemErrors,
+                message: errorMessage, // Custom error message
             });
         }
     });
 
     return {
-        success: invalidItems.length === 0,
-        validatedItems,
-        errors: invalidItems,
+        success: invalidItems.length === 0, // If no invalid items, return success as true
+        validatedItems, // List of successfully validated orders
+        errors: invalidItems, // List of invalid orders and their errors
     };
 };
+
+
+
 

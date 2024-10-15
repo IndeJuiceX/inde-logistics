@@ -3,6 +3,7 @@ import { checkProductStock } from '@/services/data/product'; // Adjust the impor
 import { getItem } from '@/services/dynamo/wrapper';
 import { generateOrderId } from '@/services/utils';
 
+
 export async function createOrders(vendorId, orders) {
     const createdOrders = [];
     const errorOrders = [];
@@ -20,8 +21,6 @@ export async function createOrders(vendorId, orders) {
         const orderExistsInDB = await orderExists(vendorId, order.vendor_order_id);
         if (orderExistsInDB) {
             // Order already exists, add to failedOrders and continue to the next order
-            //order.failed_reason = 'An order with this ID already exists.';
-            //await insertFailedOrder(vendorId, order, 'Order ID already exists');
             failedOrders.push({
                 order: order,
                 errors: [{ message: 'An order with this ID already exists.' }],
@@ -32,60 +31,61 @@ export async function createOrders(vendorId, orders) {
         // Validate order items
         const itemValidationResult = validateOrderItems(order.items);
         const validatedItems = itemValidationResult.validatedItems;
+        const invalidItems = itemValidationResult.invalidItems
         const itemValidationErrors = itemValidationResult.errors;
 
+        // Check if all items are invalid (all have validation issues)
+        const allItemsInvalid = validatedItems.length === 0 && invalidItems.length > 0;
+
+        if (allItemsInvalid) {
+            // Move to failed orders if no valid items exist
+            failedOrders.push({
+                order: order,
+                errors: [{ message: 'All order items failed validation.', itemErrors: itemValidationErrors }],
+            });
+            continue; // Skip further processing for this order
+        }
+
+        // If there are any validation errors, mark the order as 'error'
         if (itemValidationErrors.length > 0) {
-            // Validation errors found
             orderStatus = 'error';
             orderErrors.push({
-                message: 'Order items failed validation.',
+                message: 'Some order items failed validation.',
                 itemErrors: itemValidationErrors,
             });
         }
 
-        // Check stock and SKU existence only if there are no validation errors
-        if (orderStatus !== 'error') {
-            const skuErrors = [];
-            for (const item of validatedItems) {
-                const stockCheck = await checkProductStock(vendorId, item.vendor_sku, item.quantity);
+        // Check stock and SKU existence for validated items
+        const skuErrors = [];
+        for (const item of validatedItems) {
+            const stockCheck = await checkProductStock(vendorId, item.vendor_sku, item.quantity);
 
-                if (!stockCheck.exists) {
-                    // Product does not exist
-                    orderStatus = 'error';
-                    skuErrors.push({
-                        vendor_sku: item.vendor_sku,
-                        message: `Product with vendor_sku "${item.vendor_sku}" does not exist.`,
-                    });
-                    continue;
-                }
-
-                if (!stockCheck.success) {
-                    // Insufficient stock
-                    orderStatus = 'error';
-                    skuErrors.push({
-                        vendor_sku: item.vendor_sku,
-                        message: stockCheck.message,
-                    });
-                }
-            }
-
-            if (skuErrors.length > 0) {
-                orderErrors.push({
-                    message: 'Some items have issues with SKU existence or stock availability.',
-                    skuErrors: skuErrors,
+            if (!stockCheck.exists) {
+                // Product does not exist
+                orderStatus = 'error';
+                skuErrors.push({
+                    vendor_sku: item.vendor_sku,
+                    message: `Product with vendor_sku "${item.vendor_sku}" does not exist.`,
+                });
+            } else if (!stockCheck.success) {
+                // Insufficient stock
+                orderStatus = 'error';
+                skuErrors.push({
+                    vendor_sku: item.vendor_sku,
+                    message: stockCheck.message,
                 });
             }
         }
 
+        if (skuErrors.length > 0) {
+            orderErrors.push({
+                message: 'Some items have issues with SKU existence or stock availability.',
+                skuErrors: skuErrors,
+            });
+        }
+
         // Insert the order using the insertOrder function
-        const transactionResult = await insertOrder(
-            vendorId,
-            orderId,
-            order,
-            validatedItems,
-            orderStatus,
-            orderErrors
-        );
+        const transactionResult = await insertOrder(vendorId, order);
 
         if (transactionResult.success) {
             if (orderStatus === 'accepted') {
@@ -130,6 +130,7 @@ export async function createOrders(vendorId, orders) {
     };
 }
 
+
 export async function getOrder(vendorId, orderId) {
     return await getItem(`VENDORORDER#${vendorId}`, `ORDER#${orderId}`);
 }
@@ -171,6 +172,9 @@ export async function insertFailedOrder(vendorId, order, failedReason) {
 export async function insertOrder(vendorId, order, orderErrors) {
     // we transact in a way we create an order and orderitem and for each orderitem row we hold the stock from product as well as add
     console.log('INSERTING ORDER---')
+
     console.log(order)
+
+    return { success: true };
 }
 

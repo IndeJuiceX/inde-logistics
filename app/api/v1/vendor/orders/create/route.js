@@ -23,9 +23,6 @@ export async function POST(request) {
             vendorId = decoded.vendorId;
         }
 
-       
-
-        console.log('INFERRED VENDOR ID FROM TOKEN---'+vendorId)
         // Parse request body
         const bodyText = await request.text();
         if (!bodyText) {
@@ -57,6 +54,8 @@ export async function POST(request) {
         const validOrders = validationResult.validatedItems || [];
         const invalidOrders = validationResult.errors || [];
 
+        console.log('INVALID ORDERS---')
+        console.log(invalidOrders)
         // Initialize result containers
         let ordersCreateResult = {
             success: true,
@@ -104,3 +103,5 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
 }
+
+
