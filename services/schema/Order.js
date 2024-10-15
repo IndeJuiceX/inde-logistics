@@ -54,7 +54,7 @@ export const validateOrder = (order) => {
         return {
             success: false,
             errors: [
-                'Order is valid but one or more items failed validation.',
+                'One or more order items failed validation.',
                 ...itemValidationResult.errors.map((err) => `Item ${err.item}: ${err.errors.join(', ')}`)
             ]
         };
