@@ -179,7 +179,7 @@ export default function ProductDetailsPage() {
               </div>
               <div className="mb-4">
                 <p className="text-lg text-gray-600">
-                  <strong>Stock:</strong> {product.stock}
+                  <strong>Stock:</strong> {product.stock_available}
                 </p>
               </div>
               <div className="mb-4">

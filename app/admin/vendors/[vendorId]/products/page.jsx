@@ -228,7 +228,7 @@ export default function AllProducts() {
                           <strong>Price:</strong> £{product.sale_price}
                         </p>
                         <p className="text-gray-700 mb-4">
-                          <strong>Stock:</strong> {product.stock}
+                          <strong>Stock:</strong> {product.stock_available}
                         </p>
                       </div>
                       {/* Action Buttons */}

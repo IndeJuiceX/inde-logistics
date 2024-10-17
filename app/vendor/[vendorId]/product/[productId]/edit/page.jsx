@@ -187,7 +187,7 @@ export default function EditProductPage() {
             <input
               name="stock"
               type="number"
-              value={product.stock || ''}
+              value={product.stock_available || ''}
               onChange={handleInputChange}
               className="w-full mt-1 p-2 border border-gray-300 rounded-md"
             />

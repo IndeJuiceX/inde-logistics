@@ -171,7 +171,7 @@ export default function AllProducts() {
                       <h3 className="text-lg font-semibold text-gray-700">{product.name}</h3>
                       <p className="text-gray-500 mb-2">SKU: {product.vendor_sku}</p>
                       <p className="text-gray-700 mb-2">Price: £{product.sale_price}</p>
-                      <p className="text-gray-700">Stock: {product.stock}</p>
+                      <p className="text-gray-700">Stock: {product.stock_available}</p>
                     </div>
                     {product.image && (
                       <div className="ml-4 w-24 h-24 flex-shrink-0">

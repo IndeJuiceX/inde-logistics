@@ -126,7 +126,7 @@ export default function ProductDetailsPage() {
                 <p className="text-lg text-gray-600"><strong>Price:</strong> £{product.sale_price}</p>
               </div>
               <div className="mb-4">
-                <p className="text-lg text-gray-600"><strong>Stock:</strong> {product.stock}</p>
+                <p className="text-lg text-gray-600"><strong>Stock:</strong> {product.stock_available}</p>
               </div>
               <div className="mb-4">
                 <p className="text-lg text-gray-600"><strong>Status:</strong> {product.status}</p>

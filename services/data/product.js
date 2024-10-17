@@ -106,7 +106,7 @@ export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity)
   
       // Extract the available stock from the product data
       // Adjust the field name based on how you store the stock levels
-      let availableStock = product.available_stock || product.stock_level || 0;
+      let availableStock = product.stock_available || 0;
   
       // Ensure availableStock is a number
       availableStock = Number(availableStock);
