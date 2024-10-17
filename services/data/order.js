@@ -205,7 +205,7 @@ export const createOrder = async (vendorId, order) => {
         }
 
         // Generate a unique ID for the order if not already provided
-        const uniqueOrderId = generateOrderId(vendorId,order.vendor_order_id); // You need to implement generateUniqueId()
+        const uniqueOrderId = generateOrderId(vendorId, order.vendor_order_id); // You need to implement generateUniqueId()
 
         // Prepare Put operation for the order itself with 'created_at' and 'updated_at'
         const orderPutOperation = {
@@ -288,16 +288,35 @@ export async function orderExists(vendorId, vendorOrderId) {
     }
 }
 
+export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
+    const timestamp = new Date().toISOString();
+
+    // Construct the partition key and sort key values
+    const pkVal = `VENDORORDER#${vendorId}`;
+    const skVal = `ORDER#${vendor_order_id}`;
+
+    // Fields to update
+    const updatedFields = {
+        buyer: buyer,
+        updated_at: timestamp
+    };
+
+    // Call the updateItem function
+    const result = await updateItem(pkVal, skVal, updatedFields);
+
+    if (result.success) {
+        return {
+            success: true,
+            updatedOrder: result.data
+        };
+    } else {
+        console.error('Error updating order buyer:', result.error);
+        return {
+            success: false,
+            error: result.error.message || 'Unknown error'
+        };
+    }
+};
 
 
-
-
-export async function insertOrder(vendorId, order, orderErrors) {
-    // we transact in a way we create an order and orderitem and for each orderitem row we hold the stock from product as well as add
-    console.log('INSERTING ORDER---')
-
-    console.log(order)
-
-    return { success: true };
-}
 
