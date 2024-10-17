@@ -100,7 +100,7 @@ export async function POST(request) {
 
     // Prepare products for insertion
     const productsToInsert = validationResults.validatedProducts.map((product) => {
-      const sk = `VENDORPRODUCT#${product.vendor_sku}`//generateSK(vendorId, product.vendor_sku);
+      const sk = `PRODUCT#${product.vendor_sku}`//generateSK(vendorId, product.vendor_sku);
       const productId = generateProductId(vendorId, product.vendor_sku)//sk.split('VENDOR#')[1];
 
       return {
