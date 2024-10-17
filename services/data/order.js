@@ -1,6 +1,6 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock } from '@/services/data/product'; // Adjust the import path
-import { getItem, transactWriteItems } from '@/services/dynamo/wrapper';
+import { getItem, transactWriteItems, queryItems } from '@/services/dynamo/wrapper';
 import { generateOrderId } from '@/services/utils';
 
 
@@ -317,6 +317,126 @@ export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
         };
     }
 };
+
+
+// In '@/services/data/order.js'
+
+
+
+export const cancelOrder = async (order) => {
+    const timestamp = new Date().toISOString();
+
+    try {
+        const vendorId = order.vendor_id;
+        const vendor_order_id = order.vendor_order_id;
+
+        // Retrieve the order items using queryItems wrapper
+        const queryParams = {
+            KeyConditionExpression: 'pk = :pk AND begins_with(sk, :skPrefix)',
+            ExpressionAttributeValues: {
+                ':pk': `VENDORORDERITEM#${vendorId}`,
+                ':skPrefix': `ORDER#${vendor_order_id}ITEM#`,
+            },
+        };
+
+        const queryResult = await queryItems(queryParams);
+
+        if (!queryResult.success) {
+            console.error('Error querying order items:', queryResult.error);
+            return {
+                success: false,
+                error: 'Failed to retrieve order items.',
+            };
+        }
+
+        const orderItems = queryResult.data;
+
+        if (!orderItems || orderItems.length === 0) {
+            return {
+                success: false,
+                error: `No items found for order with vendor_order_id '${vendor_order_id}'.`,
+            };
+        }
+
+        // Prepare the transaction items
+        const transactItems = [];
+
+        // Update the order status to 'Cancelled' and 'updated_at'
+        const updateOrderItem = {
+            Update: {
+                Key: {
+                    pk: `VENDORORDER#${vendorId}`,
+                    sk: `ORDER#${vendor_order_id}`,
+                },
+                UpdateExpression: 'SET #status = :status, updated_at = :updated_at',
+                ExpressionAttributeNames: {
+                    '#status': 'status',
+                },
+                ExpressionAttributeValues: {
+                    ':status': 'Cancelled',
+                    ':updated_at': timestamp,
+                },
+                ConditionExpression: 'attribute_exists(pk) AND #status <> :cancelled',
+            },
+        };
+
+        transactItems.push(updateOrderItem);
+
+        // For each order item, update the product's stock_available
+        for (const item of orderItems) {
+            const vendor_sku = item.vendor_sku;
+            const quantity = item.quantity;
+
+            const productKey = {
+                pk: `VENDORPRODUCT#${vendorId}`,
+                sk: `PRODUCT#${vendor_sku}`,
+            };
+
+            const updateProductItem = {
+                Update: {
+                    Key: productKey,
+                    UpdateExpression:
+                        'SET stock_available = stock_available + :increment, updated_at = :updated_at',
+                    ExpressionAttributeValues: {
+                        ':increment': quantity,
+                        ':updated_at': timestamp,
+                    },
+                    ConditionExpression: 'attribute_exists(pk)',
+                },
+            };
+
+            transactItems.push(updateProductItem);
+        }
+
+        // Execute the transaction using transactWriteItems
+        const transactionResult = await transactWriteItems(transactItems);
+
+        if (!transactionResult.success) {
+            console.error('Transaction failed:', transactionResult.error);
+            return {
+                success: false,
+                error: 'Failed to cancel order due to a transaction error.',
+            };
+        }
+
+        // Return success with updated order information
+        return {
+            success: true,
+            updatedOrder: {
+                ...order,
+                status: 'Cancelled',
+                updated_at: timestamp,
+            },
+        };
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        return {
+            success: false,
+            error: error.message,
+        };
+    }
+};
+
 
 
 
