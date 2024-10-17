@@ -1,6 +1,6 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock } from '@/services/data/product'; // Adjust the import path
-import { getItem } from '@/services/dynamo/wrapper';
+import { getItem, transactWriteItems } from '@/services/dynamo/wrapper';
 import { generateOrderId } from '@/services/utils';
 
 
@@ -135,6 +135,9 @@ export const createOrder = async (vendorId, order) => {
         const errors = [];
         const transactionItems = [];
 
+        // Get the current timestamp
+        const timestamp = new Date().toISOString();
+
         // For each item in the order
         for (const item of order.items) {
             const vendor_sku = item.vendor_sku;
@@ -150,35 +153,40 @@ export const createOrder = async (vendorId, order) => {
                     message: stockCheckResult.message,
                 });
             } else {
-                // Prepare Update operation to decrease stock atomically
+                // Prepare Update operation to decrease stock atomically and update 'updated_at'
                 const updateOperation = {
                     Update: {
                         Key: {
-                            pk: `VENDOR#${vendorId}`,
+                            pk: `VENDORPRODUCT#${vendorId}`,
                             sk: `PRODUCT#${vendor_sku}`,
                         },
-                        UpdateExpression: 'ADD available_stock :decrement',
-                        ConditionExpression: 'available_stock >= :requestedQuantity',
+                        UpdateExpression: 'ADD stock_available :decrement SET updated_at = :updatedAt',
+                        ConditionExpression: 'stock_available >= :requestedQuantity',
                         ExpressionAttributeValues: {
                             ':decrement': -requestedQuantity,
                             ':requestedQuantity': requestedQuantity,
+                            ':updatedAt': timestamp,
                         },
                     },
                 };
 
                 transactionItems.push(updateOperation);
 
-                // Prepare Put operation for order item
+                // Prepare Put operation for order item with 'created_at' and 'updated_at'
                 const orderItemPutOperation = {
                     Put: {
                         Item: {
-                            pk: `ORDER#${order.vendor_order_id}`,
-                            sk: `ITEM#${vendor_sku}`,
-                            vendorId,
+                            pk: `VENDORORDERITEM#${vendorId}`,
+                            sk: `ORDER#${order.vendor_order_id}ITEM#${vendor_sku}`,
+                            vendor_id: vendorId,
                             vendor_order_id: order.vendor_order_id,
                             vendor_sku,
                             quantity: requestedQuantity,
                             sales_value: item.sales_value,
+                            entity_type: 'OrderItem',
+                            status: 'Accepted',
+                            created_at: timestamp,
+                            updated_at: timestamp,
                             // Include other necessary fields from 'item'
                         },
                     },
@@ -196,20 +204,28 @@ export const createOrder = async (vendorId, order) => {
             };
         }
 
-        // Prepare Put operation for the order itself
+        // Generate a unique ID for the order if not already provided
+        const uniqueOrderId = generateOrderId(vendorId,order.vendor_order_id); // You need to implement generateUniqueId()
+
+        // Prepare Put operation for the order itself with 'created_at' and 'updated_at'
         const orderPutOperation = {
             Put: {
                 Item: {
-                    pk: `ORDER#${order.vendor_order_id}`,
-                    sk: '#METADATA#',
-                    vendorId,
+                    pk: `VENDORORDER#${vendorId}`,
+                    sk: `ORDER#${order.vendor_order_id}`,
+                    vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
                     expected_delivery_date: order.expected_delivery_date,
                     shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
+                    order_id: uniqueOrderId,
+                    entity_type: 'Order',
+                    status: 'Accepted',
+                    created_at: timestamp,
+                    updated_at: timestamp,
                     // Include other necessary fields from 'order'
                 },
-                ConditionExpression: 'attribute_not_exists(pk)', // Ensure order doesn't already exist
+                ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)', // Ensure order doesn't already exist
             },
         };
 
@@ -240,7 +256,12 @@ export const createOrder = async (vendorId, order) => {
         // Return success and the created order
         return {
             success: true,
-            createdOrder: order,
+            createdOrder: {
+                ...order,
+                order_id: uniqueId,
+                created_at: timestamp,
+                updated_at: timestamp,
+            },
         };
     } catch (error) {
         console.error('Error in createOrder:', error);
