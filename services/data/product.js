@@ -3,6 +3,8 @@ import { getItem, queryItems, putItem, deleteItem } from '@/services/dynamo/wrap
 import { searchIndex } from '@/services/open-search/wrapper';
 // Function to retrieve a single vendor by ID
 export const getProductById = async (vendorId, productUUID) => {
+    console.log(vendorId)
+    console.log(productUUID)
     return await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
 };
 
@@ -92,7 +94,8 @@ export const checkProductExists = async (vendorId, vendor_sku) => {
 export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity) => {
     try {
       // Retrieve the product
-      const productResult = await getProductByVendorSku(vendorId, vendor_sku);
+      const productResult = await getProductById(vendorId, vendor_sku);
+      console.log(productResult)
       if (!productResult || !productResult.Items || productResult.Items.length === 0) {
         // Product does not exist
         return {

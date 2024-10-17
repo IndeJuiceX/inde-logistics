@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { getOrderItemSchema } from './OrderItem'; // Import the item schema
+import { validateOrderItems } from './OrderItem'; // Import the item schema
 
 // Define the order schema
 
@@ -82,33 +82,7 @@ export const validateOrder = (order) => {
     };
 };
 
-// Function to validate order items with detailed error information
-export const validateOrderItems = (items) => {
-    const itemSchema = getOrderItemSchema(); // Assume this returns the Joi schema for an order item
-    const validatedItems = [];
-    const errors = [];
 
-    items.forEach((item, index) => {
-        const { error, value } = itemSchema.validate(item, { abortEarly: false });
-
-        if (error) {
-            error.details.forEach((err) => {
-                errors.push({
-                    message: err.message,
-                    path: err.path,
-                    index, // Index of the item in the array
-                });
-            });
-        } else {
-            validatedItems.push(value);
-        }
-    });
-
-    return {
-        validatedItems,
-        errors, // Array of error objects with message, path, and index
-    };
-};
 
 export const orderUpdateSchema = Joi.object({
     vendor_order_id: Joi.string().required().label('vendor_order_id'),
