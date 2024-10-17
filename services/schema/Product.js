@@ -4,7 +4,7 @@ import Joi from 'joi';
 export const getProductSchema = () => Joi.object({
   vendor_sku: Joi.string().required().label('vendor_sku'),
   status: Joi.string().valid('Active', 'Inactive').required().label('status'),
-  stock: Joi.number().integer().min(0).required().label('stock'),
+  stock_available: Joi.number().integer().min(0).required().label('stock_available'),
   name: Joi.string().required().label('name'),
   cost_price: Joi.number().required().label('cost_price'),
   sale_price: Joi.number().required().label('sale_price'),

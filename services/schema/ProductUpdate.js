@@ -3,9 +3,9 @@ import Joi from 'joi';
 // Define the product update schema using Joi
 export const getProductUpdateSchema = () => Joi.object({
   vendor_sku: Joi.string().required().label('vendor_sku'), // Current vendor SKU
-  new_vendor_sku: Joi.string().optional().label('new_vendor_sku'), // For updating the SKU
+  //new_vendor_sku: Joi.string().optional().label('new_vendor_sku'), // For updating the SKU
   status: Joi.string().valid('Active', 'Inactive').optional().label('status'),
-  stock: Joi.number().integer().min(0).optional().label('stock'),
+  stock_available: Joi.number().integer().min(0).optional().label('stock_available'),
   name: Joi.string().optional().label('name'),
   cost_price: Joi.number().optional().label('cost_price'),
   sale_price: Joi.number().optional().label('sale_price'),
