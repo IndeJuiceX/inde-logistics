@@ -50,3 +50,8 @@ export function generateOrderId(vendorId, orderId) {
   const uniqueId = (vendorId.substring(0, 3) + timestamp + randomPart).substring(0, 8);
   return uniqueId;
 }
+export const generateProductId = (vendorId, vendor_sku) => {
+  const input = `${vendorId}${vendor_sku}`;
+  const hash = crypto.createHash('sha256').update(input).digest('hex');
+  return hash.substring(0, 8); // Take the first 8 characters of the hash
+};

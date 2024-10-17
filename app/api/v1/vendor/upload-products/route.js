@@ -4,7 +4,7 @@ import { validateProducts } from '@/services/schema';
 import { batchWriteItems, getItem } from '@/lib/dynamodb';
 import { generateSK } from '@/services/products/Helper';  // Import the generateSK function
 import { decodeToken } from '@/services/Helper';
-import  {authenticateAndAuthorize} from '@/services/utils'
+import  {authenticateAndAuthorize,generateProductId} from '@/services/utils'
 // Constants for validation
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 5MB in bytes
 const MAX_PRODUCTS = 5000;  // Max products allowed in a batch
@@ -100,8 +100,8 @@ export async function POST(request) {
 
     // Prepare products for insertion
     const productsToInsert = validationResults.validatedProducts.map((product) => {
-      const sk = generateSK(vendorId, product.vendor_sku);
-      const productId = sk.split('VENDOR#')[1];
+      const sk = `VENDORPRODUCT#${product.vendor_sku}`//generateSK(vendorId, product.vendor_sku);
+      const productId = generateProductId(vendorId, product.vendor_sku)//sk.split('VENDOR#')[1];
 
       return {
         pk: 'VENDORPRODUCT#' + vendor.vendor_id,

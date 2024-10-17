@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateProductUpdates } from '@/services/schema';
 import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
-import { getProductByVendorSku } from '@/services/data/product';
+import { getProductByVendorSku, getProductById } from '@/services/data/product';
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { uploadToS3 } from '@/services/s3';
@@ -73,7 +73,7 @@ export async function PUT(request) {
       const { vendor_sku, new_vendor_sku, ...updatedFields } = product;
 
       // Fetch the existing product by vendor_sku
-      const result = await getProductByVendorSku(vendorId, vendor_sku);
+      const result = await getProductById(vendorId,vendor_sku)//await getProductByVendorSku(vendorId, vendor_sku);
       if (!result.success || !result.data) {
         failedUpdates.push({
           vendor_sku,
