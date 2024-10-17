@@ -193,8 +193,6 @@ export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
 };
 
 
-// In '@/services/data/order.js'
-
 
 
 export const cancelOrder = async (order) => {
