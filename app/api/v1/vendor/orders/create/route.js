@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { validateOrders } from '@/services/schema';
+import { validateOrder } from '@/services/schema';  // Changed to validateOrder
 import { decodeToken } from '@/services/Helper';
 import { authenticateAndAuthorize } from '@/services/utils';
-import { createOrders } from '@/services/data/order'; // Assuming createOrders is imported correctly.
+import { createOrder, orderExists } from '@/services/data/order'; // Changed to createOrder
 
 const MAX_SIZE_BYTES = 2 * 1024 * 1024;  // 2MB in bytes
 
@@ -36,72 +36,56 @@ export async function POST(request) {
             );
         }
 
-        let body;
+        let order;
         try {
-            body = JSON.parse(bodyText);
+            order = JSON.parse(bodyText);
         } catch (error) {
             return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
         }
 
-        // Ensure 'orders' field exists and is an array
-        if (!body.orders || !Array.isArray(body.orders)) {
-            return NextResponse.json({ error: 'Invalid request format: "orders" field is required and must be an array' }, { status: 400 });
+        // Validate the order schema
+        const validationResult = validateOrder(order);
+
+        if (!validationResult.success) {
+            return NextResponse.json(
+                {
+                    error: 'Invalid order data',
+                    details: validationResult.errors, // This now includes detailed errors
+                },
+                { status: 400 }
+            );
         }
 
-        // Validate the orders schema
-        const validationResult = validateOrders(body.orders);
 
-        const validOrders = validationResult.validatedItems || [];
-        const invalidOrders = validationResult.errors || [];
+        const validOrder = validationResult.order;
 
-        console.log('INVALID ORDERS---')
-        console.log(invalidOrders)
-        // Initialize result containers
-        let ordersCreateResult = {
-            success: true,
-            createdOrders: [],
-            errorOrders: [],
-            failedOrders: [],
-        };
+        const orderExistsInDB = await orderExists(vendorId, validOrder.vendor_order_id);
 
-        // Process valid orders
-        if (validOrders.length > 0) {
-            // Proceed to create orders with valid items
-            ordersCreateResult = await createOrders(vendorId, validOrders);
-            // Assuming createOrders returns { success, createdOrders, errorOrders, failedOrders }
+        if (orderExistsInDB) {
+          return NextResponse.json(
+            {
+              error: `Order with vendor_order_id '${validOrder.vendor_order_id}' already exists.`,
+            },
+            { status: 409 } // HTTP 409 Conflict
+          );
+        }
+
+        // Create the order
+        const createResult = await createOrder(vendorId, validOrder);
+
+        if (!createResult.success) {
+            return NextResponse.json({ error: 'Failed to create order', details: createResult.errors }, { status: 400 });
         }
 
         // Prepare the response payload
         const responsePayload = {
-            message: 'Order processing completed',
-            createdOrders: ordersCreateResult.createdOrders || [],
-            errorOrders: ordersCreateResult.errorOrders || [],
-            failedOrders: [],
+            message: 'Order created successfully',
+            order: createResult.createdOrder,
         };
 
-        // Combine invalid orders and failed orders
-        const combinedFailedOrders = [...invalidOrders, ...(ordersCreateResult.failedOrders || [])];
-
-        if (combinedFailedOrders.length > 0) {
-            // Map the failed orders to a consistent format if necessary
-            responsePayload.failedOrders = combinedFailedOrders.map((order) => {
-                return {
-                    orderId: order.order?.order_id || null,
-                    vendorOrderId: order.order?.vendor_order_id || null,
-                    errors: order.errors || [{ message: 'Unknown error' }],
-                };
-            });
-        }
-
-        // Determine the appropriate status code
-        const hasSuccess = responsePayload.createdOrders.length > 0 || responsePayload.errorOrders.length > 0;
-        const statusCode = hasSuccess ? 201 : 400;
-
-        return NextResponse.json(responsePayload, { status: statusCode });
+        return NextResponse.json(responsePayload, { status: 201 });
     } catch (error) {
         console.error('Unhandled error:', error);
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
 }
-
-

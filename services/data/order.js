@@ -4,7 +4,7 @@ import { getItem } from '@/services/dynamo/wrapper';
 import { generateOrderId } from '@/services/utils';
 
 
-export async function createOrders(vendorId, orders) {
+export async function createMultipleOrders(vendorId, orders) {
     const createdOrders = [];
     const errorOrders = [];
     const failedOrders = [];
@@ -130,6 +130,128 @@ export async function createOrders(vendorId, orders) {
     };
 }
 
+export const createOrder = async (vendorId, order) => {
+    try {
+        const errors = [];
+        const transactionItems = [];
+
+        // For each item in the order
+        for (const item of order.items) {
+            const vendor_sku = item.vendor_sku;
+            const requestedQuantity = item.quantity;
+
+            // Check product stock
+            const stockCheckResult = await checkProductStock(vendorId, vendor_sku, requestedQuantity);
+
+            if (!stockCheckResult.success) {
+                // Collect item-level errors
+                errors.push({
+                    vendor_sku,
+                    message: stockCheckResult.message,
+                });
+            } else {
+                // Prepare Update operation to decrease stock atomically
+                const updateOperation = {
+                    Update: {
+                        Key: {
+                            pk: `VENDOR#${vendorId}`,
+                            sk: `PRODUCT#${vendor_sku}`,
+                        },
+                        UpdateExpression: 'ADD available_stock :decrement',
+                        ConditionExpression: 'available_stock >= :requestedQuantity',
+                        ExpressionAttributeValues: {
+                            ':decrement': -requestedQuantity,
+                            ':requestedQuantity': requestedQuantity,
+                        },
+                    },
+                };
+
+                transactionItems.push(updateOperation);
+
+                // Prepare Put operation for order item
+                const orderItemPutOperation = {
+                    Put: {
+                        Item: {
+                            pk: `ORDER#${order.vendor_order_id}`,
+                            sk: `ITEM#${vendor_sku}`,
+                            vendorId,
+                            vendor_order_id: order.vendor_order_id,
+                            vendor_sku,
+                            quantity: requestedQuantity,
+                            sales_value: item.sales_value,
+                            // Include other necessary fields from 'item'
+                        },
+                    },
+                };
+
+                transactionItems.push(orderItemPutOperation);
+            }
+        }
+
+        // If any stock checks failed, return the errors
+        if (errors.length > 0) {
+            return {
+                success: false,
+                errors,
+            };
+        }
+
+        // Prepare Put operation for the order itself
+        const orderPutOperation = {
+            Put: {
+                Item: {
+                    pk: `ORDER#${order.vendor_order_id}`,
+                    sk: '#METADATA#',
+                    vendorId,
+                    vendor_order_id: order.vendor_order_id,
+                    expected_delivery_date: order.expected_delivery_date,
+                    shipping_cost: order.shipping_cost,
+                    buyer: order.buyer,
+                    // Include other necessary fields from 'order'
+                },
+                ConditionExpression: 'attribute_not_exists(pk)', // Ensure order doesn't already exist
+            },
+        };
+
+        transactionItems.push(orderPutOperation);
+
+        // Execute the transaction
+        const transactionResult = await transactWriteItems(transactionItems);
+
+        if (!transactionResult.success) {
+            // Handle transaction failure
+            const error = transactionResult.error;
+
+            if (error.name === 'ConditionalCheckFailedException') {
+                return {
+                    success: false,
+                    error: 'Transaction failed due to a conditional check failure.',
+                    details: error.message,
+                };
+            } else {
+                return {
+                    success: false,
+                    error: 'Transaction failed.',
+                    details: error.message,
+                };
+            }
+        }
+
+        // Return success and the created order
+        return {
+            success: true,
+            createdOrder: order,
+        };
+    } catch (error) {
+        console.error('Error in createOrder:', error);
+        return {
+            success: false,
+            error: 'Server error.',
+            details: error.message,
+        };
+    }
+};
+
 
 export async function getOrder(vendorId, orderId) {
     return await getItem(`VENDORORDER#${vendorId}`, `ORDER#${orderId}`);
@@ -147,27 +269,7 @@ export async function orderExists(vendorId, vendorOrderId) {
 
 
 
-export async function insertFailedOrder(vendorId, order, failedReason) {
-    const pk = `VENDORFAILEDORDER#${vendorId}`;
-    const sk = `VENDORORDER#${order.vendor_order_id}`;
-    const failedOrderRecord = {
-        PK: pk,
-        SK: sk,
-        orderData: order,
-        failedReason: failedReason,
-        timestamp: new Date().toISOString(),
-    };
 
-    try {
-        // Insert into the FailedOrders table in your database
-        console.log('INSERTING FAILED ORDER ----')
-        console.log(order)
-        //await db.insert('FailedOrders', failedOrderRecord); // Adjust to your DB method
-    } catch (error) {
-        console.error(`Failed to insert failed order ${order.vendor_order_id}:`, error);
-        // Optionally handle this error further
-    }
-}
 
 export async function insertOrder(vendorId, order, orderErrors) {
     // we transact in a way we create an order and orderitem and for each orderitem row we hold the stock from product as well as add
