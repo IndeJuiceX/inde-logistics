@@ -5,10 +5,7 @@ export async function GET(request, { params }) {
     try {
 
         const { vendorOrderId } = params;
-        console.log('GET ORDER DETAILS API---')
         const { authorized, user } = await authenticateAndAuthorize(request);
-        console.log(authorized)
-        console.log(user)
 
         let vendorId = user?.vendor || null;
         if (!authorized || vendorId == null) {

@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 export default function OrderDetailsPage() {
-  const { vendorId,vendorOrderId } = useParams();
+  const { vendorId, vendorOrderId } = useParams();
   const router = useRouter();
 
   const [order, setOrder] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
   const [buyerInfo, setBuyerInfo] = useState({
     name: '',
-    email: '',
     phone: '',
-    address: '',
+    address_line_1: '',
+    city: '',
+    country: '',
   });
   const [loading, setLoading] = useState(true);
   const [updatingBuyer, setUpdatingBuyer] = useState(false);
@@ -22,14 +23,17 @@ export default function OrderDetailsPage() {
     // Fetch the order details from the backend API
     const fetchOrderDetails = async () => {
       try {
-        const response = await fetch(`/api/v1/vendor/order/${vendorOrderId}?vendorId=${vendorId}`);
+        const response = await fetch(
+          `/api/v1/vendor/order/${vendorOrderId}?vendorId=${vendorId}`
+        );
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         if (response.ok && data.success) {
-          const { order_details, order_items, buyer } = data.data;
+          // Destructure the response based on the API response format
+          const { buyer, items, ...orderDetails } = data.data;
 
-          setOrder(order_details);
-          setOrderItems(order_items || []);
+          setOrder(orderDetails); // Contains order_id, status, etc.
+          setOrderItems(items || []);
           setBuyerInfo(buyer || {});
         } else {
           console.error('Error fetching order details:', data.error);
@@ -41,10 +45,10 @@ export default function OrderDetailsPage() {
       }
     };
 
-    if (vendorOrderId) {
+    if (vendorOrderId && vendorId) {
       fetchOrderDetails();
     }
-  }, [vendorOrderId]);
+  }, [vendorOrderId, vendorId]);
 
   if (loading) {
     return (
@@ -62,7 +66,13 @@ export default function OrderDetailsPage() {
     );
   }
 
-  const { order_id, created_at, status } = order;
+  const {
+    order_id,
+    created_at,
+    status,
+    shipping_cost,
+    expected_delivery_date,
+  } = order;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -80,7 +90,10 @@ export default function OrderDetailsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ vendor_order_id: vendorOrderId, buyer: buyerInfo }),
+        body: JSON.stringify({
+          vendor_order_id: vendorOrderId,
+          buyer: buyerInfo,
+        }),
       });
 
       const data = await response.json();
@@ -118,17 +131,21 @@ export default function OrderDetailsPage() {
                 {new Date(created_at).toLocaleDateString()}
               </p>
               <p className="text-gray-600">
+                <span className="font-semibold">Expected Delivery Date:</span>{' '}
+                {expected_delivery_date || 'N/A'}
+              </p>
+              <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{' '}
                 <span
                   className={`inline-block px-2 py-1 text-sm font-semibold rounded ${
-                    status === 'Pending'
+                    status === 'Accepted'
+                      ? 'bg-green-100 text-green-800'
+                      : status === 'Pending'
                       ? 'bg-yellow-100 text-yellow-800'
                       : status === 'Confirmed'
                       ? 'bg-blue-100 text-blue-800'
                       : status === 'Shipped'
-                      ? 'bg-green-100 text-green-800'
-                      : status === 'Delivered'
-                      ? 'bg-purple-100 text-purple-800'
+                      ? 'bg-orange-100 text-orange-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >
@@ -141,6 +158,10 @@ export default function OrderDetailsPage() {
               <p className="text-gray-600">
                 <span className="font-semibold">Total Items:</span>{' '}
                 {orderItems.length}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Shipping Cost:</span>{' '}
+                ${shipping_cost?.toFixed(2) || '0.00'}
               </p>
               {/* Additional order details can go here */}
             </div>
@@ -166,19 +187,6 @@ export default function OrderDetailsPage() {
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
               />
             </div>
-            {/* Email */}
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={buyerInfo.email || ''}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-              />
-            </div>
             {/* Phone */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
@@ -192,18 +200,44 @@ export default function OrderDetailsPage() {
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
               />
             </div>
-            {/* Address */}
+            {/* Address Line 1 */}
             <div>
               <label className="block text-gray-700 font-medium mb-2">
-                Address
+                Address Line 1
               </label>
-              <textarea
-                name="address"
-                value={buyerInfo.address || ''}
+              <input
+                type="text"
+                name="address_line_1"
+                value={buyerInfo.address_line_1 || ''}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
-                rows="4"
-              ></textarea>
+              />
+            </div>
+            {/* City */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                City
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={buyerInfo.city || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+            {/* Country */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Country
+              </label>
+              <input
+                type="text"
+                name="country"
+                value={buyerInfo.country || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              />
             </div>
           </div>
           {/* Save Button */}
@@ -223,9 +257,9 @@ export default function OrderDetailsPage() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {/* Product Column */}
+                  {/* Product SKU */}
                   <th className="px-4 py-2 text-left text-gray-600 font-medium">
-                    Product
+                    SKU
                   </th>
                   <th className="px-4 py-2 text-left text-gray-600 font-medium">
                     Quantity
@@ -242,27 +276,9 @@ export default function OrderDetailsPage() {
                 {orderItems.length > 0 ? (
                   orderItems.map((item, index) => (
                     <tr key={index} className="border-t hover:bg-gray-50">
-                      {/* Product Cell */}
-                      <td className="px-4 py-2 text-gray-700 flex items-center space-x-4">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-                            N/A
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium">
-                            {item.name || 'N/A'}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            SKU: {item.sku || 'N/A'}
-                          </p>
-                        </div>
+                      {/* SKU */}
+                      <td className="px-4 py-2 text-gray-700">
+                        {item.vendor_sku || 'N/A'}
                       </td>
                       {/* Quantity */}
                       <td className="px-4 py-2 text-gray-700">
@@ -270,13 +286,13 @@ export default function OrderDetailsPage() {
                       </td>
                       {/* Price */}
                       <td className="px-4 py-2 text-gray-700">
-                        ${item.price?.toFixed(2) || '0.00'}
+                        ${item.sales_value?.toFixed(2) || '0.00'}
                       </td>
                       {/* Total */}
                       <td className="px-4 py-2 text-gray-700">
                         $
                         {(
-                          (item.price || 0) * (item.quantity || 0)
+                          (item.sales_value || 0) * (item.quantity || 0)
                         ).toFixed(2)}
                       </td>
                     </tr>
