@@ -42,7 +42,7 @@ export async function PATCH(request) {
 
         // Check if the order exists
         const orderItem = await getOrder(vendorId, vendor_order_id);
-        if (!orderItem) {
+        if (!orderItem || !orderItem.data) {
             return NextResponse.json(
                 {
                     error: `Order with vendor_order_id '${vendor_order_id}' does not exist.`,
@@ -53,7 +53,7 @@ export async function PATCH(request) {
 
         // Check if the order status allows cancellation
         const nonCancellableStatuses = ['Dispatched', 'Delivered', 'Cancelled'];
-        if (nonCancellableStatuses.includes(orderItem.status)) {
+        if (nonCancellableStatuses.includes(orderItem.data.status)) {
             return NextResponse.json(
                 {
                     error: `Order with vendor_order_id '${vendor_order_id}' cannot be cancelled because its status is '${orderItem.status}'.`,
@@ -63,8 +63,9 @@ export async function PATCH(request) {
         }
 
         // Proceed to cancel the order
-        const cancelResult = await cancelOrder(orderItem);
+        const cancelResult = await cancelOrder(orderItem.data);
 
+        console.log(cancelResult)
         if (!cancelResult.success) {
             return NextResponse.json(
                 { error: 'Failed to cancel order', details: cancelResult.error },

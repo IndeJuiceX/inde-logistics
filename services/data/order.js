@@ -175,7 +175,7 @@ export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
         updated_at: timestamp
     };
 
- 
+
     // Call the updateItem function
     const result = await updateItem(pkVal, skVal, updatedFields);
 
@@ -247,6 +247,8 @@ export const cancelOrder = async (order) => {
                 ExpressionAttributeValues: {
                     ':status': 'Cancelled',
                     ':updated_at': timestamp,
+                    ':cancelled': 'Cancelled', // Define the :cancelled attribute value
+
                 },
                 ConditionExpression: 'attribute_exists(pk) AND #status <> :cancelled',
             },
@@ -342,8 +344,8 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
     }
 };
 
-export const getOrderDetails = async(vendorId, vendorOrderId) =>{
-    const orderData =  await getOrder(vendorId, vendorOrderId);
+export const getOrderDetails = async (vendorId, vendorOrderId) => {
+    const orderData = await getOrder(vendorId, vendorOrderId);
     const order = orderData.data
 
     const pkVal = `VENDORORDERITEM#${vendorId}`
@@ -354,7 +356,7 @@ export const getOrderDetails = async(vendorId, vendorOrderId) =>{
             ':pkVal': pkVal,
             ':skPrefix': skPrefix,
         },
-       
+
     };
     const orderItemsData = await queryItems(params)
     if (!orderItemsData.success) {

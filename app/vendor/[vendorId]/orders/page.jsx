@@ -49,7 +49,7 @@ export default function OrdersPage() {
     const confirmCancel = window.confirm('Are you sure you want to cancel this order?');
     if (confirmCancel) {
       try {
-        const response = await fetch(`/api/v1/order/cancel`, {
+        const response = await fetch(`/api/v1/vendor/order/cancel?vendorId=${vendorId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -80,9 +80,7 @@ export default function OrdersPage() {
 
   };
 
-  const handleEditOrder = (orderId) => {
-    console.log(`Edit Order ${orderId}`);
-  };
+
 
   const handleCreateOrder = () => {
     router.push(`/vendor/${vendorId}/orders/create`);
@@ -166,12 +164,6 @@ export default function OrdersPage() {
 
                         {order.status === 'Accepted' && (
                           <>
-                            <button
-                              onClick={() => handleEditOrder(order.order_id)}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Edit
-                            </button>
 
                             <button
                               onClick={() => handleCancelOrder(order.vendor_order_id)}
