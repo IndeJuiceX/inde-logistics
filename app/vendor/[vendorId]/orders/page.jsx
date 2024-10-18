@@ -8,77 +8,32 @@ import { useRouter, useParams } from 'next/navigation';
 import PaginationControls from '@/components/PaginationControls'; // Adjust the import path as needed
 
 export default function OrdersPage() {
-    const router = useRouter()
-    const { vendorId } = useParams();
-    const [orders, setOrders] = useState([])
-
-  // Dummy data for orders
-  const dummyOrders = [
-    {
-      id: 'ORD-1001',
-      created_at: '2023-10-01T10:00:00Z',
-      updated_at: '2023-10-02T12:00:00Z',
-      status: 'Pending',
-      buyer: {
-        name: 'John Doe',
-        address: '123 Main St, Anytown, USA',
-        phone: '+1 (555) 123-4567',
-        email: 'john.doe@example.com',
-      },
-      items: [
-        {
-          vendor_sku: 'SKU-001',
-          quantity: 2,
-          sales_value: 50.0,
-        },
-        {
-          vendor_sku: 'SKU-002',
-          quantity: 1,
-          sales_value: 30.0,
-        },
-      ],
-    },
-    {
-      id: 'ORD-1002',
-      created_at: '2023-10-05T14:30:00Z',
-      updated_at: '2023-10-05T15:00:00Z',
-      status: 'Completed',
-      buyer: {
-        name: 'Jane Smith',
-        address: '456 Oak Ave, Othertown, USA',
-        phone: '+1 (555) 987-6543',
-        email: 'jane.smith@example.com',
-      },
-      items: [
-        {
-          vendor_sku: 'SKU-003',
-          quantity: 1,
-          sales_value: 20.0,
-        },
-      ],
-    },
-    // Add more dummy orders as needed
-  ];
+  const router = useRouter()
+  const { vendorId } = useParams();
+  const [orders, setOrders] = useState([]);
+  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null)
 
   // State variables for pagination
-  const [page, setPage] = useState(1);
   const pageSize = 25; // Fixed page size
-  const totalResults = dummyOrders.length;
-  const totalPages = Math.ceil(totalResults / pageSize);
 
-  // Calculate the orders to display on the current page
-  const displayedOrders = dummyOrders.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch(`/api/v1/vendor/order/all?vendorId=${vendorId}&page=${page}&pageSize=${pageSize}`, {
+        let url = `/api/v1/vendor/order/all?vendorId=${vendorId}&pageSize=${pageSize}`;
+        if (lastEvaluatedKey) {
+          url += `&lastEvaluatedKey=${encodeURIComponent(lastEvaluatedKey)}`;
+        }
+        const response = await fetch(url, {
           method: 'GET',
           cache: 'no-store',  // Disable cache
         });
         const data = await response.json();
-       
-        setOrders(data.data); // Populate product data
+
+        setOrders((prevOrders) => [...prevOrders, ...data.data]);
+
+        // Update the lastEvaluatedKey
+        setLastEvaluatedKey(data.lastEvaluatedKey);
         //setLoading(false);
       } catch (err) {
         //setLoading(false);
@@ -88,7 +43,7 @@ export default function OrdersPage() {
     if (vendorId) {
       fetchOrders();
     }
-  }, [vendorId,page]);
+  }, [vendorId, lastEvaluatedKey]);
   // Event handlers (implement navigation or actions as needed)
   const handleViewOrder = (orderId) => {
     // Implement view order functionality
@@ -156,15 +111,14 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          order.status === 'Accepted'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : order.status === 'Dispatched'
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${order.status === 'Accepted'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : order.status === 'Dispatched'
                             ? 'bg-green-100 text-green-800'
                             : order.status === 'Cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
                       >
                         {order.status}
                       </span>
@@ -205,14 +159,13 @@ export default function OrdersPage() {
             </tbody>
           </table>
         </div>
+        {lastEvaluatedKey && (
+          <button onClick={fetchOrders} className="load-more-button">
+            Load More
+          </button>
+        )}
 
-        {/* Pagination Controls */}
-        <PaginationControls
-          page={page}
-          totalPages={totalPages}
-          setPage={setPage}
-          totalResults={totalResults}
-        />
+
       </div>
     </div>
   );
