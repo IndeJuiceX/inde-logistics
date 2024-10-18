@@ -307,21 +307,30 @@ export const cancelOrder = async (order) => {
     }
 };
 
-export const getAllOrders = async (vendorId) => {
-    const pkVal = `VENDORORDER#${vendorId}`;
 
+
+export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = null) => {
+    const pkVal = `VENDORORDER#${vendorId}`;
     const params = {
         KeyConditionExpression: 'pk = :pkVal',
         ExpressionAttributeValues: {
             ':pkVal': pkVal,
         },
+        Limit: pageSize,
     };
+
+    if (exclusiveStartKey) {
+        params.ExclusiveStartKey = exclusiveStartKey;
+    }
 
     try {
         const result = await queryItems(params);
-        console.log(result)
         if (result.success) {
-            return { success: true, data: result.data };
+            return {
+                success: true,
+                data: result.data,
+                lastEvaluatedKey: result.lastEvaluatedKey,
+            };
         } else {
             return { success: false, error: result.error };
         }
