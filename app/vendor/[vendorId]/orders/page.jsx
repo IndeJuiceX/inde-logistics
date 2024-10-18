@@ -1,25 +1,19 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
-// Import the PaginationControls component
-import PaginationControls from '@/components/PaginationControls'; // Adjust the import path as needed
-
 export default function OrdersPage() {
-  const router = useRouter()
+  const router = useRouter();
   const { vendorId } = useParams();
   const [orders, setOrders] = useState([]);
-  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null)
+  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null);
 
-  // State variables for pagination
   const pageSize = 25; // Fixed page size
 
   const fetchOrders = async (startKey = null) => {
     try {
       console.log('Fetching orders with startKey:', startKey);
-
       let url = `/api/v1/vendor/order/all?vendorId=${vendorId}&pageSize=${pageSize}`;
       if (startKey) {
         url += `&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
@@ -37,7 +31,6 @@ export default function OrdersPage() {
         return [...prevOrders, ...newOrders];
       });
 
-      // Update the lastEvaluatedKey
       setLastEvaluatedKey(data.lastEvaluatedKey);
     } catch (err) {
       console.error('Failed to fetch orders:', err);
@@ -46,28 +39,52 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (vendorId) {
-      // Clear previous orders and lastEvaluatedKey when vendorId changes
       setOrders([]);
       setLastEvaluatedKey(null);
-
-      // Fetch the first page of orders
       fetchOrders();
     }
   }, [vendorId]);
 
-  // Event handlers (implement navigation or actions as needed)
+  const handleCancelOrder = async (vendor_order_id) => {
+    const confirmCancel = window.confirm('Are you sure you want to cancel this order?');
+    if (confirmCancel) {
+      try {
+        const response = await fetch(`/api/v1/order/cancel`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ vendor_order_id }),
+        });
+
+        if (response.ok) {
+          // After successful cancellation, update the order status locally
+          setOrders((prevOrders) =>
+            prevOrders.map((order) =>
+              order.vendor_order_id === vendor_order_id ? { ...order, status: 'Cancelled' } : order
+            )
+          );
+          alert('Order cancelled successfully');
+        } else {
+          alert('Failed to cancel the order');
+        }
+      } catch (err) {
+        console.error('Error cancelling order:', err);
+        alert('An error occurred while cancelling the order');
+      }
+    }
+  };
+
   const handleViewOrder = (orderId) => {
-    // Implement view order functionality
-    console.log(`View Order ${orderId}`);
+    router.push(`/vendor/${vendorId}/orders/${orderId}`);
+
   };
 
   const handleEditOrder = (orderId) => {
-    // Implement edit order functionality
     console.log(`Edit Order ${orderId}`);
   };
 
   const handleCreateOrder = () => {
-    // Implement create order functionality
     router.push(`/vendor/${vendorId}/orders/create`);
   };
 
@@ -140,22 +157,29 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        {/* View button */}
                         <button
-                          onClick={() => handleViewOrder(order.id)}
+                          onClick={() => handleViewOrder(order.vendor_order_id)}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           View
                         </button>
 
-                        {/* Edit button only if order is Pending */}
                         {order.status === 'Accepted' && (
-                          <button
-                            onClick={() => handleEditOrder(order.id)}
-                            className="text-green-600 hover:text-green-900"
-                          >
-                            Edit
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleEditOrder(order.order_id)}
+                              className="text-green-600 hover:text-green-900"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => handleCancelOrder(order.vendor_order_id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Cancel
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -174,13 +198,12 @@ export default function OrdersPage() {
             </tbody>
           </table>
         </div>
+
         {lastEvaluatedKey && (
           <button onClick={handleLoadMore} className="load-more-button">
             Load More
           </button>
         )}
-
-
       </div>
     </div>
   );

@@ -51,7 +51,7 @@ export const createOrder = async (vendorId, order) => {
                     Put: {
                         Item: {
                             pk: `VENDORORDERITEM#${vendorId}`,
-                            sk: `ORDER#${order.vendor_order_id}ITEM#${vendor_sku}`,
+                            sk: `ORDER#${order.vendor_order_id}#ITEM#${vendor_sku}`,
                             vendor_id: vendorId,
                             vendor_order_id: order.vendor_order_id,
                             vendor_sku,
@@ -340,4 +340,33 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
     }
 };
 
+export const getOrderDetails = async(vendorId, vendorOrderId) =>{
+    console.log('HITTING ORDER DETAILS---')
+    const orderData =  await getOrder(vendorId, vendorOrderId);
+    console.log(orderData)
+    const order = orderData.data
+
+    const pkVal = `VENDORORDERITEM#${vendorId}`
+    const skPrefix = `ORDER#${vendorOrderId}ITEM#`;
+    const params = {
+        KeyConditionExpression: 'pk = :pkVal AND begins_with(sk, :skPrefix)',
+        ExpressionAttributeValues: {
+            ':pkVal': pkVal,
+            ':skPrefix': skPrefix,
+
+        },
+       
+    };
+    const orderItemsData = await queryItems(params)
+    if (!orderItemsData.success) {
+        return { success: false, error: 'Failed to retrieve order items' };
+    }
+
+    // Format the response with order details and items
+    const orderDetails = {
+        ...order,
+        items: orderItemsData.data,
+    };
+    return { success: true, data: orderDetails };
+}
 
