@@ -193,8 +193,6 @@ export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
 };
 
 
-
-
 export const cancelOrder = async (order) => {
     const timestamp = new Date().toISOString();
 
@@ -309,6 +307,28 @@ export const cancelOrder = async (order) => {
     }
 };
 
+export const getAllOrders = async (vendorId) => {
+    const pkVal = `VENDORORDER#${vendorId}`;
 
+    const params = {
+        KeyConditionExpression: 'pk = :pkVal',
+        ExpressionAttributeValues: {
+            ':pkVal': pkVal,
+        },
+    };
+
+    try {
+        const result = await queryItems(params);
+        console.log(result)
+        if (result.success) {
+            return { success: true, data: result.data };
+        } else {
+            return { success: false, error: result.error };
+        }
+    } catch (error) {
+        console.error('Error retrieving all orders:', error);
+        return { success: false, error: 'Failed to retrieve orders' };
+    }
+};
 
 

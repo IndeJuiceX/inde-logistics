@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 // Import the PaginationControls component
@@ -10,6 +10,7 @@ import PaginationControls from '@/components/PaginationControls'; // Adjust the 
 export default function OrdersPage() {
     const router = useRouter()
     const { vendorId } = useParams();
+    const [orders, setOrders] = useState([])
 
   // Dummy data for orders
   const dummyOrders = [
@@ -61,13 +62,33 @@ export default function OrdersPage() {
 
   // State variables for pagination
   const [page, setPage] = useState(1);
-  const pageSize = 20; // Fixed page size
+  const pageSize = 25; // Fixed page size
   const totalResults = dummyOrders.length;
   const totalPages = Math.ceil(totalResults / pageSize);
 
   // Calculate the orders to display on the current page
   const displayedOrders = dummyOrders.slice((page - 1) * pageSize, page * pageSize);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(`/api/v1/vendor/order/all?vendorId=${vendorId}&page=${page}&pageSize=${pageSize}`, {
+          method: 'GET',
+          cache: 'no-store',  // Disable cache
+        });
+        const data = await response.json();
+       
+        setOrders(data.data); // Populate product data
+        //setLoading(false);
+      } catch (err) {
+        //setLoading(false);
+      }
+    };
+
+    if (vendorId) {
+      fetchOrders();
+    }
+  }, [vendorId,page]);
   // Event handlers (implement navigation or actions as needed)
   const handleViewOrder = (orderId) => {
     // Implement view order functionality
@@ -121,11 +142,11 @@ export default function OrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {displayedOrders.length > 0 ? (
-                displayedOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
+              {orders.length > 0 ? (
+                orders.map((order) => (
+                  <tr key={order.order_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {order.id}
+                      {order.vendor_order_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(order.created_at).toLocaleDateString()}
@@ -136,9 +157,9 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          order.status === 'Pending'
+                          order.status === 'Accepted'
                             ? 'bg-yellow-100 text-yellow-800'
-                            : order.status === 'Completed'
+                            : order.status === 'Dispatched'
                             ? 'bg-green-100 text-green-800'
                             : order.status === 'Cancelled'
                             ? 'bg-red-100 text-red-800'
@@ -159,7 +180,7 @@ export default function OrdersPage() {
                         </button>
 
                         {/* Edit button only if order is Pending */}
-                        {order.status === 'Pending' && (
+                        {order.status === 'Accepted' && (
                           <button
                             onClick={() => handleEditOrder(order.id)}
                             className="text-green-600 hover:text-green-900"
