@@ -34,19 +34,24 @@ export const validateOrderItem = (item) => {
   }
 };
 
+
 // Function to validate multiple order items
 export const validateOrderItems = (items) => {
   const validatedItems = [];
   const invalidItems = [];
 
-  items.forEach((item) => {
+  items.forEach((item, index) => {
     const result = validateOrderItem(item);
     if (result.success) {
       validatedItems.push(result.value);
     } else {
-      invalidItems.push({
-        errors: result.errors,
-        item: item.vendor_sku || item,
+      // For each error in the item, include the index and field path
+      result.errors.forEach((error) => {
+        invalidItems.push({
+          index: index,
+          field: error.field,
+          message: error.message,
+        });
       });
     }
   });
@@ -57,3 +62,4 @@ export const validateOrderItems = (items) => {
     errors: invalidItems,
   };
 };
+

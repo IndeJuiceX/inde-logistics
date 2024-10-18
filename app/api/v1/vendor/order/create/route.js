@@ -17,12 +17,14 @@ export async function POST(request) {
                 return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
             }
             const decoded = decodeToken(apiToken);
+            console.log(decoded)
             if (!decoded) {
                 return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
             }
             vendorId = decoded.vendorId;
         }
 
+        console.log('VENDOR ID IS' +vendorId)
         // Parse request body
         const bodyText = await request.text();
         if (!bodyText) {

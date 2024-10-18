@@ -95,8 +95,8 @@ export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity)
     try {
       // Retrieve the product
       const productResult = await getProductById(vendorId, vendor_sku);
-      console.log(productResult)
-      if (!productResult || !productResult.Items || productResult.Items.length === 0) {
+   
+      if (!productResult || !productResult.data ) {
         // Product does not exist
         return {
           exists: false, // Product does not exist
@@ -105,7 +105,7 @@ export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity)
         };
       }
   
-      const product = productResult.Items[0];
+      const product = productResult.data;
   
       // Extract the available stock from the product data
       // Adjust the field name based on how you store the stock levels

@@ -21,10 +21,14 @@ export const getOrderSchema = () =>
     Joi.object({
         vendor_order_id: Joi.string().required().label('vendor_order_id'),
 
-        expected_delivery_date: Joi.date()
-            .iso()
+        expected_delivery_date: Joi.string()
+            .pattern(/^([0-2][0-9]|(3)[0-1])\/(0[1-9]|1[0-2])\/\d{4}$/)
             .required()
-            .label('expected_delivery_date'),
+            .label('expected_delivery_date')
+            .messages({
+                'string.pattern.base': '"expected_delivery_date" must be in "dd/mm/yyyy" format',
+                'any.required': '"expected_delivery_date" is required',
+            }),
 
         shipping_cost: Joi.number().required().label('shipping_cost'),
 
@@ -61,7 +65,7 @@ export const validateOrder = (order) => {
         itemValidationResult.errors.forEach((itemError) => {
             errors.push({
                 message: itemError.message,
-                path: ['items', itemError.index, ...itemError.path],
+                path: ['items', itemError.index, itemError.field],
             });
         });
     }
