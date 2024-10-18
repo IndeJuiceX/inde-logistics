@@ -1,6 +1,6 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock } from '@/services/data/product'; // Adjust the import path
-import { getItem, transactWriteItems, queryItems } from '@/services/dynamo/wrapper';
+import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/dynamo/wrapper';
 import { generateOrderId } from '@/services/utils';
 
 

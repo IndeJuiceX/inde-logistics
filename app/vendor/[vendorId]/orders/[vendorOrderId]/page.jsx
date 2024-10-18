@@ -12,8 +12,13 @@ export default function OrderDetailsPage() {
   const [buyerInfo, setBuyerInfo] = useState({
     name: '',
     phone: '',
+    email: '',
     address_line_1: '',
+    address_line_2: '',
+    address_line_3: '',
+    address_line_4: '',
     city: '',
+    postcode: '',
     country: '',
   });
   const [loading, setLoading] = useState(true);
@@ -85,8 +90,8 @@ export default function OrderDetailsPage() {
   const handleSaveBuyerInfo = async () => {
     setUpdatingBuyer(true);
     try {
-      const response = await fetch('/order/update-buyer', {
-        method: 'POST',
+      const response = await fetch(`/api/v1/vendor/order/update-buyer?vendorId=${vendorId}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -131,7 +136,9 @@ export default function OrderDetailsPage() {
                 {new Date(created_at).toLocaleDateString()}
               </p>
               <p className="text-gray-600">
-                <span className="font-semibold">Expected Delivery Date:</span>{' '}
+                <span className="font-semibold">
+                  Expected Delivery Date:
+                </span>{' '}
                 {expected_delivery_date || 'N/A'}
               </p>
               <p className="text-gray-600">
@@ -161,7 +168,7 @@ export default function OrderDetailsPage() {
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Shipping Cost:</span>{' '}
-                ${shipping_cost?.toFixed(2) || '0.00'}
+                £{shipping_cost?.toFixed(2) || '0.00'}
               </p>
               {/* Additional order details can go here */}
             </div>
@@ -183,8 +190,8 @@ export default function OrderDetailsPage() {
                 type="text"
                 name="name"
                 value={buyerInfo.name || ''}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full px-3 py-2 border rounded-md bg-gray-100 text-gray-700"
+                readOnly
               />
             </div>
             {/* Phone */}
@@ -196,8 +203,21 @@ export default function OrderDetailsPage() {
                 type="text"
                 name="phone"
                 value={buyerInfo.phone || ''}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                className="w-full px-3 py-2 border rounded-md bg-gray-100 text-gray-700"
+                readOnly
+              />
+            </div>
+            {/* Email */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={buyerInfo.email || ''}
+                className="w-full px-3 py-2 border rounded-md bg-gray-100 text-gray-700"
+                readOnly
               />
             </div>
             {/* Address Line 1 */}
@@ -209,6 +229,46 @@ export default function OrderDetailsPage() {
                 type="text"
                 name="address_line_1"
                 value={buyerInfo.address_line_1 || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
+              />
+            </div>
+            {/* Address Line 2 */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Address Line 2
+              </label>
+              <input
+                type="text"
+                name="address_line_2"
+                value={buyerInfo.address_line_2 || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+            {/* Address Line 3 */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Address Line 3
+              </label>
+              <input
+                type="text"
+                name="address_line_3"
+                value={buyerInfo.address_line_3 || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              />
+            </div>
+            {/* Address Line 4 */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Address Line 4
+              </label>
+              <input
+                type="text"
+                name="address_line_4"
+                value={buyerInfo.address_line_4 || ''}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
               />
@@ -224,6 +284,21 @@ export default function OrderDetailsPage() {
                 value={buyerInfo.city || ''}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
+              />
+            </div>
+            {/* Postcode */}
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Postcode
+              </label>
+              <input
+                type="text"
+                name="postcode"
+                value={buyerInfo.postcode || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
               />
             </div>
             {/* Country */}
@@ -237,6 +312,7 @@ export default function OrderDetailsPage() {
                 value={buyerInfo.country || ''}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                required
               />
             </div>
           </div>
@@ -257,18 +333,17 @@ export default function OrderDetailsPage() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {/* Product SKU */}
+                  {/* SKU */}
                   <th className="px-4 py-2 text-left text-gray-600 font-medium">
                     SKU
                   </th>
+                  {/* Quantity */}
                   <th className="px-4 py-2 text-left text-gray-600 font-medium">
                     Quantity
                   </th>
+                  {/* Price */}
                   <th className="px-4 py-2 text-left text-gray-600 font-medium">
                     Price
-                  </th>
-                  <th className="px-4 py-2 text-left text-gray-600 font-medium">
-                    Total
                   </th>
                 </tr>
               </thead>
@@ -286,21 +361,14 @@ export default function OrderDetailsPage() {
                       </td>
                       {/* Price */}
                       <td className="px-4 py-2 text-gray-700">
-                        ${item.sales_value?.toFixed(2) || '0.00'}
-                      </td>
-                      {/* Total */}
-                      <td className="px-4 py-2 text-gray-700">
-                        $
-                        {(
-                          (item.sales_value || 0) * (item.quantity || 0)
-                        ).toFixed(2)}
+                        £{item.sales_value?.toFixed(2) || '0.00'}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="3"
                       className="px-4 py-2 text-center text-gray-500"
                     >
                       No items in this order.
