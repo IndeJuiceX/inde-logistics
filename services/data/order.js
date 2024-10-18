@@ -175,9 +175,11 @@ export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
         updated_at: timestamp
     };
 
+ 
     // Call the updateItem function
     const result = await updateItem(pkVal, skVal, updatedFields);
 
+    console.log(result)
     if (result.success) {
         return {
             success: true,

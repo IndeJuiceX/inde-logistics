@@ -102,13 +102,7 @@ export default function OrderDetailsPage() {
       });
 
       const data = await response.json();
-
-      if (response.ok && data.success) {
-        alert('Buyer information updated successfully.');
-      } else {
-        console.error('Error updating buyer information:', data.error);
-        alert('Failed to update buyer information.');
-      }
+      alert(data.message)
     } catch (error) {
       console.error('Error updating buyer information:', error);
       alert('An error occurred while updating buyer information.');
