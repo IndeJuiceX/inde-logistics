@@ -16,34 +16,45 @@ export default function OrdersPage() {
   // State variables for pagination
   const pageSize = 25; // Fixed page size
 
+  const fetchOrders = async (startKey = null) => {
+    try {
+      console.log('Fetching orders with startKey:', startKey);
+
+      let url = `/api/v1/vendor/order/all?vendorId=${vendorId}&pageSize=${pageSize}`;
+      if (startKey) {
+        url += `&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
+      }
+      const response = await fetch(url, {
+        method: 'GET',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+
+      setOrders((prevOrders) => {
+        const newOrders = data.data.filter((newOrder) =>
+          !prevOrders.some((prevOrder) => prevOrder.order_id === newOrder.order_id)
+        );
+        return [...prevOrders, ...newOrders];
+      });
+
+      // Update the lastEvaluatedKey
+      setLastEvaluatedKey(data.lastEvaluatedKey);
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        let url = `/api/v1/vendor/order/all?vendorId=${vendorId}&pageSize=${pageSize}`;
-        if (lastEvaluatedKey) {
-          url += `&lastEvaluatedKey=${encodeURIComponent(lastEvaluatedKey)}`;
-        }
-        const response = await fetch(url, {
-          method: 'GET',
-          cache: 'no-store',  // Disable cache
-        });
-        const data = await response.json();
-
-        setOrders((prevOrders) => [...prevOrders, ...data.data]);
-
-        // Update the lastEvaluatedKey
-        setLastEvaluatedKey(data.lastEvaluatedKey);
-        //setLoading(false);
-      } catch (err) {
-        //setLoading(false);
-      }
-    };
-
     if (vendorId) {
+      // Clear previous orders and lastEvaluatedKey when vendorId changes
+      setOrders([]);
+      setLastEvaluatedKey(null);
+
+      // Fetch the first page of orders
       fetchOrders();
     }
-  }, [vendorId, lastEvaluatedKey]);
+  }, [vendorId]);
+
   // Event handlers (implement navigation or actions as needed)
   const handleViewOrder = (orderId) => {
     // Implement view order functionality
@@ -58,6 +69,10 @@ export default function OrdersPage() {
   const handleCreateOrder = () => {
     // Implement create order functionality
     router.push(`/vendor/${vendorId}/orders/create`);
+  };
+
+  const handleLoadMore = () => {
+    fetchOrders(lastEvaluatedKey);
   };
 
   return (
@@ -160,7 +175,7 @@ export default function OrdersPage() {
           </table>
         </div>
         {lastEvaluatedKey && (
-          <button onClick={fetchOrders} className="load-more-button">
+          <button onClick={handleLoadMore} className="load-more-button">
             Load More
           </button>
         )}
