@@ -39,7 +39,13 @@ export async function GET(request, { params }) {
             }
 
             return NextResponse.json(response, { status: 200 });
+        } else {
+            return NextResponse.json(
+                { error: result.error },
+                { status: 404 }
+            );
         }
+
 
         return NextResponse.json(
             { error: 'Failed to fetch orders', details: result.error },

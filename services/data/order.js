@@ -346,6 +346,10 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
 
 export const getOrderDetails = async (vendorId, vendorOrderId) => {
     const orderData = await getOrder(vendorId, vendorOrderId);
+    console.log(orderData)
+    if(!orderData.success) {
+        return { success: false, error: orderData?.error||'Order not found ' };
+    }
     const order = orderData.data
 
     const pkVal = `VENDORORDERITEM#${vendorId}`
