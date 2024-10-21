@@ -30,3 +30,20 @@ export const generateProductId = (vendorId, vendor_sku) => {
   const hash = crypto.createHash('sha256').update(input).digest('hex');
   return hash.substring(0, 8); // Take the first 8 characters of the hash
 };
+
+/**
+ * Cleans the data by removing the sk, pk, and entity_type properties.
+ * @param {Array|Object} data - The data to be cleaned.
+ * @returns {Array|Object} - The cleaned data.
+ */
+export const cleanResponseData = (data) => {
+  const removeKeys = ({ sk, pk, entity_type, ...rest }) => rest;
+
+  if (Array.isArray(data)) {
+      return data.map(removeKeys);
+  } else if (typeof data === 'object' && data !== null) {
+      return removeKeys(data);
+  } else {
+      throw new Error('Invalid data type. Expected an array or object.');
+  }
+};

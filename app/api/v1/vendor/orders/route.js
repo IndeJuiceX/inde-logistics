@@ -42,12 +42,16 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         }
 
         if (result.success) {
+            console.log(result)
             const response = {
                 data: result.data,
             };
 
             if (result.lastEvaluatedKey) {
                 response.lastEvaluatedKey = Buffer.from(JSON.stringify(result.lastEvaluatedKey)).toString('base64');
+            }
+            if (result.hasMore !== undefined) {
+                response.hasMore = result.hasMore;
             }
 
             return NextResponse.json(response, { status: 200 });
@@ -62,4 +66,4 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
-}, ['vendor','admin']); // Allowed roles
+}, ['vendor', 'admin']); // Allowed roles
