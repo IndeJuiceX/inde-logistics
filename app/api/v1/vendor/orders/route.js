@@ -23,7 +23,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
             vendorId = user.vendorId;
         } else if (user.role === 'admin') {
             // Admins need to specify the vendorId in the query parameters
-            vendorId = searchParams.get('vendorId');
+            vendorId = searchParams.get('vendor_id');
             if (!vendorId) {
                 return NextResponse.json({ error: 'Vendor ID is required for admins' }, { status: 400 });
             }
