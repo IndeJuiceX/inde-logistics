@@ -65,7 +65,6 @@ export const PATCH = withAuthAndRole(async (request, { params, user }) => {
         // Prepare the response payload
         const responsePayload = {
             vendor_order_id: cancelResult.updatedOrder.vendor_order_id,
-            object: order,
             cancelled: cancelResult.updatedOrder.status,
         };
 

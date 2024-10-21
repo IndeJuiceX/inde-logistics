@@ -58,7 +58,6 @@ export const createOrder = async (vendorId, order) => {
                             quantity: requestedQuantity,
                             sales_value: item.sales_value,
                             entity_type: 'OrderItem',
-                            status: 'Accepted',
                             created_at: timestamp,
                             updated_at: timestamp,
                             // Include other necessary fields from 'item'
@@ -89,7 +88,7 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    expected_delivery_date: order.expected_delivery_date.toISOString(),
+                    expected_delivery_date: order.expected_delivery_date,
                     shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
@@ -207,7 +206,7 @@ export const cancelOrder = async (order) => {
             KeyConditionExpression: 'pk = :pk AND begins_with(sk, :skPrefix)',
             ExpressionAttributeValues: {
                 ':pk': `VENDORORDERITEM#${vendorId}`,
-                ':skPrefix': `ORDER#${vendor_order_id}ITEM#`,
+                ':skPrefix': `ORDER#${vendor_order_id}#ITEM#`,
             },
         };
 
