@@ -15,19 +15,9 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = null;
+        let vendorId = user.vendorId;
 
-        // Determine the vendorId based on the user's role
-        if (user.role === 'vendor') {
-            // Vendors can only access their own data
-            vendorId = user.vendorId;
-        } else if (user.role === 'admin') {
-            // Admins need to specify the vendorId in the query parameters
-            vendorId = searchParams.get('vendor_id');
-            if (!vendorId) {
-                return NextResponse.json({ error: 'Vendor ID is required for admins' }, { status: 400 });
-            }
-        } else {
+        if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
@@ -65,4 +55,4 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
-}, ['vendor', 'admin']); // Allowed roles
+}, ['vendor']); // Allowed roles
