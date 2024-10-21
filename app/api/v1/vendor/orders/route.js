@@ -7,8 +7,8 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         const { searchParams } = new URL(request.url);
         const vendorOrderId = searchParams.get('vendor_order_id');
 
-        const pageSize = parseInt(searchParams.get('pageSize')) || 25;
-        const lastEvaluatedKeyParam = searchParams.get('lastEvaluatedKey');
+        const pageSize = parseInt(searchParams.get('page_size')) || 25;
+        const lastEvaluatedKeyParam = searchParams.get('last_evaluated_key');
 
         let exclusiveStartKey = null;
         if (lastEvaluatedKeyParam) {
@@ -42,13 +42,12 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         }
 
         if (result.success) {
-            console.log(result)
             const response = {
                 data: result.data,
             };
 
             if (result.lastEvaluatedKey) {
-                response.lastEvaluatedKey = Buffer.from(JSON.stringify(result.lastEvaluatedKey)).toString('base64');
+                response.last_evaluated_key = Buffer.from(JSON.stringify(result.lastEvaluatedKey)).toString('base64');
             }
             if (result.hasMore !== undefined) {
                 response.hasMore = result.hasMore;
