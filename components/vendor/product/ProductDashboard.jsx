@@ -31,7 +31,7 @@ export default function ProductDashboard({ vendorId }) {
     }, [vendorId]);
     const breadCrumbLinks = [
         { text: 'Home', url: `/vendor/${vendorId}/dashboard` },
-        { text: 'Product', url: `/vendor/${vendorId}/dashboard` }
+        { text: 'Catalogue', url: `/vendor/${vendorId}/dashboard` }
     ];
     return (
         <>

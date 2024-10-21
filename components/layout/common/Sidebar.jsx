@@ -31,15 +31,14 @@ export default function Sidebar({ vendor, vendorId }) {
           href: `/vendor/${vendorId}/products/upload`,
         },
         {
-          label: "View Product",
-          href: `/vendor/${vendorId}/products/view`,
-        },
-        {
-          label: "Edit Product",
-          href: `/vendor/${vendorId}/products/edit`, // Default link
+          label: "View Products",
+          href: `/vendor/${vendorId}/products/all`,
           match: (path) => {
+            const viewProductsPath = `/vendor/${vendorId}/products/all`;
             const editProductPattern = new RegExp(`^/vendor/${vendorId}/product/[\\w-]+/edit$`);
-            return editProductPattern.test(path);
+            const viewProductPattern = new RegExp(`^/vendor/${vendorId}/product/[\\w-]+$`);
+
+            return path === viewProductsPath || editProductPattern.test(path) || viewProductPattern.test(path);
           },
         },
       ],
@@ -75,11 +74,10 @@ export default function Sidebar({ vendor, vendorId }) {
                   {/* Parent Menu Item with Submenu */}
                   <Link
                     href={menuItem.href}
-                    className={`flex justify-between items-center py-2 px-4 rounded-lg transition ${
-                      menuItemActive
-                        ? "bg-blue-500 text-white"
-                        : "text-gray-700 hover:bg-blue-500 hover:text-white"
-                    }`}
+                    className={`flex justify-between items-center py-2 px-4 rounded-lg transition ${menuItemActive
+                      ? "bg-blue-500 text-white"
+                      : "text-gray-700 hover:bg-blue-500 hover:text-white"
+                      }`}
                   >
                     <span>{menuItem.label}</span>
                     <span
@@ -95,11 +93,10 @@ export default function Sidebar({ vendor, vendorId }) {
                         <li key={subItem.label}>
                           <Link
                             href={subItem.href}
-                            className={`block py-2 px-4 rounded-lg transition ${
-                              isActive(subItem)
-                                ? "bg-blue-500 text-white"
-                                : "text-gray-700 hover:bg-blue-500 hover:text-white"
-                            }`}
+                            className={`block py-2 px-4 rounded-lg transition ${isActive(subItem)
+                              ? "bg-blue-500 text-white"
+                              : "text-gray-700 hover:bg-blue-500 hover:text-white"
+                              }`}
                           >
                             {subItem.label}
                           </Link>
@@ -112,11 +109,10 @@ export default function Sidebar({ vendor, vendorId }) {
                 // Menu Item without Submenu
                 <Link
                   href={menuItem.href}
-                  className={`block py-2 px-4 rounded-lg transition ${
-                    menuItemActive
-                      ? "bg-blue-500 text-white"
-                      : "text-gray-700 hover:bg-blue-500 hover:text-white"
-                  }`}
+                  className={`block py-2 px-4 rounded-lg transition ${menuItemActive
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-700 hover:bg-blue-500 hover:text-white"
+                    }`}
                 >
                   {menuItem.label}
                 </Link>

@@ -115,7 +115,7 @@ export default function AllProducts({ vendorId }) {
 
   const breadCrumbLinks = [
     { text: 'Home', url: `/vendor/${vendorId}/dashboard` },
-    { text: 'Product', url: `/vendor/${vendorId}/products` },
+    { text: 'Catalogue', url: `/vendor/${vendorId}/products` },
     { text: 'All Products', url: `/vendor/${vendorId}/product/all` }
   ];
 
