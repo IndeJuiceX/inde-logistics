@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
-import { authenticateAndAuthorize } from '@/services/utils';
+import { withAuthAndRole } from '@/services/utils/auth';
 
-export async function GET(request, { params }) {
+export const GET = withAuthAndRole(async (request, { params, user }) => {
     try {
-        const { authorized, user, status } = await authenticateAndAuthorize(request);
-
-        if (!authorized || !user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: status });
-        }
-
         const { searchParams } = new URL(request.url);
-        const vendorId = searchParams.get('vendorId');
         const vendorOrderId = searchParams.get('vendor_order_id');
 
         const pageSize = parseInt(searchParams.get('pageSize')) || 25;
@@ -22,11 +15,30 @@ export async function GET(request, { params }) {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
+        let vendorId = null;
+
+        // Determine the vendorId based on the user's role
+        if (user.role === 'vendor') {
+            // Vendors can only access their own data
+            vendorId = user.vendorId;
+        } else if (user.role === 'admin') {
+            // Admins need to specify the vendorId in the query parameters
+            vendorId = searchParams.get('vendorId');
+            if (!vendorId) {
+                return NextResponse.json({ error: 'Vendor ID is required for admins' }, { status: 400 });
+            }
+        } else {
+            // If the role is neither 'vendor' nor 'admin', return Forbidden
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         let result = null;
         if (vendorOrderId) {
-            result = await getOrderDetails(user.vendorId, vendorOrderId);
+            // Fetch specific order details
+            result = await getOrderDetails(vendorId, vendorOrderId);
         } else {
-            result = await getAllOrders(user.vendorId, pageSize, exclusiveStartKey);
+            // Fetch all orders with pagination
+            result = await getAllOrders(vendorId, pageSize, exclusiveStartKey);
         }
 
         if (result.success) {
@@ -46,13 +58,8 @@ export async function GET(request, { params }) {
             );
         }
 
-
-        return NextResponse.json(
-            { error: 'Failed to fetch orders', details: result.error },
-            { status: 500 }
-        );
     } catch (error) {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
-}
+}, ['vendor','admin']); // Allowed roles
