@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateStockShipmentItems } from '@/services/schema';
-import { decodeToken } from '@/services/Helper';
+import { decodeToken } from '@/services/utils/token';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { updateStockShipment, getStockShipmentById } from '@/services/data/stock-shipment';
 
@@ -103,6 +103,6 @@ export async function PATCH(request) {
 }
 
 async function checkShipmentExists(vendorId, stock_shipment_id) {
-    const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
-    return shipmentData.success && shipmentData.data.length > 0;
+  const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
+  return shipmentData.success && shipmentData.data.length > 0;
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateOrderUpdateSchema } from '@/services/schema'; // Updated import
-import { decodeToken } from '@/services/Helper';
+import { decodeToken } from '@/services/utils/token';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { updateOrderBuyer, getOrder } from '@/services/data/order'; // Data access functions
 

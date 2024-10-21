@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authenticateAndAuthorize } from '@/services/utils';
-import { decodeToken } from '@/services/Helper';
+import { decodeToken } from '@/services/utils/token';
 import { getOrder, cancelOrder } from '@/services/data/order';
 
 export async function PATCH(request) {

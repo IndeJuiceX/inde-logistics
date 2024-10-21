@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateOrder } from '@/services/schema';  // Changed to validateOrder
-import { decodeToken } from '@/services/Helper';
+import { decodeToken } from '@/services/utils/token';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { createOrder, orderExists } from '@/services/data/order'; // Changed to createOrder
 
@@ -24,7 +24,7 @@ export async function POST(request) {
             vendorId = decoded.vendorId;
         }
 
-        console.log('VENDOR ID IS' +vendorId)
+        console.log('VENDOR ID IS' + vendorId)
         // Parse request body
         const bodyText = await request.text();
         if (!bodyText) {
@@ -64,12 +64,12 @@ export async function POST(request) {
         const orderExistsInDB = await orderExists(vendorId, validOrder.vendor_order_id);
 
         if (orderExistsInDB) {
-          return NextResponse.json(
-            {
-              error: `Order with vendor_order_id '${validOrder.vendor_order_id}' already exists.`,
-            },
-            { status: 409 } // HTTP 409 Conflict
-          );
+            return NextResponse.json(
+                {
+                    error: `Order with vendor_order_id '${validOrder.vendor_order_id}' already exists.`,
+                },
+                { status: 409 } // HTTP 409 Conflict
+            );
         }
 
         // Create the order

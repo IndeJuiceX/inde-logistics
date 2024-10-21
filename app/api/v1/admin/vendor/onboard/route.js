@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { putItem } from '@/lib/dynamodb';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { generateJwtToken } from '@/services/Helper';
+import { generateJwtToken } from '@/services/utils/token';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'stringwhichisasecretforoutnew3plsystem'; // Replace with secure key
 

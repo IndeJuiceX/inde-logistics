@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateStockShipmentItems } from '@/services/schema';
-import { decodeToken } from '@/services/Helper';
+import { decodeToken } from '@/services/utils/token';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { createStockShipment } from '@/services/data/stock-shipment';
 

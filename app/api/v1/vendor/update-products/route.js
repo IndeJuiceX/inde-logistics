@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { validateProductUpdates } from '@/services/schema';
 import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
 import { getProductByVendorSku, getProductById } from '@/services/data/product';
-import { decodeToken } from '@/services/Helper';
+import { decodeToken } from '@/services/utils/token';
 import { authenticateAndAuthorize } from '@/services/utils';
 import { uploadToS3 } from '@/services/s3';
 
@@ -73,7 +73,7 @@ export async function PUT(request) {
       const { vendor_sku, new_vendor_sku, ...updatedFields } = product;
 
       // Fetch the existing product by vendor_sku
-      const result = await getProductById(vendorId,vendor_sku)//await getProductByVendorSku(vendorId, vendor_sku);
+      const result = await getProductById(vendorId, vendor_sku)//await getProductByVendorSku(vendorId, vendor_sku);
       if (!result.success || !result.data) {
         failedUpdates.push({
           vendor_sku,
@@ -164,7 +164,7 @@ export async function PUT(request) {
           { history: [historyS3Key] },  // List append fields (like history)
           { '#history': 'history' }  // Reserved keyword for 'history'
         );
-      
+
         if (!historyUpdateResult.success) {
           console.error('Failed to append history to DynamoDB:', historyUpdateResult.error);
           failedUpdates.push({
@@ -172,7 +172,7 @@ export async function PUT(request) {
             error: 'Failed to upload history to S3',
           });
         }
-        
+
       } catch (error) {
         console.error('Failed to upload history to S3:', error);
         failedUpdates.push({

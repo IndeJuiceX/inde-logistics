@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
-import { validateStockShipmentItems} from '@/services/schema';
-import { decodeToken } from '@/services/Helper';
+import { validateStockShipmentItems } from '@/services/schema';
+import { decodeToken } from '@/services/utils/token';
 import { authenticateAndAuthorize } from '@/services/utils';
-import {checkShipmentExists } from '@/services/data/stock-shipment';
+import { checkShipmentExists } from '@/services/data/stock-shipment';
 import { updateItemsStockInStockShipment } from '@/services/data/stock-shipment-item';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes

@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { deleteGuestCookie, getGuestCookie } from "@/services/guestCookies";
-import { verifyPassword } from "@/services/password"
+import { verifyPassword } from "@/services/utils/password"
 import { getItem } from "@/lib/dynamodb"
 
 export const {

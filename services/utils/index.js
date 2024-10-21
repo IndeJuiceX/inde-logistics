@@ -1,31 +1,51 @@
 import { getLoggedInUser } from '@/app/actions';
 import crypto from 'crypto';
+import { decodeToken } from './token';
+import { getVendorById } from '../data/vendor';
 
 export async function authenticateAndAuthorize(request) {
-  // Get the logged-in user session
-  const user = await getLoggedInUser();
+  let user = null;
 
-  // Check if the user is authenticated
+  // 1. Try to get the user from the session (for browser-based requests)
+  try {
+    user = await getLoggedInUser();
+  } catch (error) {
+    // Log the error if needed
+    console.error('Error getting logged-in user from session:', error);
+  }
+
+  // 2. If user is not in the session, check for Authorization header (for API requests)
   if (!user) {
-    return { authorized: false, status: 401 };  // Not authenticated
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { authorized: false, status: 401 }; // Unauthorized
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer '
+
+    try {
+      // Verify the token and extract user info
+      user = decodeToken(token);
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      return { authorized: false, status: 401 }; // Unauthorized
+    }
   }
 
-  // Extract user's role and vendor ID from the session
-  const { role, vendor: sessionVendorId } = user;
+  if (user && user.vendorId) {
+    // 3. User is authenticated
+    // fetch the vendor from db and check it has status of active..
+    const vendor = await getVendorById(user.vendorId)
+    if (vendor && vendor?.data?.status === 'Active') {
+      return { authorized: true, user, status: 200 };
+    }
 
-  // Parse request to get the vendorId (if needed)
-  const { searchParams } = new URL(request.url);
-  const vendorId = searchParams.get('vendorId');
-
-  // Check if the user is an admin or if their vendorId matches the request vendorId
-  if (role === 'admin' || sessionVendorId === vendorId) {
-    return { authorized: true, user, status: 200 };  // User is authorized
   }
 
-  // Return false if not authorized
-  return { authorized: false, status: 403 };  // Access denied
+  // 4. If we reach this point, authentication failed
+  return { authorized: false, status: 401 }; // Unauthorized
 }
-
 export function generateShipmentId(vendorId) {
   const timestamp = Date.now().toString(36);  // Convert timestamp to a base36 string (more compact)
   const randomPart = Math.random().toString(36).substring(2, 4);  // Generate 2 random characters
