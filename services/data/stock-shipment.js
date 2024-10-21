@@ -1,7 +1,7 @@
 import { getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
-import { transactWriteItems,putItem,batchWriteItems } from '@/services/dynamo/wrapper';
-import { searchIndex } from '../open-search/wrapper';
+import { transactWriteItems,putItem,batchWriteItems,queryItems } from '@/services/dynamo/wrapper';
+import { cleanResponseData } from '@/services/utils';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
         // Second-tier validation: Check if vendor_sku exists in the database
@@ -283,38 +283,41 @@ export async function getStockShipmentById(vendorId, stockShipmentId) {
     };
 }
 
-export async function getAllStockShipments(vendorId, page = 1, pageSize = 20) {
-    const from = (page - 1) * pageSize;
-    const size = pageSize;
-    const must = [
-        { term: { 'entity_type.keyword': 'StockShipment' } },           // Match the exact entity_type
-        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENT#' + vendorId } }   // Exact match for the vendor's product ID (pk)
-    ];
-
-    // Perform the search without the "query" wrapping
-    const response = await searchIndex({
-        bool: {
-            must: must
-        }
-    }, {}, from, size);  // Pass pagination parameters
-
-    // Extract the results and total hits
-    const results = response.hits.hits;
-    const totalHits = response.hits.total.value;  // Total number of matched records
-
-    // Extract only the _source field
-    const sources = results.map(item => item._source);
-
-    return {
-        success: true,
-        data: sources,
-        pagination: {
-            page,
-            pageSize,
-            total: totalHits  // Use total hits for pagination, not results length
-        }
+export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveStartKey = null) => {
+    const pkVal = `VENDORSTOCKSHIPMENT#${vendorId}`;
+    const params = {
+        KeyConditionExpression: 'pk = :pkVal',
+        ExpressionAttributeValues: {
+            ':pkVal': pkVal,
+        },
+        Limit: pageSize,
     };
-}
+
+    if (exclusiveStartKey) {
+        params.ExclusiveStartKey = exclusiveStartKey;
+    }
+
+    try {
+        const result = await queryItems(params);
+        if (result.success) {
+            const hasMore = !!result.lastEvaluatedKey;
+
+            return {
+                success: true,
+                data: cleanResponseData(result.data),
+                hasMore: hasMore,
+                lastEvaluatedKey: result.lastEvaluatedKey,
+            };
+        } else {
+            return { success: false, error: result.error };
+        }
+    } catch (error) {
+        console.error('Error retrieving stock shipments:', error);
+        return { success: false, error: 'Failed to retrieve stockshipments' };
+    }
+};
+
+
 
 export async function getStockShipmentDetails(vendorId, stockShipmentId) {
     // const from = (page - 1) * pageSize;
