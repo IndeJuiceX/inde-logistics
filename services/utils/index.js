@@ -27,7 +27,6 @@ export async function authenticateAndAuthorize(request) {
     try {
       // Verify the token and extract user info
       user = decodeToken(token);
-      console.log(user)
     } catch (error) {
       console.error('Error verifying token:', error);
       return { authorized: false, status: 401 }; // Unauthorized
