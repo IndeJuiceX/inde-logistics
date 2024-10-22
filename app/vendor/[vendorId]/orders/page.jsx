@@ -49,7 +49,7 @@ export default function OrdersPage() {
     const confirmCancel = window.confirm('Are you sure you want to cancel this order?');
     if (confirmCancel) {
       try {
-        const response = await fetch(`/api/v1/vendor/order/cancel?vendorId=${vendorId}`, {
+        const response = await fetch(`/api/v1/vendor/orders/cancel`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

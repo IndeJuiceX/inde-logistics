@@ -90,7 +90,7 @@ export default function OrderDetailsPage() {
   const handleSaveBuyerInfo = async () => {
     setUpdatingBuyer(true);
     try {
-      const response = await fetch(`/api/v1/vendor/order/update-buyer?vendorId=${vendorId}`, {
+      const response = await fetch(`/api/v1/vendor/orders/update-buyer`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
