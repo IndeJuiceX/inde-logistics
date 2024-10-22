@@ -1,0 +1,20 @@
+paths:
+  /products/add:
+    post:
+      summary: Add a product
+      tags:
+        - Product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                price:
+                  type: number
+      responses:
+        "201":
+          description: Product added successfully

@@ -1,0 +1,22 @@
+paths:
+  /products/edit:
+    put:
+      summary: Edit a product
+      tags:
+        - Product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                name:
+                  type: string
+                price:
+                  type: number
+      responses:
+        "200":
+          description: Product updated successfully

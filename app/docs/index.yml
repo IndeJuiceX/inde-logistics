@@ -1,0 +1,17 @@
+openapi: 3.0.0
+info:
+  title: Vendor Product Catalogue API
+  version: 1.0.0
+  description: >
+    API documentation for the Vendor Product Catalogue system.
+    This API allows vendors to upload and update product batches
+    with a maximum payload size of 2 MB.
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: Product
+    description: Operations related to products
+  - name: Order
+    description: Operations related to orders
+  - name: Shipments
+    description: Operations related to shipments

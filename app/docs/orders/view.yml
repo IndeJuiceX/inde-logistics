@@ -1,0 +1,15 @@
+paths:
+  /orders/view:
+    get:
+      summary: Order a product
+      tags:
+        - Order
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product details retrieved successfully
