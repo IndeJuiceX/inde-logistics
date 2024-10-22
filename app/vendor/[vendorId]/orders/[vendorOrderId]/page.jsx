@@ -29,7 +29,7 @@ export default function OrderDetailsPage() {
     const fetchOrderDetails = async () => {
       try {
         const response = await fetch(
-          `/api/v1/vendor/order/${vendorOrderId}?vendorId=${vendorId}`
+          `/api/v1/vendor/orders?vendor_order_id=${vendorOrderId}`
         );
         const data = await response.json();
         console.log(data);
@@ -90,7 +90,7 @@ export default function OrderDetailsPage() {
   const handleSaveBuyerInfo = async () => {
     setUpdatingBuyer(true);
     try {
-      const response = await fetch(`/api/v1/vendor/order/update-buyer?vendorId=${vendorId}`, {
+      const response = await fetch(`/api/v1/vendor/orders/update-buyer`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -138,17 +138,16 @@ export default function OrderDetailsPage() {
               <p className="text-gray-600">
                 <span className="font-semibold">Status:</span>{' '}
                 <span
-                  className={`inline-block px-2 py-1 text-sm font-semibold rounded ${
-                    status === 'Accepted'
+                  className={`inline-block px-2 py-1 text-sm font-semibold rounded ${status === 'Accepted'
                       ? 'bg-green-100 text-green-800'
                       : status === 'Pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : status === 'Confirmed'
-                      ? 'bg-blue-100 text-blue-800'
-                      : status === 'Shipped'
-                      ? 'bg-orange-100 text-orange-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : status === 'Confirmed'
+                          ? 'bg-blue-100 text-blue-800'
+                          : status === 'Shipped'
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-gray-100 text-gray-800'
+                    }`}
                 >
                   {status}
                 </span>

@@ -1,29 +1,23 @@
 import { NextResponse } from 'next/server';
-import { queryItems } from '@/lib/dynamodb';  // Your DynamoDB helper
-import { authenticateAndAuthorize } from '@/services/utils';  // Auth helper
-
-export async function GET(request) {
+import { queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';  // Your DynamoDB helper
+import { withAuthAndRole } from '@/services/utils/auth';
+import { getAllVendorProducts } from '@/services/data/product';
+export const GET = withAuthAndRole(async (request, { params, user }) => {
   try {
-    // Use the helper to authenticate and authorize the user
-    const { authorized, user, status } = await authenticateAndAuthorize(request);
-
-    // If not authorized, return an appropriate response
-    if (!authorized) {
-      return NextResponse.json({ error: 'Access denied' }, { status });
-    }
-
+    
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendorId');
-    const page = parseInt(searchParams.get('page'), 10) || 1;
-    const pageSize = parseInt(searchParams.get('pageSize'), 10) || 5;
+    const vendorId = searchParams.get('vendor_id')||user.vendor;
+    const page = parseInt(searchParams.get('page')) || 1;
+    const pageSize = parseInt(searchParams.get('page_size')) || 25;
+
+   
 
     if (!vendorId) {
-      return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing vendor_id parameter' }, { status: 400 });
     }
 
     // Query items for the given vendor
-    const result = await queryItems(`VENDORPRODUCT#${vendorId}`, 'PRODUCT#');
-    
+    const result = await queryItemsWithPkAndSk(`VENDORPRODUCT#${vendorId}`, 'PRODUCT#')//getAllVendorProducts(vendorId,pageSize, exclusiveStartKey)//await queryItems(`VENDORPRODUCT#${vendorId}`, 'PRODUCT#');
     // If query failed, return an error
     if (!result.success) {
       return NextResponse.json({ error: 'Failed to fetch products', details: result.error }, { status: 500 });
@@ -37,4 +31,4 @@ export async function GET(request) {
   } catch (error) {
     return NextResponse.json({ error: 'Unexpected server error', details: error.message }, { status: 500 });
   }
-}
+},['vendor','admin'])

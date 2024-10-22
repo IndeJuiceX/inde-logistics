@@ -14,7 +14,7 @@ export default function OrdersPage() {
   const fetchOrders = async (startKey = null) => {
     try {
       console.log('Fetching orders with startKey:', startKey);
-      let url = `/api/v1/vendor/order/all?vendorId=${vendorId}&pageSize=${pageSize}`;
+      let url = `/api/v1/vendor/orders?page_size=${pageSize}`;
       if (startKey) {
         url += `&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
       }
@@ -49,7 +49,7 @@ export default function OrdersPage() {
     const confirmCancel = window.confirm('Are you sure you want to cancel this order?');
     if (confirmCancel) {
       try {
-        const response = await fetch(`/api/v1/vendor/order/cancel?vendorId=${vendorId}`, {
+        const response = await fetch(`/api/v1/vendor/orders/cancel`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

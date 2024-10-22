@@ -1,11 +1,14 @@
 // services/data/vendor.js
 import { getItem, queryItems, putItem, deleteItem } from '@/services/dynamo/wrapper';
 import { searchIndex } from '@/services/open-search/wrapper';
+import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
 export const getProductById = async (vendorId, productUUID) => {
-    console.log(vendorId)
-    console.log(productUUID)
-    return await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
+    const data = await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
+    if(data.success && data.data) {
+        data.data=cleanResponseData(data.data,['warehouse'])
+    }
+    return data;
 };
 
 export const getProductByVendorSku = async (vendorId, vendor_sku) => {
@@ -93,55 +96,90 @@ export const checkProductExists = async (vendorId, vendor_sku) => {
 
 export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity) => {
     try {
-      // Retrieve the product
-      const productResult = await getProductById(vendorId, vendor_sku);
-   
-      if (!productResult || !productResult.data ) {
-        // Product does not exist
-        return {
-          exists: false, // Product does not exist
-          success: false,
-          message: `Product with vendor_sku "${vendor_sku}" does not exist.`,
-        };
-      }
-  
-      const product = productResult.data;
-  
-      // Extract the available stock from the product data
-      // Adjust the field name based on how you store the stock levels
-      let availableStock = product.stock_available || 0;
-  
-      // Ensure availableStock is a number
-      availableStock = Number(availableStock);
-  
-      if (isNaN(availableStock)) {
-        // Handle cases where stock information is missing or invalid
-        return {
-          exists: true,
-          success: false,
-          message: `Stock information for vendor_sku "${vendor_sku}" is unavailable or invalid.`,
-        };
-      }
-  
-      if (availableStock >= requestedQuantity) {
-        // Sufficient stock available
-        return {
-          exists: true,
-          success: true,
-          availableStock: availableStock,
-        };
-      } else {
-        // Insufficient stock
-        return {
-          exists: true,
-          success: false,
-          message: `Insufficient stock for vendor_sku "${vendor_sku}". Requested: ${requestedQuantity}, Available: ${availableStock}`,
-        };
-      }
+        // Retrieve the product
+        const productResult = await getProductById(vendorId, vendor_sku);
+
+        if (!productResult || !productResult.data) {
+            // Product does not exist
+            return {
+                exists: false, // Product does not exist
+                success: false,
+                message: `Product with vendor_sku "${vendor_sku}" does not exist.`,
+            };
+        }
+
+        const product = productResult.data;
+
+        // Extract the available stock from the product data
+        // Adjust the field name based on how you store the stock levels
+        let availableStock = product.stock_available || 0;
+
+        // Ensure availableStock is a number
+        availableStock = Number(availableStock);
+
+        if (isNaN(availableStock)) {
+            // Handle cases where stock information is missing or invalid
+            return {
+                exists: true,
+                success: false,
+                message: `Stock information for vendor_sku "${vendor_sku}" is unavailable or invalid.`,
+            };
+        }
+
+        if (availableStock >= requestedQuantity) {
+            // Sufficient stock available
+            return {
+                exists: true,
+                success: true,
+                availableStock: availableStock,
+            };
+        } else {
+            // Insufficient stock
+            return {
+                exists: true,
+                success: false,
+                message: `Insufficient stock for vendor_sku "${vendor_sku}". Requested: ${requestedQuantity}, Available: ${availableStock}`,
+            };
+        }
     } catch (error) {
-      console.error(`Error checking stock for vendor_sku "${vendor_sku}":`, error);
-      throw new Error(`Error checking stock for vendor_sku "${vendor_sku}": ${error.message}`);
+        console.error(`Error checking stock for vendor_sku "${vendor_sku}":`, error);
+        throw new Error(`Error checking stock for vendor_sku "${vendor_sku}": ${error.message}`);
     }
-  };
+};
+
+export const getAllVendorProducts = async (vendorId, pageSize = 25, exclusiveStartKey = null) => {
+    const pkVal = `VENDORPRODUCT#${vendorId}`;
+    const params = {
+        KeyConditionExpression: 'pk = :pkVal',
+        ExpressionAttributeValues: {
+            ':pkVal': pkVal,
+        },
+        Limit: pageSize,
+    };
+
+    if (exclusiveStartKey) {
+        params.ExclusiveStartKey = exclusiveStartKey;
+    }
+
+    try {
+        const result = await queryItems(params);
+        console.log(result)
+        if (result.success) {
+            const hasMore = !!result.lastEvaluatedKey;
+
+            return {
+                success: true,
+                data: cleanResponseData(result.data),
+                hasMore: hasMore,
+                lastEvaluatedKey: result.lastEvaluatedKey,
+            };
+        } else {
+            return { success: false, error: result.error };
+        }
+    } catch (error) {
+        console.error('Error retrieving all products:', error);
+        return { success: false, error: 'Failed to retrieve products' };
+    }
+};
 
 

@@ -7,7 +7,7 @@ export const PATCH = withAuthAndRole(async (request, { params, user }) => {
   try {
     // Extract authentication details
 
-    let vendorId = user?.vendorId || null;
+    let vendorId = user?.vendor || null;
 
     if (!vendorId ) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

@@ -36,7 +36,7 @@ export const generateProductId = (vendorId, vendor_sku) => {
  * @param {Array|Object} data - The data to be cleaned.
  * @returns {Array|Object} - The cleaned data.
  */
-export const cleanResponseData = (data) => {
+/*export const cleanResponseData = (data) => {
   const removeKeys = ({ sk, pk, entity_type, ...rest }) => rest;
 
   if (Array.isArray(data)) {
@@ -45,5 +45,25 @@ export const cleanResponseData = (data) => {
       return removeKeys(data);
   } else {
       throw new Error('Invalid data type. Expected an array or object.');
+  }
+};*/
+export const cleanResponseData = (data, additionalKeys = []) => {
+  const removeKeys = (obj) => {
+    const keysToRemove = ['sk', 'pk', 'entity_type', ...additionalKeys];
+    const cleanedObj = { ...obj };
+    keysToRemove.forEach(key => {
+      if (key in cleanedObj) {
+        delete cleanedObj[key];
+      }
+    });
+    return cleanedObj;
+  };
+
+  if (Array.isArray(data)) {
+    return data.map(removeKeys);
+  } else if (typeof data === 'object' && data !== null) {
+    return removeKeys(data);
+  } else {
+    throw new Error('Invalid data type. Expected an array or object.');
   }
 };

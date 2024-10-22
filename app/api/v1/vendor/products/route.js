@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
 import { withAuthAndRole } from '@/services/utils/auth';
+import { getAllVendorProducts,getProductById } from '@/services/data/product';
 
 export const GET = withAuthAndRole(async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
-        const vendorOrderId = searchParams.get('vendor_order_id');
+        const vendorSku = searchParams.get('vendor_sku');
 
         const pageSize = parseInt(searchParams.get('page_size')) || 25;
         const lastEvaluatedKeyParam = searchParams.get('last_evaluated_key');
@@ -23,14 +24,14 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         }
 
         let result = null;
-        if (vendorOrderId) {
+        if (vendorSku) {
             // Fetch specific order details
-            result = await getOrderDetails(vendorId, vendorOrderId);
+            result =  await getProductById(vendorId, vendorSku);
         } else {
-            // Fetch all orders with pagination
-            result = await getAllOrders(vendorId, pageSize, exclusiveStartKey);
+            // Fetch all products with pagination
+            result = await getAllVendorProducts(vendorId, pageSize, exclusiveStartKey);
         }
-
+        console.log(result)
         if (result.success) {
             const response = {
                 data: result.data,

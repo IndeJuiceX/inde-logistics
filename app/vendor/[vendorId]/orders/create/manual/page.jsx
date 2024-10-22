@@ -48,7 +48,7 @@ export default function OrdersUploadPage() {
 
         setUploading(true);
         try {
-            const response = await fetch(`/api/v1/vendor/orders/create?vendorId=${vendorId}`, {
+            const response = await fetch(`/api/v1/vendor/orders/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

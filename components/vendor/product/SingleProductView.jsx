@@ -20,12 +20,16 @@ export default function SingleProductView({ vendorId, productId }) {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`, {
+                // const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`, {
+                //     method: 'GET',
+                //     cache: 'no-store',  // Disable cache
+                // });
+                const response = await fetch(`/api/v1/vendor/products?vendor_sku=${productId}`, {
                     method: 'GET',
                     cache: 'no-store',  // Disable cache
                 });
                 const data = await response.json();
-                setProduct(data); // Populate product data
+                setProduct(data.data); // Populate product data
                 setLoading(false);
             } catch (err) {
                 setError('Error fetching product data');

@@ -1,33 +1,19 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
-
-import { validateVendorSkuArray } from '@/services/schema';
-import { decodeToken } from '@/services/utils/token';
-import { authenticateAndAuthorize } from '@/services/utils';
+import { validateStockShipmentItems } from '@/services/schema';
+import { withAuthAndRole } from '@/services/utils/auth';
 import { checkShipmentExists } from '@/services/data/stock-shipment';
-import { removeItemsFromStockShipment } from '@/services/data/stock-shipment-item';
+import { updateItemsStockInStockShipment } from '@/services/data/stock-shipment-item';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export async function DELETE(request) {
+export const PATCH = withAuthAndRole(async (request, { params, user }) => {
   try {
     // Extract authentication details
-    const { authorized, user } = await authenticateAndAuthorize(request);
-
-    if (!authorized) {
-      const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
-      if (!apiToken) {
-        return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
-      }
-      const decoded = decodeToken(apiToken);
-      if (!decoded) {
-        return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-      }
-      user.vendor = decoded.vendorId;
+    let vendorId = user?.vendor || null;
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const vendorId = user.vendor;
-
     // Parse request body
     const bodyText = await request.text();
     if (!bodyText) {
@@ -72,7 +58,7 @@ export async function DELETE(request) {
     }
 
     // Validate the stock shipment items
-    const validationResult = /*SchemaValidation.*/validateVendorSkuArray(items);
+    const validationResult = /*SchemaValidation.*/validateStockShipmentItems(items);
 
     if (!validationResult.success) {
       return NextResponse.json(
@@ -84,7 +70,7 @@ export async function DELETE(request) {
     const validItems = validationResult.validatedItems;
 
     // Update the stock shipment
-    const stockShipmentResult = await removeItemsFromStockShipment(vendorId, stock_shipment_id, validItems);
+    const stockShipmentResult = await updateItemsStockInStockShipment(vendorId, stock_shipment_id, validItems);
 
     if (!stockShipmentResult.success) {
       return NextResponse.json(
@@ -102,5 +88,5 @@ export async function DELETE(request) {
     console.error('Unhandled error:', error);
     return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
-}
+}, ['vendor'])
 

@@ -24,7 +24,7 @@ export default function AllProducts({ vendorId }) {
     if (vendorId) {
       const fetchTotalProducts = async () => {
         try {
-          const response = await fetch(`/api/v1/admin/vendor/products/count?vendorId=${vendorId}`);
+          const response = await fetch(`/api/v1/admin/vendor/products/count?vendor_id=${vendorId}`);
           const data = await response.json();
           setTotalProducts(data.count); // Assuming your API returns { count: number }
           setLoadingCount(false);
@@ -42,7 +42,7 @@ export default function AllProducts({ vendorId }) {
     if (vendorId) {
       const fetchProducts = async () => {
         try {
-          const response = await fetch(`/api/v1/admin/vendor/products?vendorId=${vendorId}&page=${page}&pageSize=${pageSize}`);
+          const response = await fetch(`/api/v1/admin/vendor/products?vendor_id=${vendorId}&page=${page}&page_size=${pageSize}`);
           const data = await response.json();
           setProducts(data);
           setLoading(false);

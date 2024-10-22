@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { getLoggedInUser } from '@/app/actions';
 export async function authenticateAndAuthorize(request) {
     let user = null;
-
+    
     // 1. Try to get the user from the session (for browser-based requests)
     try {
         user = await getLoggedInUser();
@@ -31,13 +31,12 @@ export async function authenticateAndAuthorize(request) {
             return { authorized: false, status: 401 }; // Unauthorized
         }
     }
-
-    if (user && user.vendorId) {
+    console.log(user)
+    if (user && user.vendor) {
         // 3. User is authenticated
         // fetch the vendor from db and check it has status of active..
-        const vendor = await getVendorById(user.vendorId)
+        const vendor = await getVendorById(user.vendor)
         if (vendor && vendor?.data?.status === 'Active') {
-            user.role ='vendor'
             return { authorized: true, user, status: 200 };
         }
 
@@ -51,7 +50,6 @@ export function withAuthAndRole(handler, allowedRoles = []) {
     return async function (request, context) {
         try {
             const { authorized, user, status } = await authenticateAndAuthorize(request);
-            console.log(user)
             if (!authorized) {
                 return NextResponse.json({ error: 'Unauthorized' }, { status });
             }

@@ -48,7 +48,7 @@ export default function UploadProduct({ vendorId }) {
 
         setUploading(true);
         try {
-            const response = await fetch(`/api/v1/vendor/upload-products?vendorId=${vendorId}`, {
+            const response = await fetch(`/api/v1/vendor/products/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
