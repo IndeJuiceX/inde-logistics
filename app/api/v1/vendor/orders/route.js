@@ -15,7 +15,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = user.vendorId;
+        let vendorId = user?.vendor;
 
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden

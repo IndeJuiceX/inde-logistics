@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
 import { queryItemCount } from '@/lib/dynamodb';
-import { authenticateAndAuthorize } from '@/services/utils';
+import { withAuthAndRole } from '@/services/utils/auth';
 
-export async function GET(request) {
-  const { authorized, user, status } = await authenticateAndAuthorize(request);
+export const GET = withAuthAndRole(async (request, { params, user }) => {
+  
 
   // Return the appropriate response based on the authorization result
-  if (!authorized) {
+  if (!user) {
     return NextResponse.json({ error: 'Access denied' }, { status });
   }
 
+  console.log(user)
   const { searchParams } = new URL(request.url);
-  const vendorId = searchParams.get('vendorId');
+  const vendorId = searchParams.get('vendorId')||user.vendorId;
 
   if (!vendorId) {
     return NextResponse.json({ error: 'Missing vendorId parameter' }, { status: 400 });
@@ -23,4 +24,4 @@ export async function GET(request) {
   }
 
   return NextResponse.json({ count: result.count });
-}
+},['vendor','admin'])

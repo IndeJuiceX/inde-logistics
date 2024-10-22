@@ -8,7 +8,7 @@ const MAX_SIZE_BYTES = 2 * 1024 * 1024;  // 2MB in bytes
 export const POST = withAuthAndRole(async (request, { params, user }) => {
     try {
         
-        let vendorId = user?.vendorId || null;
+        let vendorId = user?.vendor || null;
         if (!vendorId ) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     

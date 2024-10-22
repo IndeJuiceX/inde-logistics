@@ -4,7 +4,7 @@ import { withAuthAndRole } from '@/services/utils/auth';
 export const GET = withAuthAndRole(async (request, { params, user }) => {
     try {
 
-        let vendorId = user?.vendorId||null;
+        let vendorId = user?.vendor||null;
         if (!vendorId ) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }

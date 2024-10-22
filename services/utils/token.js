@@ -1,11 +1,16 @@
 import jwt from 'jsonwebtoken';
 // Function to generate JWT token
-export const generateJwtToken = (vendorId, companyName, companyNumber) => {
+export const generateJwtToken = (vendorId, companyNumber) => {
     // Payload for the JWT
+    // const payload = {
+    //     vendorId,        // Vendor ID
+    //     companyNumber,   // Company Number
+    // };
+
     const payload = {
-        vendorId,        // Vendor ID
-        companyName,     // Company Name
-        companyNumber,   // Company Number
+        email: `${vendorId}-api-key`, // Email field as 'vendor-id-api-key'
+        vendor: vendorId,               // Vendor ID
+        role: 'vendor',                 // Role
     };
 
     // Sign the JWT with a secret key

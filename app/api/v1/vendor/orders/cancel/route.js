@@ -4,7 +4,7 @@ import { getOrder, cancelOrder } from '@/services/data/order';
 
 export const PATCH = withAuthAndRole(async (request, { params, user }) => {
     try {
-        let vendorId = user.vendorId;
+        let vendorId = user?.vendor||null;
 
         if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
