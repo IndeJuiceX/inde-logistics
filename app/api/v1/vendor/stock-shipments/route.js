@@ -27,6 +27,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
 
         return NextResponse.json(result, { status: 200 });
     } catch (error) {
+        console.log(error)
         return NextResponse.json({ error: 'Failed to fetch Stock Shipments' }, { status: 500 });
     }
 },['vendor'])

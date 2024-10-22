@@ -1,6 +1,6 @@
 import { getProductById, getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
-import { transactWriteItems,putItem,batchWriteItems,queryItems } from '@/services/dynamo/wrapper';
+import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
@@ -13,7 +13,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
 
             // Fetch the existing product by vendor_sku
             const result = await getProductById(vendorId, vendor_sku);
-            if (!result.success || !result.data ) {
+            if (!result.success || !result.data) {
                 invalidItems.push({
                     item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
@@ -255,32 +255,50 @@ export async function updateStockShipment(vendorId, stockShipmentId, stockShipme
     }
 }
 
-export async function getStockShipmentById(vendorId, stockShipmentId) {
-    const must = [
-        { term: { 'entity_type.keyword': 'StockShipment' } },           // Match the exact entity_type
-        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENT#' + vendorId } },
-        { term: { 'sk.keyword': 'STOCKSHIPMENT#' + stockShipmentId } }
-    ];
-    const response = await searchIndex({
-        bool: {
-            must: must
-        }
-    }, {}, 0, 1);
+export async function getStockShipmentDetails(vendorId, stockShipmentId) {
+    const shipmentData = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENT#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}`)
+    const shipment = shipmentData?.data || null
 
-    const results = response.hits.hits;
-    const totalHits = response.hits.total.value;  // Total number of matched records
 
-    // Extract only the _source field
-    const sources = results.map(item => item._source);
+    const shipmentItemsData = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#`)
+
+    const shipmentItems = shipmentItemsData?.data || null
+
+    if (!shipment) {
+        return { success: false, error: 'No stock shipment found' };
+    }
+    if (!shipmentItems) {
+        return { success: false, error: 'No stock shipment items found' };
+    }
+
+    const vendorSkus = shipmentItems.map((hit) => hit.vendor_sku);
+    const uniqueVendorSkus = [...new Set(vendorSkus)];
+    const productDataMap = {};
+    for (const sku of uniqueVendorSkus) {
+        const product = await getProductById(vendorId, sku);
+        productDataMap[product.data.vendor_sku] = {
+            name: product.data.name,
+            image: product.data.image,
+            brand_name: product.data.brand_name,
+        };
+    }
+    const stockShipmentItems = shipmentItems.map((item) => {
+
+        const productInfo = productDataMap[item.vendor_sku] || {};
+
+        return {
+            vendor_sku: item.vendor_sku,
+            quantity: item.stock_in,
+            ...productInfo,
+        };
+    });
+
+    // Return the final data in the desired format
     return {
         success: true,
-        data: sources,
-        pagination: {
-            page: 1,
-            pageSize: 1,
-            total: totalHits  // Use total hits for pagination, not results length
-        }
+        data: { stock_shipment: shipment, stock_shipment_items: stockShipmentItems }, // Shipment items as data
     };
+
 }
 
 export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveStartKey = null) => {
@@ -319,7 +337,7 @@ export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveSta
 
 
 
-export async function getStockShipmentDetails(vendorId, stockShipmentId) {
+/*export async function getStockShipmentDetails(vendorId, stockShipmentId) {
     // const from = (page - 1) * pageSize;
     // const size = pageSize;
 
@@ -422,7 +440,7 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
         success: true,
         data: { stock_shipment: stockShipment, stock_shipment_items: shipmentItems }, // Shipment items as data
     };
-}
+}*/
 
 export async function checkShipmentExists(vendorId, stock_shipment_id) {
     const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
