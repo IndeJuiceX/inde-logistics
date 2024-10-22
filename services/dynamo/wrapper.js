@@ -66,7 +66,29 @@ const queryItems = async (params) => {
 };
 
 
+const queryItemsWithPkAndSk = async (pkValue, skPrefix = null) => {
+    const client = getClient()
+    let params = {
+        TableName: TABLE_NAME,
+        KeyConditionExpression: 'pk = :pkValue',
+        ExpressionAttributeValues: {
+            ':pkValue': pkValue,
+        },
+    };
 
+    if (skPrefix) {
+        params.KeyConditionExpression += ' AND begins_with(sk, :skPrefix)';
+        params.ExpressionAttributeValues[':skPrefix'] = skPrefix;
+    }
+
+    try {
+        const data = await client.send(new QueryCommand(params));
+        return { success: true, data: data.Items };
+    } catch (error) {
+        console.error('DynamoDB QueryItems Error:', error);
+        return { success: false, error };
+    }
+};
 
 
 // Query items with optional sk prefix
@@ -529,4 +551,17 @@ const transactWriteItems = async (transactionItems) => {
 
 
 
-export { putItem, getItem, updateItem, queryItems, deleteItem, scanItems, batchWriteItems, deleteItemBatch, queryItemCount, updateOrInsert, transactWriteItems };
+export { 
+    putItem, 
+    getItem, 
+    updateItem, 
+    queryItems, 
+    deleteItem, 
+    scanItems, 
+    batchWriteItems, 
+    deleteItemBatch, 
+    queryItemCount, 
+    updateOrInsert, 
+    transactWriteItems ,
+    queryItemsWithPkAndSk
+};
