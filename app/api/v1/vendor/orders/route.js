@@ -34,6 +34,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         if (result.success) {
             const response = {
                 data: result.data,
+                success:true,
             };
 
             if (result.lastEvaluatedKey) {

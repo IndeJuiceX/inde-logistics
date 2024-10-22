@@ -355,7 +355,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     const order = orderData.data
 
     const pkVal = `VENDORORDERITEM#${vendorId}`
-    const skPrefix = `ORDER#${vendorOrderId}ITEM#`;
+    const skPrefix = `ORDER#${vendorOrderId}#ITEM#`;
     const params = {
         KeyConditionExpression: 'pk = :pkVal AND begins_with(sk, :skPrefix)',
         ExpressionAttributeValues: {
