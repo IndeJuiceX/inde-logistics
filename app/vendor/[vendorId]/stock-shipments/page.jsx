@@ -21,7 +21,7 @@ export default function StockShipmentsPage() {
       const fetchStockShipments = async () => {
         try {
           const response = await fetch(
-            `/api/v1/vendor/stock-shipments?page=${page}&pageSize=${pageSize}`
+            `/api/v1/vendor/stock-shipments?page_size=${pageSize}`
           );
           const data = await response.json();
           console.log('API Response:', data);
