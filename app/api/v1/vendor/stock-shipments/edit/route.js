@@ -1,30 +1,17 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateStockShipmentItems } from '@/services/schema';
-import { decodeToken } from '@/services/utils/token';
-import { authenticateAndAuthorize } from '@/services/utils';
+import { withAuthAndRole } from '@/services/utils/auth';
 import { updateStockShipment, getStockShipmentById } from '@/services/data/stock-shipment';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export async function PATCH(request) {
+export const PATCH = withAuthAndRole(async (request, { params, user }) => {
   try {
-    // Extract authentication details
-    const { authorized, user } = await authenticateAndAuthorize(request);
-
-    if (!authorized) {
-      const apiToken = request.headers.get('Authorization')?.split(' ')[1];  // Bearer token
-      if (!apiToken) {
-        return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
-      }
-      const decoded = decodeToken(apiToken);
-      if (!decoded) {
-        return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-      }
-      user.vendor = decoded.vendorId;
+    let vendorId = user?.vendor || null;
+    if (!vendorId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const vendorId = user.vendor;
 
     // Parse request body
     const bodyText = await request.text();
@@ -100,7 +87,7 @@ export async function PATCH(request) {
     console.error('Unhandled error:', error);
     return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
-}
+}, ['vendor'])
 
 async function checkShipmentExists(vendorId, stock_shipment_id) {
   const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
