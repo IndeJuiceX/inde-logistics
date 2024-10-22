@@ -1,4 +1,4 @@
-import { getProductByVendorSku } from '@/services/data/product';
+import { getProductById, getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
 import { transactWriteItems,putItem,batchWriteItems,queryItems } from '@/services/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
@@ -12,8 +12,8 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
             const { vendor_sku } = item;
 
             // Fetch the existing product by vendor_sku
-            const result = await getProductByVendorSku(vendorId, vendor_sku);
-            if (!result.success || !result.data || result.data.length === 0) {
+            const result = await getProductById(vendorId, vendor_sku);
+            if (!result.success || !result.data ) {
                 invalidItems.push({
                     item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
@@ -67,7 +67,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
 
             const shipmentItemEntry = {
                 pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-                sk: `STOCKSHIPMENTITEM#${itemId}`,
+                sk: `STOCKSHIPMENT#${shipmentId}#STOCKSHIPMENTITEM#${itemId}`,
                 entity_type: 'StockShipmentItem',
                 shipment_id: shipmentId,
                 vendor_sku: itemId,
