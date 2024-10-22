@@ -7,7 +7,7 @@ import { uploadToS3 } from '@/services/s3';
 import { withAuthAndRole } from '@/services/utils/auth';
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export const PUT = withAuthAndRole(async (request, { params, user }) => {
+export const PATCH = withAuthAndRole(async (request, { params, user }) => {
     try {
 
 
@@ -42,10 +42,9 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
         }
 
         // Validate the products (removing any "pk" or "sk" fields if passed)
-        const validationResults = /*SchemaValidation.*/validateProductUpdates(body.products);
+        const validationResults = validateProductUpdates(body.products);
         const validatedProducts = validationResults.validatedProducts;
         const invalidProducts = validationResults.errors;
-
         // Early return if all products fail validation
         if (validatedProducts.length === 0) {
             return NextResponse.json({
@@ -56,10 +55,9 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
 
         const updatedProducts = [];
         const failedUpdates = [];
-
+        console.log(validatedProducts)
         for (const product of validatedProducts) {
-            const { vendor_sku, new_vendor_sku, ...updatedFields } = product;
-
+            const { vendor_sku, ...updatedFields } = product;            
             // Fetch the existing product by vendor_sku
             const result = await getProductById(vendorId, vendor_sku)//await getProductByVendorSku(vendorId, vendor_sku);
             if (!result.success || !result.data) {
@@ -70,8 +68,8 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
                 continue;  // Move to the next product
             }
 
-            const existingProduct = result.data[0];
-            const productUUID = existingProduct.sk.split('PRODUCT#')[1];
+            const existingProduct = result.data;
+            const productUUID = result.data.vendor_sku//existingProduct.sk.split('PRODUCT#')[1];
 
             // Prepare update expressions for DynamoDB
             const updateExpressions = {};
@@ -86,10 +84,10 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
             }
 
             // If both vendor_sku and new_vendor_sku are present, update the SKU
-            if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
-                updateExpressions.vendor_sku = new_vendor_sku;
-                hasUpdates = true;
-            }
+            // if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
+            //     updateExpressions.vendor_sku = new_vendor_sku;
+            //     hasUpdates = true;
+            // }
 
             // If no fields have been updated, skip this product
             if (!hasUpdates) {
@@ -99,7 +97,6 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
                 });
                 continue;
             }
-
             // Update the product in DynamoDB
             // Call the updated updateItem function
             const updateResult = await updateItem(
@@ -108,6 +105,8 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
                 updateExpressions
             );
 
+            console.log('FIRST UPDATE RESULT')
+            console.log(updateResult)
 
             if (!updateResult.success) {
                 failedUpdates.push({
@@ -137,13 +136,14 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
                     historySnapshot.changes[`new_${key}`] = value;
                 }
             }
-            if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
-                historySnapshot.changes.old_vendor_sku = vendor_sku;
-                historySnapshot.changes.new_vendor_sku = new_vendor_sku;
-            }
+            // if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
+            //     historySnapshot.changes.old_vendor_sku = vendor_sku;
+            //     historySnapshot.changes.new_vendor_sku = new_vendor_sku;
+            // }
 
             // Upload the history object to S3
             try {
+               
                 const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
 
                 const historyUpdateResult = await updateOrInsert(
@@ -152,7 +152,8 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
                     { history: [historyS3Key] },  // List append fields (like history)
                     { '#history': 'history' }  // Reserved keyword for 'history'
                 );
-
+                console.log('HISTORY UPDATE RESULT---')
+                console.log(historyUpdateResult)
                 if (!historyUpdateResult.success) {
                     console.error('Failed to append history to DynamoDB:', historyUpdateResult.error);
                     failedUpdates.push({
@@ -170,8 +171,9 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
                 continue;
             }
 
-            updatedProducts.push({ vendor_sku, new_vendor_sku: new_vendor_sku || vendor_sku });
+            updatedProducts.push({ vendor_sku });
         }
+
 
         // Return summary of updates and any invalid/failed products
         return NextResponse.json({
@@ -183,6 +185,7 @@ export const PUT = withAuthAndRole(async (request, { params, user }) => {
         }, { status: 200 });
 
     } catch (error) {
+        console.log(error)
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
 },['vendor'])

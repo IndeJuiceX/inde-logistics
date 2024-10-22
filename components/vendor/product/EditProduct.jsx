@@ -20,9 +20,11 @@ export default function EditProduct({ vendorId, productId }) {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`);
+                // const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`);
+                const response = await fetch(`/api/v1/vendor/products?vendor_sku=${productId}`);
+
                 const data = await response.json();
-                setProduct(data); // Populate product data
+                setProduct(data.data); // Populate product data
                 setLoading(false);
             } catch (err) {
                 setError('Error fetching product data');
@@ -56,8 +58,13 @@ export default function EditProduct({ vendorId, productId }) {
         };
 
         try {
-            const response = await fetch(`/api/v1/vendor/update-products?vendorId=${vendorId}`, {
-                method: 'PUT',
+            // const response = await fetch(`/api/v1/vendor/update-products?vendorId=${vendorId}`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(payload), // Submit updated product data
+            // });
+            const response = await fetch(`/api/v1/vendor/products/update`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload), // Submit updated product data
             });

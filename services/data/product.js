@@ -4,9 +4,11 @@ import { searchIndex } from '@/services/open-search/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
 export const getProductById = async (vendorId, productUUID) => {
-    console.log(vendorId)
-    console.log(productUUID)
-    return await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
+    const data = await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
+    if(data.success && data.data) {
+        data.data=cleanResponseData(data.data,['warehouse'])
+    }
+    return data;
 };
 
 export const getProductByVendorSku = async (vendorId, vendor_sku) => {

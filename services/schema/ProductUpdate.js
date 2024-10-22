@@ -53,6 +53,7 @@ export const validateProductUpdates = (products) => {
 
   products.forEach((product) => {
     const result = validateProductUpdate(product);
+
     if (result.success) {
       validatedProducts.push(result.value);
     } else {
