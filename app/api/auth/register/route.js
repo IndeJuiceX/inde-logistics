@@ -1,6 +1,6 @@
 // pages/api/auth/register.js
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/services/password';  // Utility function to hash the password
+import { hashPassword } from '@/services/utils/password';  // Utility function to hash the password
 import { saveUser } from '@/services/data/user';     // DynamoDB utility function for adding user
 
 export async function POST(request) {
@@ -22,7 +22,7 @@ export async function POST(request) {
     const newUser = {
       pk: `USER#${email}`,  // Partition key
       sk: `USER#${email}`,  // Sort key
-      first_name : firstName,
+      first_name: firstName,
       last_name: lastName,
       email,
       phone,
@@ -31,7 +31,7 @@ export async function POST(request) {
       createdAt: new Date().toISOString(),
     };
 
-    if(vendorId) {
+    if (vendorId) {
       newUser.vendor_id = vendorId
     }
     // Add the user to the DynamoDB table

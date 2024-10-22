@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 import { validateProducts } from '@/services/schema';
 import { batchWriteItems, getItem } from '@/lib/dynamodb';
 import { generateSK } from '@/services/products/Helper';  // Import the generateSK function
-import { decodeToken } from '@/services/Helper';
-import  {authenticateAndAuthorize,generateProductId} from '@/services/utils'
+import { decodeToken } from '@/services/utils/token';
+import { authenticateAndAuthorize, generateProductId } from '@/services/utils'
 // Constants for validation
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 5MB in bytes
 const MAX_PRODUCTS = 5000;  // Max products allowed in a batch

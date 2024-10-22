@@ -1,25 +1,17 @@
 import { NextResponse } from 'next/server';
 import { validateOrderUpdateSchema } from '@/services/schema'; // Updated import
-import { decodeToken } from '@/services/utils/token';
-import { authenticateAndAuthorize } from '@/services/utils';
+import { withAuthAndRole } from '@/services/utils/auth';
 import { updateOrderBuyer, getOrder } from '@/services/data/order'; // Data access functions
 
-export async function PATCH(request) {
+export const PATCH = withAuthAndRole(async (request, { params, user }) => {
   try {
     // Extract authentication details
-    const { authorized, user } = await authenticateAndAuthorize(request);
-    let vendorId = user?.vendor || null;
 
-    if (!authorized || vendorId == null) {
-      const apiToken = request.headers.get('Authorization')?.split(' ')[1]; // Bearer token
-      if (!apiToken) {
-        return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
-      }
-      const decoded = decodeToken(apiToken);
-      if (!decoded) {
-        return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-      }
-      vendorId = decoded.vendorId;
+    let vendorId = user?.vendorId || null;
+
+    if (!vendorId ) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     }
 
     // Parse request body
@@ -62,7 +54,7 @@ export async function PATCH(request) {
       );
     }
     // Check if the order status allows updating buyer data
-    const nonUpdatableStatuses = ['Dispatched', 'Delivered'];
+    const nonUpdatableStatuses = ['Dispatched', 'Delivered','Cancelled'];
     if (nonUpdatableStatuses.includes(orderItem.status)) {
       return NextResponse.json(
         {
@@ -83,8 +75,9 @@ export async function PATCH(request) {
 
     // Prepare the response payload
     const responsePayload = {
-      message: 'Order updated successfully',
-      order: updateResult.updatedOrder,
+        vendor_order_id : updateResult.updatedOrder.vendor_order_id,
+        updated: 'true'
+     
     };
 
     return NextResponse.json(responsePayload, { status: 200 });
@@ -92,4 +85,4 @@ export async function PATCH(request) {
     console.error('Unhandled error:', error);
     return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
-}
+},['vendor'])

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/services/password';  // Utility function to hash the password
+import { hashPassword } from '@/services/utils/password';  // Utility function to hash the password
 import { saveUser } from '@/services/data/user';     // DynamoDB utility function for adding user
 
 export async function POST(request, { params }) {

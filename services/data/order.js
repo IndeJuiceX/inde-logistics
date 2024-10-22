@@ -1,7 +1,7 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock } from '@/services/data/product'; // Adjust the import path
 import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/dynamo/wrapper';
-import { generateOrderId } from '@/services/utils';
+import { generateOrderId, cleanResponseData } from '@/services/utils';
 
 
 export const createOrder = async (vendorId, order) => {
@@ -58,7 +58,6 @@ export const createOrder = async (vendorId, order) => {
                             quantity: requestedQuantity,
                             sales_value: item.sales_value,
                             entity_type: 'OrderItem',
-                            status: 'Accepted',
                             created_at: timestamp,
                             updated_at: timestamp,
                             // Include other necessary fields from 'item'
@@ -89,7 +88,7 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    expected_delivery_date: order.expected_delivery_date.toISOString(),
+                    expected_delivery_date: order.expected_delivery_date,
                     shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
@@ -207,7 +206,7 @@ export const cancelOrder = async (order) => {
             KeyConditionExpression: 'pk = :pk AND begins_with(sk, :skPrefix)',
             ExpressionAttributeValues: {
                 ':pk': `VENDORORDERITEM#${vendorId}`,
-                ':skPrefix': `ORDER#${vendor_order_id}ITEM#`,
+                ':skPrefix': `ORDER#${vendor_order_id}#ITEM#`,
             },
         };
 
@@ -330,9 +329,12 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
     try {
         const result = await queryItems(params);
         if (result.success) {
+            const hasMore = !!result.lastEvaluatedKey;
+
             return {
                 success: true,
-                data: result.data,
+                data: cleanResponseData(result.data),
+                hasMore: hasMore,
                 lastEvaluatedKey: result.lastEvaluatedKey,
             };
         } else {
@@ -346,6 +348,10 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
 
 export const getOrderDetails = async (vendorId, vendorOrderId) => {
     const orderData = await getOrder(vendorId, vendorOrderId);
+    console.log(orderData)
+    if(!orderData.success) {
+        return { success: false, error: orderData?.error||'Order not found ' };
+    }
     const order = orderData.data
 
     const pkVal = `VENDORORDERITEM#${vendorId}`
@@ -362,14 +368,10 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     if (!orderItemsData.success) {
         return { success: false, error: 'Failed to retrieve order items' };
     }
-    const { pk, sk, entity_type, ...cleanedOrder } = order;
-
-    const cleanedItems = orderItemsData.data.map(({ pk, sk, entity_type, ...rest }) => rest);
-
-    // Format the response with order details and items
+  
     const orderDetails = {
-        ...cleanedOrder,
-        items: cleanedItems,
+        ...cleanResponseData(order),
+        items: cleanResponseData(orderItemsData.data),
     };
     return { success: true, data: orderDetails };
 }

@@ -1,24 +1,13 @@
 import { NextResponse } from 'next/server';
-import { authenticateAndAuthorize } from '@/services/utils';
-import { decodeToken } from '@/services/utils/token';
+import { withAuthAndRole } from '@/services/utils/auth';
 import { getOrder, cancelOrder } from '@/services/data/order';
 
-export async function PATCH(request) {
+export const PATCH = withAuthAndRole(async (request, { params, user }) => {
     try {
-        // Extract authentication details
-        const { authorized, user } = await authenticateAndAuthorize(request);
-        let vendorId = user?.vendor || null;
+        let vendorId = user.vendorId;
 
-        if (!authorized || vendorId == null) {
-            const apiToken = request.headers.get('Authorization')?.split(' ')[1]; // Bearer token
-            if (!apiToken) {
-                return NextResponse.json({ error: 'Missing API token' }, { status: 401 });
-            }
-            const decoded = decodeToken(apiToken);
-            if (!decoded) {
-                return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-            }
-            vendorId = decoded.vendorId;
+        if (!vendorId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         // Parse request body
@@ -56,7 +45,7 @@ export async function PATCH(request) {
         if (nonCancellableStatuses.includes(orderItem.data.status)) {
             return NextResponse.json(
                 {
-                    error: `Order with vendor_order_id '${vendor_order_id}' cannot be cancelled because its status is '${orderItem.status}'.`,
+                    error: `Order with vendor_order_id '${vendor_order_id}' cannot be cancelled because its status is '${orderItem.data.status}'.`,
                 },
                 { status: 400 } // Bad Request
             );
@@ -75,8 +64,8 @@ export async function PATCH(request) {
 
         // Prepare the response payload
         const responsePayload = {
-            message: 'Order cancelled successfully',
-            order: cancelResult.updatedOrder,
+            vendor_order_id: cancelResult.updatedOrder.vendor_order_id,
+            cancelled: cancelResult.updatedOrder.status,
         };
 
         return NextResponse.json(responsePayload, { status: 200 });
@@ -84,4 +73,4 @@ export async function PATCH(request) {
         console.error('Unhandled error:', error);
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
-}
+}, ['vendor', 'admin'])
