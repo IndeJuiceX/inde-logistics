@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,12 +15,57 @@ export default function Sidebar({ vendor, vendorId }) {
     }
   };
 
-  // Function to check if any of the submenu items are active
+  // Function to check if any of the submenu items are active (recursive)
   const isSubMenuActive = (subMenu) => {
-    return subMenu.some((item) => isActive(item));
+    return subMenu.some((item) => {
+      return (
+        isActive(item) || (item.subMenu && isSubMenuActive(item.subMenu))
+      );
+    });
   };
 
-  // Menu Data
+  // Recursive function to render menu items
+  const renderMenuItems = (items, level = 0) => {
+    return items.map((menuItem) => {
+      const hasSubMenu = menuItem.subMenu && menuItem.subMenu.length > 0;
+      const menuItemActive = isActive(menuItem);
+      const subMenuActive =
+        hasSubMenu && isSubMenuActive(menuItem.subMenu);
+      const isOpen = menuItemActive || subMenuActive;
+
+      // Dynamic padding based on nesting level
+      const paddingLeft = 16 + level * 16; // Base padding + indentation per level
+
+      return (
+        <li key={menuItem.label} className="border-b border-gray-200">
+          <Link
+            href={menuItem.href}
+            className={`block py-2 transition-all duration-200 ${
+              menuItemActive
+                ? "bg-blue-500 text-white"
+                : "text-gray-700 hover:bg-blue-500 hover:text-white"
+            }`}
+            style={{ paddingLeft: `${paddingLeft}px` }}
+          >
+            <div className="flex justify-between items-center">
+              <span>{menuItem.label}</span>
+              {hasSubMenu && (
+                <span className="transform transition-transform duration-200">
+                  {isOpen ? "▼" : "▶"}
+                </span>
+              )}
+            </div>
+          </Link>
+          {/* Submenu */}
+          {hasSubMenu && isOpen && (
+            <ul>{renderMenuItems(menuItem.subMenu, level + 1)}</ul>
+          )}
+        </li>
+      );
+    });
+  };
+
+  // Menu Data with potential nested submenus
   const menuData = [
     {
       label: "Products",
@@ -35,10 +80,18 @@ export default function Sidebar({ vendor, vendorId }) {
           href: `/vendor/${vendorId}/products/all`,
           match: (path) => {
             const viewProductsPath = `/vendor/${vendorId}/products/all`;
-            const editProductPattern = new RegExp(`^/vendor/${vendorId}/product/[\\w-]+/edit$`);
-            const viewProductPattern = new RegExp(`^/vendor/${vendorId}/product/[\\w-]+$`);
+            const editProductPattern = new RegExp(
+              `^/vendor/${vendorId}/product/[\\w-]+/edit$`
+            );
+            const viewProductPattern = new RegExp(
+              `^/vendor/${vendorId}/product/[\\w-]+$`
+            );
 
-            return path === viewProductsPath || editProductPattern.test(path) || viewProductPattern.test(path);
+            return (
+              path === viewProductsPath ||
+              editProductPattern.test(path) ||
+              viewProductPattern.test(path)
+            );
           },
         },
       ],
@@ -50,78 +103,48 @@ export default function Sidebar({ vendor, vendorId }) {
     {
       label: "Stock Shipments",
       href: `/vendor/${vendorId}/stock-shipments`,
+      match: (path) => {
+        const viewProductsPath = `/vendor/${vendorId}/stock-shipments`;
+        const editProductPattern = new RegExp(
+          `^/vendor/${vendorId}/stock-shipments/[\\w-]+/edit$`
+        );
+        const viewProductPattern = new RegExp(
+          `^/vendor/${vendorId}/stock-shipments/[\\w-]+$`
+        );
+
+        return (
+          path === viewProductsPath ||
+          editProductPattern.test(path) ||
+          viewProductPattern.test(path)
+        );
+      },
+      subMenu: [
+        {
+          label: "Create",
+          href: `/vendor/${vendorId}/stock-shipments/create`,
+          subMenu: [
+            {
+              label: "Create Manually",
+              href: `/vendor/${vendorId}/stock-shipments/create/manual`,
+            },
+            {
+              label: "Upload File",
+              href: `/vendor/${vendorId}/stock-shipments/create/upload`,
+            },
+          ],
+        },
+      ],
     },
   ];
 
   return (
-    <div className="w-64 bg-white shadow-lg h-screen fixed top-0 left-0 z-20">
-      <div className="p-2 border-b-2 border-gray-300">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+    <div className="w-64 bg-white shadow-lg h-screen fixed top-0 left-0 z-20 overflow-y-auto">
+      <div className="p-4 border-b-2 border-gray-300">
+        <h2 className="text-2xl font-bold text-gray-800">
           {vendor?.company_name || "Vendor"}
         </h2>
       </div>
-      <ul className="space-y-4 mt-4">
-        {menuData.map((menuItem) => {
-          const hasSubMenu = menuItem.subMenu && menuItem.subMenu.length > 0;
-          const menuItemActive = isActive(menuItem);
-          const subMenuActive = hasSubMenu && isSubMenuActive(menuItem.subMenu);
-          const isOpen = menuItemActive || subMenuActive;
-
-          return (
-            <li key={menuItem.label}>
-              {hasSubMenu ? (
-                <>
-                  {/* Parent Menu Item with Submenu */}
-                  <Link
-                    href={menuItem.href}
-                    className={`flex justify-between items-center py-2 px-4 rounded-lg transition ${menuItemActive
-                      ? "bg-blue-500 text-white"
-                      : "text-gray-700 hover:bg-blue-500 hover:text-white"
-                      }`}
-                  >
-                    <span>{menuItem.label}</span>
-                    <span
-                      className={`transform transition-transform duration-200 ${isOpen ? "rotate-90" : "rotate-0"
-                        }`}>
-                      &gt;
-                    </span>
-                  </Link>
-                  {/* Submenu */}
-                  {isOpen && (
-                    <ul className="ml-4 space-y-2 mt-2">
-                      {menuItem.subMenu.map((subItem) => (
-                        <li key={subItem.label}>
-                          <Link
-                            href={subItem.href}
-                            className={`block py-2 px-4 rounded-lg transition ${isActive(subItem)
-                              ? "bg-blue-500 text-white"
-                              : "text-gray-700 hover:bg-blue-500 hover:text-white"
-                              }`}
-                          >
-                            {subItem.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </>
-              ) : (
-                // Menu Item without Submenu
-                <Link
-                  href={menuItem.href}
-                  className={`block py-2 px-4 rounded-lg transition ${menuItemActive
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-700 hover:bg-blue-500 hover:text-white"
-                    }`}
-                >
-                  {menuItem.label}
-                </Link>
-              )}
-              <hr className="border-t border-gray-200" />
-            </li>
-          );
-        })}
-      </ul>
+      <ul>{renderMenuItems(menuData)}</ul>
     </div>
   );
 }
