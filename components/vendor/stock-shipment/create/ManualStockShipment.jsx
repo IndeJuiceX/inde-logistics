@@ -36,7 +36,8 @@ export default function ManualStockShipment({ vendorId }) {
 
             let url = `/api/v1/vendor/products?page_size=${pageSize}`;
             if (startKey) {
-                url += `&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
+               const  modifiedPageSize = 60; // Change pageSize if startKey is provided
+                url = `/api/v1/vendor/products?page_size=${modifiedPageSize}&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
             }
             const response = await fetch(url, {
                 method: 'GET',
@@ -45,8 +46,9 @@ export default function ManualStockShipment({ vendorId }) {
             const data = await response.json();
 
             setProducts(data.data)
-
-            setLastEvaluatedKey(data.lastEvaluatedKey);
+            console.log('data', data);
+            
+            setLastEvaluatedKey(data.last_evaluated_key);
             setLoading(false)
         } catch (err) {
             console.error('Failed to fetch orders:', err);
@@ -170,6 +172,20 @@ export default function ManualStockShipment({ vendorId }) {
         { text: 'Create Stock Shipment', url: `/vendor/${vendorId}/stock-shipments/create` },
         { text: 'Manual Stock Shipment' },
     ];
+
+
+    useEffect(() => {
+        console.log('lastEvaluatedKey', lastEvaluatedKey);
+
+    }, [lastEvaluatedKey]);
+
+    const handleNext = () => {
+        console.log('lastEvaluatedKey', lastEvaluatedKey);
+        if(lastEvaluatedKey){
+            fetchProducts(lastEvaluatedKey);
+        }
+    }
+
     return (
         <>
             <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />
@@ -258,6 +274,12 @@ export default function ManualStockShipment({ vendorId }) {
                                             onClick={handleSaveShipment}
                                         >
                                             Save
+                                        </button>
+                                        <button
+                                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                                            onClick={handleNext}
+                                        >
+                                            Next
                                         </button>
                                     </div>
                                 </>
