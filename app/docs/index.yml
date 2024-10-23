@@ -7,7 +7,7 @@ info:
     This API allows vendors to upload and update product batches
     with a maximum payload size of 2 MB.
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:3002/api
 tags:
   - name: Product
     description: Operations related to products

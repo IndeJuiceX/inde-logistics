@@ -1,0 +1,59 @@
+paths:
+  /v1/vendor/products:
+    get:
+      summary: Retrieve product(s)
+      description: >
+        Fetch one or multiple products for the authenticated vendor. If `vendor_sku` is provided,
+        retrieves a specific product. Otherwise, retrieves a paginated list of products.
+      tags:
+        - Product
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vendor_sku
+          in: query
+          description: The vendor SKU of the product to retrieve.
+          required: false
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          description: Number of products to retrieve per page (defaults to 25).
+          required: false
+          schema:
+            type: integer
+            default: 25
+        - name: last_evaluated_key
+          in: query
+          description: Base64-encoded string for pagination. Use the value from previous response's `last_evaluated_key`.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful retrieval of product(s).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/product'
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/product'
+                    description: >
+                      If `vendor_sku` is provided, `data` is a single product object.
+                      Otherwise, `data` is an array of product objects.
+                  success:
+                    type: boolean
+                    example: true
+                  last_evaluated_key:
+                    type: string
+                    description: Base64-encoded string for pagination.
+                    example: "eyJza2lkIjogIlBST0RVQ1QjMTIzNDU2In0="
+                  hasMore:
+                    type: boolean
+                    description: Indicates if more results are available.
+                    example: true

@@ -1,34 +1,126 @@
 paths:
-  /products/edit:
-    put:
-      summary: Update existing products
+  /products/update-products:
+    patch:
+      summary: Update products
+      description: Updates existing products for the authenticated vendor.
       tags:
         - Product
-      description: >
-        Endpoint for vendors to update existing products in batches. The payload size must not exceed 2 MB. The `vendor_sku` is required, and any other attribute can be optionally updated. The request must contain at least one field to update in addition to `vendor_sku`.
-        Requires API token for authentication.
       security:
         - BearerAuth: []
       requestBody:
+        description: A JSON object containing an array of products to be updated.
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - products
               properties:
                 products:
                   type: array
-                  maxItems: 5000
                   items:
-                    $ref: "#/components/schemas/product_update"
+                    $ref: '#/components/schemas/product'
       responses:
-        "200":
-          description: Products updated successfully
-        "400":
-          description: Validation errors or request payload exceeds limits
-        "401":
-          description: Unauthorized - Missing or invalid API token
-        "413":
-          description: Payload exceeds the allowed size limit (2 MB)
-        "500":
-          description: Server error
+        '200':
+          description: Products updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Products update process completed'
+                  updatedCount:
+                    type: integer
+                    description: Number of products successfully updated.
+                    example: 5
+                  updatedProducts:
+                    type: array
+                    description: List of products that were successfully updated.
+                    items:
+                      type: object
+                      properties:
+                        vendor_sku:
+                          type: string
+                          example: '12345678'
+                  failedUpdates:
+                    type: array
+                    description: List of products that failed to update.
+                    items:
+                      type: object
+                      properties:
+                        vendor_sku:
+                          type: string
+                          example: '87654321'
+                        error:
+                          type: string
+                          description: Error message explaining why the update failed.
+                          example: 'Product with SKU 87654321 not found'
+                  invalidProducts:
+                    type: array
+                    description: Products that failed validation.
+                    items:
+                      type: object
+                      properties:
+                        product:
+                          $ref: '#/components/schemas/product'
+                        errors:
+                          type: array
+                          items:
+                            type: string
+                            example: 'Stock must be a positive integer'
+        '400':
+          description: Bad Request - Invalid request parameters or missing fields.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Validation failed for all products'
+                  invalidProducts:
+                    type: array
+                    description: Products that failed validation.
+                    items:
+                      type: object
+                      properties:
+                        product:
+                          $ref: '#/components/schemas/product'
+                        errors:
+                          type: array
+                          items:
+                            type: string
+                            example: 'Name is required'
+        '403':
+          description: Forbidden - User not authorized.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Forbidden'
+        '413':
+          description: Payload Too Large - Payload exceeds the size limit.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Payload exceeds size limit of 2MB'
+        '500':
+          description: Internal Server Error - An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Server error'
