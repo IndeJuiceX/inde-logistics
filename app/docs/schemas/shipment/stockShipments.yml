@@ -1,4 +1,4 @@
-StockShipmentItem:
+StockShipments:
   type: object
   required:
     - vendor_sku

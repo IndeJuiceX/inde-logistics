@@ -1,0 +1,91 @@
+paths:
+  /v1/vendor/stock-shipments/create:
+    post:
+      summary: Create a new stock shipment
+      description: >
+        Creates a new stock shipment with items for the authenticated vendor.
+        Each item in the shipment must be valid and conform to required schemas.
+      tags:
+        - Shipments
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: An array of items to include in the stock shipment.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - stock_shipment
+              properties:
+                stock_shipment:
+                  type: array
+                  description: List of items for the new stock shipment.
+                  items:
+                    $ref: "#/components/schemas/StockShipments"
+      responses:
+        "201":
+          description: Stock shipment created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message.
+                    example: "Stock shipment created successfully."
+                  shipment_id:
+                    type: string
+                    description: The ID of the created stock shipment.
+                    example: "SHIPMENT12345"
+        "400":
+          description: Bad Request - Invalid request format or validation errors.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message detailing why the request failed.
+                    example: "Validation failed for some items."
+                  invalidItems:
+                    type: array
+                    description: Details about items that failed validation.
+                    items:
+                      type: object
+                      properties:
+                        item:
+                          $ref: "#/components/schemas/StockShipments"
+                        errors:
+                          type: array
+                          items:
+                            type: string
+                            example: "Quantity must be a positive integer."
+        "413":
+          description: Payload Too Large - Payload exceeds size limit.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the payload is too large.
+                    example: "Payload exceeds size limit of 2MB."
+        "500":
+          description: Internal Server Error - An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating a server error.
+                    example: "Server error"
+                  details:
+                    type: string
+                    description: Additional details about the error (optional).
