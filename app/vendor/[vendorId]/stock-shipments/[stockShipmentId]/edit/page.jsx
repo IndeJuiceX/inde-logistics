@@ -28,14 +28,45 @@ export default function EditStockShipmentPage() {
   const [totalResults, setTotalResults] = useState(0); // Total number of results
   const pageSize = 30; // Products per page
   const [loadingShipment, setLoadingShipment] = useState(true); // Loading state for shipment data
+  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null);
+
+  const fetchProducts = async (startKey = null) => {
+    try {
+
+      let url = `/api/v1/vendor/products?page_size=${pageSize}`;
+      if (startKey) {
+        url += `&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
+      }
+      const response = await fetch(url, {
+        method: 'GET',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+
+      setProducts(data.data)
+
+      setLastEvaluatedKey(data.lastEvaluatedKey);
+      setLoading(false)
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    }
+  };
+  useEffect(() => {
+    if (vendorId) {
+      fetchProducts(lastEvaluatedKey);
+    }
+  }, [vendorId, lastEvaluatedKey]);
 
   // Fetch existing shipment data on mount
   useEffect(() => {
     const fetchShipmentData = async () => {
       setLoadingShipment(true);
       try {
+        // const response = await fetch(
+        //   `/api/v1/vendor/stock-shipments/${stockShipmentId}?vendorId=${vendorId}`
+        // );
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/${stockShipmentId}?vendorId=${vendorId}`
+          `/api/v1/vendor/stock-shipments?stock_shipment_id=${stockShipmentId}`
         );
         const data = await response.json();
 
@@ -65,7 +96,7 @@ export default function EditStockShipmentPage() {
   }, [vendorId, stockShipmentId]);
 
   // Fetch vendor products with pagination and search
-  useEffect(() => {
+  /*useEffect(() => {
     if (vendorId) {
       const fetchProducts = async () => {
         setLoading(true);
@@ -123,7 +154,7 @@ export default function EditStockShipmentPage() {
 
       fetchBrands();
     }
-  }, [vendorId, brandSearchTerm]);
+  }, [vendorId, brandSearchTerm]);*/
 
   // Handle product selection (Add or Update Item)
   const handleSelectProduct = async (product, quantity) => {
@@ -150,7 +181,7 @@ export default function EditStockShipmentPage() {
       // Item exists, update the quantity
       try {
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/${stockShipmentId}/update-item?vendorId=${vendorId}`,
+          `/api/v1/vendor/stock-shipments/update-item?stock_shipment_id=${stockShipmentId}`,
           {
             method: 'PATCH',
             headers: {
@@ -182,7 +213,7 @@ export default function EditStockShipmentPage() {
       // Item does not exist, add it
       try {
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/${stockShipmentId}/add-item?vendorId=${vendorId}`,
+          `/api/v1/vendor/stock-shipments/add-item?stock_shipment_id=${stockShipmentId}`,
           {
             method: 'POST',
             headers: {
@@ -218,7 +249,7 @@ export default function EditStockShipmentPage() {
 
     try {
       const response = await fetch(
-        `/api/v1/vendor/stock-shipments/${stockShipmentId}/remove-item?vendorId=${vendorId}`,
+        `/api/v1/vendor/stock-shipments/remove-item?stock_shipment_id=${stockShipmentId}`,
         {
           method: 'DELETE', // Assuming POST for remove
           headers: {
@@ -325,14 +356,14 @@ export default function EditStockShipmentPage() {
         <div className="mt-6 flex flex-col md:flex-row">
           {/* Left Column: Filters and Items in Shipment */}
           <div className="md:w-1/4 md:pr-4 mb-6 md:mb-0">
-            {/* Filters */}
+            {/* Filters 
             <Filters
               brands={brands}
               selectedBrands={selectedBrands}
               handleBrandCheckboxChange={handleBrandCheckboxChange}
               brandSearchTerm={brandSearchTerm}
               setBrandSearchTerm={setBrandSearchTerm}
-            />
+            />*/}
 
             {/* Items in Shipment */}
             <ItemsInShipment

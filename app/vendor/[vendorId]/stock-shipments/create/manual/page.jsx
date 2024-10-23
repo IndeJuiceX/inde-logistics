@@ -28,11 +28,34 @@ export default function CreateStockShipmentPageManual() {
   const [totalPages, setTotalPages] = useState(0);               // Total number of pages
   const [totalResults, setTotalResults] = useState(0);           // Total number of results
   const pageSize = 30;                                           // Products per page
+  const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null);
+
+  const fetchProducts = async (startKey = null) => {
+    try {
+     
+      let url = `/api/v1/vendor/products?page_size=${pageSize}`;
+      if (startKey) {
+        url += `&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
+      }
+      const response = await fetch(url, {
+        method: 'GET',
+        cache: 'no-store',
+      });
+      const data = await response.json();
+
+      setProducts(data.data)
+
+      setLastEvaluatedKey(data.lastEvaluatedKey);
+      setLoading(false)
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    }
+  };
 
   // Fetch vendor products with pagination and search
   useEffect(() => {
     if (vendorId) {
-      const fetchProducts = async () => {
+      /*const fetchProducts = async () => {
         setLoading(true);
         setError(null);
         try {
@@ -59,14 +82,14 @@ export default function CreateStockShipmentPageManual() {
         } finally {
           setLoading(false);
         }
-      };
+      };*/
 
-      fetchProducts();
+      fetchProducts(lastEvaluatedKey);
     }
-  }, [vendorId, query, page, selectedBrands]);
+  }, [vendorId, lastEvaluatedKey]);
 
   // Fetch brands when the page loads or when brandSearchTerm changes
-  useEffect(() => {
+  /*useEffect(() => {
     if (vendorId) {
       const fetchBrands = async () => {
         try {
@@ -83,7 +106,7 @@ export default function CreateStockShipmentPageManual() {
 
       fetchBrands();
     }
-  }, [vendorId, brandSearchTerm]);
+  }, [vendorId, brandSearchTerm]);*/
 
   // Handle quantity input change
   const handleQuantityChange = (product, quantity) => {
@@ -162,7 +185,7 @@ export default function CreateStockShipmentPageManual() {
       try {
         // Send the POST request to the backend
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/create?vendorId=${vendorId}`,
+          `/api/v1/vendor/stock-shipments/create`,
           {
             method: 'POST',
             headers: {
@@ -229,13 +252,13 @@ export default function CreateStockShipmentPageManual() {
           {/* Left Column: Filters and Items in Shipment */}
           <div className="md:w-1/4 md:pr-4 mb-6 md:mb-0">
             {/* Filters */}
-            <Filters
+            {/*<Filters
               brands={brands}
               selectedBrands={selectedBrands}
               handleBrandCheckboxChange={handleBrandCheckboxChange}
               brandSearchTerm={brandSearchTerm}
               setBrandSearchTerm={setBrandSearchTerm}
-            />
+            />*/}
 
             {/* Items in Shipment */}
             <ItemsInShipment
