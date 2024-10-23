@@ -181,7 +181,7 @@ export default function EditStockShipmentPage() {
       // Item exists, update the quantity
       try {
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/${stockShipmentId}/update-item?vendorId=${vendorId}`,
+          `/api/v1/vendor/stock-shipments/update-item?stock_shipment_id=${stockShipmentId}`,
           {
             method: 'PATCH',
             headers: {
@@ -213,7 +213,7 @@ export default function EditStockShipmentPage() {
       // Item does not exist, add it
       try {
         const response = await fetch(
-          `/api/v1/vendor/stock-shipments/${stockShipmentId}/add-item?vendorId=${vendorId}`,
+          `/api/v1/vendor/stock-shipments/add-item?stock_shipment_id=${stockShipmentId}`,
           {
             method: 'POST',
             headers: {
@@ -249,7 +249,7 @@ export default function EditStockShipmentPage() {
 
     try {
       const response = await fetch(
-        `/api/v1/vendor/stock-shipments/${stockShipmentId}/remove-item?vendorId=${vendorId}`,
+        `/api/v1/vendor/stock-shipments/remove-item?stock_shipment_id=${stockShipmentId}`,
         {
           method: 'DELETE', // Assuming POST for remove
           headers: {
@@ -356,14 +356,14 @@ export default function EditStockShipmentPage() {
         <div className="mt-6 flex flex-col md:flex-row">
           {/* Left Column: Filters and Items in Shipment */}
           <div className="md:w-1/4 md:pr-4 mb-6 md:mb-0">
-            {/* Filters */}
+            {/* Filters 
             <Filters
               brands={brands}
               selectedBrands={selectedBrands}
               handleBrandCheckboxChange={handleBrandCheckboxChange}
               brandSearchTerm={brandSearchTerm}
               setBrandSearchTerm={setBrandSearchTerm}
-            />
+            />*/}
 
             {/* Items in Shipment */}
             <ItemsInShipment
