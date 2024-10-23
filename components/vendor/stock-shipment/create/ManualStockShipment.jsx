@@ -211,16 +211,6 @@ export default function ManualStockShipment({ vendorId }) {
                     <div className="mt-6 flex flex-col md:flex-row">
                         {/* Left Column: Filters and Items in Shipment */}
                         <div className="md:w-1/4 md:pr-4 mb-6 md:mb-0">
-                            {/* Filters */}
-                            {/*<Filters
-              brands={brands}
-              selectedBrands={selectedBrands}
-              handleBrandCheckboxChange={handleBrandCheckboxChange}
-              brandSearchTerm={brandSearchTerm}
-              setBrandSearchTerm={setBrandSearchTerm}
-            />*/}
-
-                            {/* Items in Shipment */}
                             <ItemsInShipment
                                 selectedItems={selectedItems}
                                 handleRemoveProduct={handleRemoveProduct}
