@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { validateStockShipmentItems } from '@/services/schema';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndRole } from '@/services/utils/apiMiddleware';
 import { createStockShipment } from '@/services/data/stock-shipment';
 
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export const POST = withAuthAndRole(async (request, { params, user }) =>  {
+export const POST = withAuthAndRole(async (request, { params, user }) => {
     try {
-       
+
         let vendorId = user?.vendor || null
         // Parse request body
         const bodyText = await request.text();
@@ -65,4 +65,4 @@ export const POST = withAuthAndRole(async (request, { params, user }) =>  {
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
 
-},['vendor'])
+}, ['vendor'])

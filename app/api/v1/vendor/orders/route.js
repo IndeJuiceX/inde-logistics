@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndRole } from '@/services/utils/apiMiddleware';
 
 export const GET = withAuthAndRole(async (request, { params, user }) => {
     try {
@@ -34,7 +34,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         if (result.success) {
             const response = {
                 data: result.data,
-                success:true,
+                success: true,
             };
 
             if (result.lastEvaluatedKey) {

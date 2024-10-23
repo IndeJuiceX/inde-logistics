@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateStockShipmentItems } from '@/services/schema';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndRole } from '@/services/utils/apiMiddleware';
 import { updateStockShipment, getStockShipmentById } from '@/services/data/stock-shipment';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes

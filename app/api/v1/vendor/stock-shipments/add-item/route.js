@@ -4,7 +4,7 @@ import { validateStockShipmentItems } from '@/services/schema';
 
 import { checkShipmentExists } from '@/services/data/stock-shipment';
 import { addItemsToStockShipment } from '@/services/data/stock-shipment-item';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndRole } from '@/services/utils/apiMiddleware';
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const POST = withAuthAndRole(async (request, { params, user }) => {

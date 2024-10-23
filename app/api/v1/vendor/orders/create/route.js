@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import { validateOrder } from '@/services/schema';  // Changed to validateOrder
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndRole } from '@/services/utils/apiMiddleware';
 import { createOrder, orderExists } from '@/services/data/order'; // Changed to createOrder
 
 const MAX_SIZE_BYTES = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const POST = withAuthAndRole(async (request, { params, user }) => {
     try {
-        
+
         let vendorId = user?.vendor || null;
-        if (!vendorId ) {
+        if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    
+
         }
         // Parse request body
         const bodyText = await request.text();
@@ -69,7 +69,7 @@ export const POST = withAuthAndRole(async (request, { params, user }) => {
 
         // Prepare the response payload
         const responsePayload = {
-            created : true,
+            created: true,
             vendor_order_id: createResult.createdOrder.vendor_order_id
         };
 
@@ -78,4 +78,4 @@ export const POST = withAuthAndRole(async (request, { params, user }) => {
         console.error('Unhandled error:', error);
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
-},['vendor'])
+}, ['vendor'])
