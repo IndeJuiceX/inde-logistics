@@ -1,0 +1,25 @@
+Order:
+      type: object
+      description: Order information
+      properties:
+        vendor_order_id:
+          type: string
+        expected_delivery_date:
+          type: string
+          pattern: '^([0-2][0-9]|(3)[0-1])\\/(0[1-9]|1[0-2])\\/\\d{4}$'
+          example: '31/12/2023'
+        shipping_cost:
+          type: number
+        buyer:
+          $ref: '#/components/schemas/Buyer'
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderItem'
+      required:
+        - vendor_order_id
+        - expected_delivery_date
+        - shipping_cost
+        - buyer
+        - items

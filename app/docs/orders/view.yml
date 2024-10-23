@@ -1,15 +1,90 @@
 paths:
-  /orders/view:
+  /v1/vendor/orders:
     get:
-      summary: Order a product
+      summary: Retrieve order(s)
+      description: >
+        Fetch one or multiple orders for the authenticated vendor. If `vendor_order_id` is provided,
+        retrieves the specific order's details. Otherwise, retrieves a paginated list of orders.
       tags:
         - Order
+      security:
+        - BearerAuth: []
       parameters:
-        - name: productId
+        - name: vendor_order_id
           in: query
-          required: true
+          description: The vendor's order ID to retrieve a specific order.
+          required: false
+          schema:
+            type: string
+        - name: page_size
+          in: query
+          description: Number of orders to retrieve per page (defaults to 25).
+          required: false
+          schema:
+            type: integer
+            default: 25
+        - name: last_evaluated_key
+          in: query
+          description: >
+            Base64-encoded string for pagination. Use the value from the previous response's `last_evaluated_key`.
+          required: false
           schema:
             type: string
       responses:
-        "200":
-          description: Product details retrieved successfully
+        '200':
+          description: Successful retrieval of order(s).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/Order'
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+                    description: >
+                      If `vendor_order_id` is provided, `data` is a single order object.
+                      Otherwise, `data` is an array of order objects.
+                  success:
+                    type: boolean
+                    example: true
+                  last_evaluated_key:
+                    type: string
+                    description: Base64-encoded string for pagination.
+                    example: "eyJza2lkIjogIk9SREVSIzEyMzQ1NiJ9"
+                  hasMore:
+                    type: boolean
+                    description: Indicates if more results are available.
+                    example: true
+        '403':
+          description: Forbidden - User not authorized.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Forbidden'
+        '404':
+          description: Not Found - Order not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Order not found'
+        '500':
+          description: Internal Server Error - An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Failed to fetch orders'

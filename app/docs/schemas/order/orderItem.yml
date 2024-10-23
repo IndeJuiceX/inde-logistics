@@ -1,0 +1,16 @@
+OrderItem:
+  type: object
+  description: Order item information
+  properties:
+    vendor_sku:
+      type: string
+    quantity:
+      type: integer
+      minimum: 1
+    sales_value:
+      type: number
+      exclusiveMinimum: 0
+  required:
+    - vendor_sku
+    - quantity
+    - sales_value

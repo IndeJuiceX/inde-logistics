@@ -1,0 +1,87 @@
+paths:
+  /v1/vendor/orders/cancel:
+    patch:
+      summary: Cancel an order
+      description: >
+        Cancels an existing order for the authenticated vendor or admin. The order can only be cancelled if it is in a cancellable status.
+      tags:
+        - Order
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Payload containing the `vendor_order_id` of the order to cancel.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vendor_order_id
+              properties:
+                vendor_order_id:
+                  type: string
+                  description: The vendor's order ID.
+                  example: 'ORDER12345'
+      responses:
+        '200':
+          description: Order cancelled successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vendor_order_id:
+                    type: string
+                    description: The vendor's order ID of the cancelled order.
+                    example: 'ORDER12345'
+                  cancelled:
+                    type: string
+                    description: The updated status of the order after cancellation.
+                    example: 'Cancelled'
+        '400':
+          description: Bad Request - Invalid request parameters or order cannot be cancelled.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message detailing why the request failed.
+                    example: "Order with vendor_order_id 'ORDER12345' cannot be cancelled because its status is 'Dispatched'."
+        '403':
+          description: Forbidden - User not authorized.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating lack of permission.
+                    example: 'Forbidden'
+        '404':
+          description: Not Found - Order not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the order does not exist.
+                    example: "Order with vendor_order_id 'ORDER12345' does not exist."
+        '500':
+          description: Internal Server Error - An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating a server error.
+                    example: 'Server error'
+                  details:
+                    type: string
+                    description: Additional details about the error (optional).
