@@ -65,23 +65,23 @@ export default function AllProducts({ vendorId }) {
     }
   };
 
-  const handleSearch = async (page = 1, pageSize = 10) => {
-    setLoading(true);
-    try {
-      // Include the `page` and `pageSize` in the API call
-      const response = await fetch(`/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${searchTerm}&page=${page}&pageSize=${pageSize}`);
-      const data = await response.json();
-      console.log('Search results:', data);
+  // const handleSearch = async (page = 1, pageSize = 10) => {
+  //   setLoading(true);
+  //   try {
+  //     // Include the `page` and `pageSize` in the API call
+  //     const response = await fetch(`/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${searchTerm}&page=${page}&pageSize=${pageSize}`);
+  //     const data = await response.json();
+  //     console.log('Search results:', data);
 
-      // Set the products and any pagination data if needed
-      setProducts(data.products);  // Assuming data.products is where the product list is stored
-      //setTotalPages(Math.ceil(data.total / pageSize));  // Calculate total pages from the response
-      setLoading(false);
-    } catch (error) {
-      console.error('Error searching products:', error);
-      setLoading(false);
-    }
-  };
+  //     // Set the products and any pagination data if needed
+  //     setProducts(data.products);  // Assuming data.products is where the product list is stored
+  //     //setTotalPages(Math.ceil(data.total / pageSize));  // Calculate total pages from the response
+  //     setLoading(false);
+  //   } catch (error) {
+  //     console.error('Error searching products:', error);
+  //     setLoading(false);
+  //   }
+  // };
 
 
   const handleDeleteCatalogue = async () => {
@@ -127,7 +127,7 @@ export default function AllProducts({ vendorId }) {
 
           {/* Only display the search bar and buttons if there are products */}
           {totalProducts > 0 && (
-            <ProductSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleSearch={handleSearch} handleDeleteCatalogue={handleDeleteCatalogue} />
+            <ProductSearch vendorId={vendorId} setProducts={setProducts} setLoading={setLoading} searchTerm={searchTerm} setSearchTerm={setSearchTerm} handleDeleteCatalogue={handleDeleteCatalogue} />
           )}
 
           {/* Total Products Count */}

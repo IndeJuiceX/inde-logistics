@@ -13,7 +13,7 @@ product_update:
       type: string
       enum: [Active, Inactive]
       example: "Active"
-    stock:
+    stock_available:
       type: integer
       example: 100
     name:

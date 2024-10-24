@@ -3,7 +3,7 @@ product:
   required:
     - vendor_sku
     - status
-    - stock
+    - stock_available
     - name
     - cost_price
     - sale_price
@@ -16,7 +16,7 @@ product:
     status:
       type: string
       example: "Active"
-    stock:
+    stock_available:
       type: integer
       example: 50
     name:
