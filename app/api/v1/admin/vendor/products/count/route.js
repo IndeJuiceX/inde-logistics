@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { queryItemCount } from '@/lib/dynamodb';
-import { withAuthAndRole } from '@/services/utils/apiMiddleware';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 
-export const GET = withAuthAndRole(async (request, { params, user }) => {
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
 
 
   const { searchParams } = new URL(request.url);

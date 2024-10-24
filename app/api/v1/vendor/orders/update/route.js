@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { validateOrderUpdateSchema } from '@/services/schema'; // Updated import
-import { withAuthAndRole } from '@/services/utils/apiMiddleware';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { updateOrderBuyer, getOrder } from '@/services/data/order'; // Data access functions
 
-export const PATCH = withAuthAndRole(async (request, { params, user }) => {
+export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract authentication details
 

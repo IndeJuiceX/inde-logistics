@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';  // Your DynamoDB helper
-import { withAuthAndRole } from '@/services/utils/apiMiddleware';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getAllVendorProducts } from '@/services/data/product';
-export const GET = withAuthAndRole(async (request, { params, user }) => {
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
   try {
 
     const { searchParams } = new URL(request.url);

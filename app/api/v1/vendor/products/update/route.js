@@ -4,10 +4,10 @@ import { validateProductUpdates } from '@/services/schema';
 import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
 import { getProductByVendorSku, getProductById } from '@/services/data/product';
 import { uploadToS3 } from '@/services/s3';
-import { withAuthAndRole } from '@/services/utils/apiMiddleware';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export const PATCH = withAuthAndRole(async (request, { params, user }) => {
+export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
 
 

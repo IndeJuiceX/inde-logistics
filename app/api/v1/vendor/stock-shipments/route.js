@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAllStockShipments, getStockShipmentDetails } from '@/services/data/stock-shipment';
-import { withAuthAndRole } from '@/services/utils/apiMiddleware';
-export const GET = withAuthAndRole(async (request, { params, user }) => {
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
     try {
 
         let vendorId = user?.vendor || null;
