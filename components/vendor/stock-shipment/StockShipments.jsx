@@ -32,7 +32,7 @@ export default function StockShipments({ vendorId }) {
                         setShipments(data.data);
 
                         // Calculate total pages based on total items and page size
-                        const totalItems = data.pagination.total;
+                        // const totalItems = data.pagination.total;
                         setTotalResults(totalItems);
                         setTotalPages(Math.ceil(totalItems / pageSize));
                     } else {
