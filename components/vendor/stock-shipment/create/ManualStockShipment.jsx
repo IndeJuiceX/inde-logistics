@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
 import SearchBar from '@/components/SearchBar';
@@ -10,11 +10,16 @@ import ProductList from '@/components/ProductList';
 import PaginationControls from '@/components/PaginationControls';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 
+
 export default function ManualStockShipment({ vendorId }) {
     const router = useRouter();
     //   const { vendorId } = useParams();  // Get vendorId from route
 
     // State variables
+    const [responseData, setResponseData] = useState({
+        data: [],
+        last_evaluated_key: ''
+    });
     const [products, setProducts] = useState([]);                  // Products to display
     const [selectedItems, setSelectedItems] = useState([]);        // Selected products with quantities
     const [searchTerm, setSearchTerm] = useState('');              // User input for search
@@ -28,27 +33,37 @@ export default function ManualStockShipment({ vendorId }) {
     const [page, setPage] = useState(1);                           // Current page for pagination
     const [totalPages, setTotalPages] = useState(0);               // Total number of pages
     const [totalResults, setTotalResults] = useState(0);           // Total number of results
-    const pageSize = 30;                                           // Products per page
+    // const pageSize = 30;                                           // Products per page
+    const [pageSize, setPageSize] = useState(30);                  // Products per page
     const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null);
+    const [hasMore, setHasMore] = useState(true);                  // More products available
+    const observerRef = useRef(null);
 
-    const fetchProducts = async (startKey = null) => {
+
+
+    const fetchProducts = async (startKey = null, newPageSize = null) => {
         try {
-
             let url = `/api/v1/vendor/products?page_size=${pageSize}`;
-            if (startKey) {
-               const  modifiedPageSize = 60; // Change pageSize if startKey is provided
-                url = `/api/v1/vendor/products?page_size=${modifiedPageSize}&lastEvaluatedKey=${encodeURIComponent(startKey)}`;
+
+            if (startKey && newPageSize) {
+                url = `/api/v1/vendor/products?page_size=${newPageSize}&last_evaluated_key=${encodeURIComponent(startKey)}`;
             }
             const response = await fetch(url, {
                 method: 'GET',
                 cache: 'no-store',
             });
             const data = await response.json();
-
+            setResponseData(prev => ({
+                ...prev,
+                data: data.data,
+                last_evaluated_key: data.last_evaluated_key,
+            }));
             setProducts(data.data)
-            console.log('data', data);
-            
+            console.log('data', data.last_evaluated_key);
+
             setLastEvaluatedKey(data.last_evaluated_key);
+
+            setHasMore(data.hasMore);
             setLoading(false)
         } catch (err) {
             console.error('Failed to fetch orders:', err);
@@ -58,10 +73,45 @@ export default function ManualStockShipment({ vendorId }) {
     // Fetch vendor products with pagination and search
     useEffect(() => {
         if (vendorId) {
-            fetchProducts(lastEvaluatedKey);
+            fetchProducts();
         }
-    }, [vendorId, lastEvaluatedKey]);
+    }, [vendorId]);
 
+    ////=========================================================
+
+    useEffect(() => {
+        const options = {
+            root: null, // viewport
+            rootMargin: '20px',
+            threshold: 1.0,
+        };
+        const handleObserver = (entries) => {
+            const target = entries[0];
+            if (target.isIntersecting && hasMore) {
+                console.log('scrolling has more', hasMore);
+                const newPageSize = pageSize + 30;
+                setPageSize(newPageSize);
+                console.log('scrolling lastEvaluatedKey', responseData);
+
+                fetchProducts(responseData.last_evaluated_key, newPageSize);
+
+            }
+        };
+        observerRef.current = new IntersectionObserver(handleObserver, options);
+        if (observerRef.current) {
+            const sentinel = document.querySelector('#scroll-sentinel');
+            if (sentinel) {
+                observerRef.current.observe(sentinel);
+            }
+        }
+
+        return () => {
+            if (observerRef.current) observerRef.current.disconnect();
+        };
+    }, [hasMore, responseData]);
+
+
+    ////=========================================================
 
     // Handle quantity input change
     const handleQuantityChange = (product, quantity) => {
@@ -173,19 +223,6 @@ export default function ManualStockShipment({ vendorId }) {
         { text: 'Manual Stock Shipment' },
     ];
 
-
-    useEffect(() => {
-        console.log('lastEvaluatedKey', lastEvaluatedKey);
-
-    }, [lastEvaluatedKey]);
-
-    const handleNext = () => {
-        console.log('lastEvaluatedKey', lastEvaluatedKey);
-        if(lastEvaluatedKey){
-            fetchProducts(lastEvaluatedKey);
-        }
-    }
-
     return (
         <>
             <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />
@@ -222,9 +259,17 @@ export default function ManualStockShipment({ vendorId }) {
                             ))}
                         </div>
                     )}
-
+                    <div className="flex justify-end mt-8">
+                        <button
+                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                            onClick={handleSaveShipment}
+                        >
+                            Save Shipment
+                        </button>
+                    </div>
                     {/* Main Content with Filters and Items in Shipment Column */}
                     <div className="mt-6 flex flex-col md:flex-row">
+
                         {/* Left Column: Filters and Items in Shipment */}
                         <div className="md:w-1/4 md:pr-4 mb-6 md:mb-0">
                             <ItemsInShipment
@@ -268,26 +313,14 @@ export default function ManualStockShipment({ vendorId }) {
                                     />
 
                                     {/* Save Shipment Button */}
-                                    <div className="flex justify-end mt-8">
-                                        <button
-                                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                                            onClick={handleSaveShipment}
-                                        >
-                                            Save
-                                        </button>
-                                        <button
-                                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                                            onClick={handleNext}
-                                        >
-                                            Next
-                                        </button>
-                                    </div>
+
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+            <div id="scroll-sentinel" style={{ height: '1px' }}></div>
         </>
     );
 }
