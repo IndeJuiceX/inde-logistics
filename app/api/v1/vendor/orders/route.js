@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 
-export const GET = withAuthAndRole(async (request, { params, user }) => {
+const handler = async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
         const vendorOrderId = searchParams.get('vendor_order_id');
@@ -34,7 +34,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         if (result.success) {
             const response = {
                 data: result.data,
-                success:true,
+                success: true,
             };
 
             if (result.lastEvaluatedKey) {
@@ -56,4 +56,6 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
-}, ['vendor']); // Allowed roles
+}
+
+export const GET = withAuthAndLogging(handler, ['vendor']); // Allowed roles: 'vendor'

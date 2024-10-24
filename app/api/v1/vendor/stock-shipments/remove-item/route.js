@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 
 import { validateVendorSkuArray } from '@/services/schema';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { checkShipmentExists } from '@/services/data/stock-shipment';
 import { removeItemsFromStockShipment } from '@/services/data/stock-shipment-item';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export const DELETE = withAuthAndRole(async (request, { params, user }) => {
+export const DELETE = withAuthAndLogging(async (request, { params, user }) => {
   try {
     // Extract authentication details
     let vendorId = user?.vendor || null;

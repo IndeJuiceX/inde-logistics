@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 //import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateProducts } from '@/services/schema';
 import { batchWriteItems, getItem } from '@/lib/dynamodb';
-import { withAuthAndRole } from '@/services/utils/auth';
-import {  generateProductId } from '@/services/utils'
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+import { generateProductId } from '@/services/utils'
 // Constants for validation
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 5MB in bytes
 const MAX_PRODUCTS = 500;  // Max products allowed in a batch
 
-export const POST = withAuthAndRole(async (request, { params, user }) => {
+export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract API token from headers
 
@@ -57,7 +57,7 @@ export const POST = withAuthAndRole(async (request, { params, user }) => {
             return NextResponse.json({ error: 'Invalid request format: Products field is required' }, { status: 400 });
         }
 
-       ;
+        ;
         const validationResults = validateProducts(body.products);
 
         const validatedProducts = validationResults.validatedProducts;
@@ -114,7 +114,7 @@ export const POST = withAuthAndRole(async (request, { params, user }) => {
         console.log(error)
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
-},['vendor'])
+}, ['vendor'])
 
 
 

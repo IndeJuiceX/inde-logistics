@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 // import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateStockShipmentItems } from '@/services/schema';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { checkShipmentExists } from '@/services/data/stock-shipment';
 import { updateItemsStockInStockShipment } from '@/services/data/stock-shipment-item';
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export const PATCH = withAuthAndRole(async (request, { params, user }) => {
+export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
   try {
     // Extract authentication details
     let vendorId = user?.vendor || null;

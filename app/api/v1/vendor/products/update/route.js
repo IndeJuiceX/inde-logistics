@@ -4,10 +4,10 @@ import { validateProductUpdates } from '@/services/schema';
 import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
 import { getProductByVendorSku, getProductById } from '@/services/data/product';
 import { uploadToS3 } from '@/services/s3';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
-export const PATCH = withAuthAndRole(async (request, { params, user }) => {
+export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
 
 
@@ -57,7 +57,7 @@ export const PATCH = withAuthAndRole(async (request, { params, user }) => {
         const failedUpdates = [];
         console.log(validatedProducts)
         for (const product of validatedProducts) {
-            const { vendor_sku, ...updatedFields } = product;            
+            const { vendor_sku, ...updatedFields } = product;
             // Fetch the existing product by vendor_sku
             const result = await getProductById(vendorId, vendor_sku)//await getProductByVendorSku(vendorId, vendor_sku);
             if (!result.success || !result.data) {
@@ -143,7 +143,7 @@ export const PATCH = withAuthAndRole(async (request, { params, user }) => {
 
             // Upload the history object to S3
             try {
-               
+
                 const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
 
                 const historyUpdateResult = await updateOrInsert(
@@ -188,4 +188,4 @@ export const PATCH = withAuthAndRole(async (request, { params, user }) => {
         console.log(error)
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
-},['vendor'])
+}, ['vendor'])

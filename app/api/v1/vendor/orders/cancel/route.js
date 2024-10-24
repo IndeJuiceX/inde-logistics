@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { withAuthAndRole } from '@/services/utils/auth';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getOrder, cancelOrder } from '@/services/data/order';
 
-export const PATCH = withAuthAndRole(async (request, { params, user }) => {
+export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
-        let vendorId = user?.vendor||null;
+        let vendorId = user?.vendor || null;
 
         if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
-import { withAuthAndRole } from '@/services/utils/auth';
-import { getAllVendorProducts,getProductById } from '@/services/data/product';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+import { getAllVendorProducts, getProductById } from '@/services/data/product';
 
-export const GET = withAuthAndRole(async (request, { params, user }) => {
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
         const vendorSku = searchParams.get('vendor_sku');
@@ -26,7 +26,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         let result = null;
         if (vendorSku) {
             // Fetch specific order details
-            result =  await getProductById(vendorId, vendorSku);
+            result = await getProductById(vendorId, vendorSku);
         } else {
             // Fetch all products with pagination
             result = await getAllVendorProducts(vendorId, pageSize, exclusiveStartKey);
@@ -35,7 +35,7 @@ export const GET = withAuthAndRole(async (request, { params, user }) => {
         if (result.success) {
             const response = {
                 data: result.data,
-                success:true,
+                success: true,
             };
 
             if (result.lastEvaluatedKey) {
