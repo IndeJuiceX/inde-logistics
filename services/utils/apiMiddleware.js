@@ -2,6 +2,7 @@ import { decodeToken } from './token';
 import { getVendorById } from '../data/vendor';
 import { NextResponse } from 'next/server';
 import { getLoggedInUser } from '@/app/actions';
+import { sendLogToFirehose } from '../firehose';
 export async function authenticateAndAuthorize(request) {
     let user = null;
     let source;
@@ -60,6 +61,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
         let requestData = {};
         let requestFrom=null;
         let endpoint=null;
+        let logType =null
 
         try {
             // **Capture request data**
@@ -93,6 +95,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
             user = authUser;
             vendorId = user?.vendor;
             requestFrom=source
+            logType= user.role
             if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
                 responseStatus = 403;
                 responseData = { error: 'Forbidden' };
@@ -126,18 +129,21 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
             if (endpoint.startsWith('/api/v1/vendor')) {
                 //do vendor data logging---
                 const dataToSave = {
-                    vendorId,
+                    vendor_id:vendorId,
                     user: requestFrom == 'app' ? user.email : 'token',
                     endpoint,
                     method: request.method,
-                    requestData,
-                    responseData,
-                    status: responseStatus,
+                    request_data :JSON.stringify(requestData),
+                    response_data : JSON.stringify(responseData),
+                    status: parseInt(responseStatus),
                     timestamp: new Date(startTime).toISOString(),
-                    duration:`${duration} ms`,
-                    error: errorOccurred,
+                    duration_ms: duration,
+                    error: JSON.stringify(errorOccurred),
+                    log_type : logType,
+                    environment : process.env.APP_ENV
+
                 };
-                console.log(dataToSave)
+                await sendLogToFirehose(dataToSave)
             }
             
             // **Save the API call log**
