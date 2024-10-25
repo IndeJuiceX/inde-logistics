@@ -1,10 +1,33 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequestLabel from "@/components/vendor/api-logs/RequestLabel";
 
 
-export default function RequestLogs({ data }) {
+
+export default function RequestLogs({ data, vendorId }) {
+    const [loading, setLoading] = useState(true);
+    const [logs, setLogs] = useState([]);
+
+    useEffect(() => {
+        const fetchLogs = async () => {
+            const response = await fetch(`/api/v1/logs`);
+            if (!response.ok) {
+                console.error("Failed to fetch logs");
+                return;
+            }
+            const data = await response.json();
+            setLogs(data);
+            setLoading(false);
+            return data
+        }
+        if (vendorId) {
+            fetchLogs();
+        }
+    }, [vendorId]);
+
+
+
     const [searchTag, setSearchTag] = useState("");
 
     return (
@@ -23,8 +46,6 @@ export default function RequestLogs({ data }) {
                 <table className="min-w-full bg-white rounded-lg shadow">
                     <thead>
                         <tr className="text-left border-b border-gray-300">
-                            <th className="px-6 py-3">Environment</th>
-                            <th className="px-6 py-3">Type</th>
                             <th className="px-6 py-3">Verb</th>
                             <th className="px-6 py-3">Path</th>
                             <th className="px-6 py-3">Status</th>
@@ -34,12 +55,18 @@ export default function RequestLogs({ data }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {data
+                        {loading && (
+                            <tr>
+                                <td colSpan="7" className="text-center py-4">
+                                    Loading...
+                                </td>
+                            </tr>
+                        )}
+
+                        {logs
                             .filter((item) => item.endpoint.includes(searchTag))
                             .map((item, idx) => (
                                 <tr key={idx} className="border-b border-gray-200">
-                                    <td className="px-6 py-4 text-gray-600">{item.environment}</td>
-                                    <td className="px-6 py-4 text-gray-600">{item.log_type}</td>
                                     <td className="px-6 py-4"><RequestLabel type={'method'} value={item.method} /></td>
                                     <td className="px-6 py-4 text-gray-600">{item.endpoint}</td>
                                     <td className="px-6 py-4">
@@ -48,7 +75,7 @@ export default function RequestLogs({ data }) {
                                     <td className="px-6 py-4 text-gray-600">{item.duration_ms}ms</td>
 
                                     <td className="px-6 py-4" >
-                                        <Link href="api-logs/details" className="text-gray-500 hover:text-blue-500">
+                                        <Link href={`api-logs/${idx}`} className="text-gray-500 hover:text-blue-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"

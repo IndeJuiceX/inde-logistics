@@ -1,18 +1,8 @@
 import RequestLogs from "@/components/vendor/api-logs/RequestLogs";
 
-async function fetchLogs() {
-    const res = await fetch('https://api.example.com/vendor/logs');
-    if (!res.ok) {
-        console.error('Failed to fetch logs');
-    }
-    return res.json();
-}
 
-
-
-export default async function ApiLogsPage() {
-
-
+export default async function ApiLogsPage({ params }) {
+    const vendorId = params.vendorId;
     const sampleData = [{
         vendor_id: 'b71812ec',
         user: 'vendor@indejuice.com',
@@ -33,6 +23,6 @@ export default async function ApiLogsPage() {
     }]
 
     return (
-        <RequestLogs data={sampleData} />
+        <RequestLogs data={sampleData} vendorId={vendorId} />
     )
 }

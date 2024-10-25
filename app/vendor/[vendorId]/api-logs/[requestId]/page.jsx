@@ -1,7 +1,10 @@
 import RequestDetails from "@/components/vendor/api-logs/RequestDetails";
 
 
-export default function RequestDetailsPage() {
+export default function RequestDetailsPage({ params }) {
+    const requestId = params.requestId;
+    console.log('request id',requestId);
+
     const sampleData = {
         vendor_id: 'b71812ec',
         user: 'vendor@indejuice.com',
@@ -21,6 +24,6 @@ export default function RequestDetailsPage() {
         environment: 'local'
     };
     return (
-        <RequestDetails data={sampleData} />
+        <RequestDetails data={sampleData} requestId={requestId} />
     )
 }
