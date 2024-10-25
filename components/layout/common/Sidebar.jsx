@@ -14,6 +14,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   ChevronRightIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ vendor, vendorId }) {
@@ -57,21 +58,19 @@ export default function Sidebar({ vendor, vendorId }) {
 
       if (level === 0) {
         // Parent items
-        menuItemClasses = `${baseClasses} ${
-          menuItemActive
-            ? "bg-blue-600 text-white"
-            : subMenuActive
+        menuItemClasses = `${baseClasses} ${menuItemActive
+          ? "bg-blue-600 text-white"
+          : subMenuActive
             ? "bg-gray-100 text-gray-800"
             : "text-gray-800 hover:bg-gray-100"
-        }`;
+          }`;
         textStyle = "font-medium";
       } else {
         // Child items
-        menuItemClasses = `${baseClasses} ${
-          menuItemActive
-            ? "bg-blue-100 text-blue-700"
-            : "text-gray-600 hover:bg-gray-100"
-        }`;
+        menuItemClasses = `${baseClasses} ${menuItemActive
+          ? "bg-blue-100 text-blue-700"
+          : "text-gray-600 hover:bg-gray-100"
+          }`;
         textStyle = "font-normal";
         iconColor = "text-gray-400";
       }
@@ -92,18 +91,16 @@ export default function Sidebar({ vendor, vendorId }) {
             </div>
             {hasSubMenu && (
               <ChevronRightIcon
-                className={`w-5 h-5 ${iconColor} transform transition-transform duration-200 ${
-                  isOpen ? "rotate-90" : ""
-                }`}
+                className={`w-5 h-5 ${iconColor} transform transition-transform duration-200 ${isOpen ? "rotate-90" : ""
+                  }`}
               />
             )}
           </Link>
           {/* Submenu */}
           {hasSubMenu && (
             <div
-              className={`overflow-hidden transition-all duration-300 ${
-                isOpen ? "max-h-screen" : "max-h-0"
-              }`}
+              className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-screen" : "max-h-0"
+                }`}
             >
               <ul>{renderMenuItems(menuItem.subMenu, level + 1)}</ul>
             </div>
@@ -191,6 +188,12 @@ export default function Sidebar({ vendor, vendorId }) {
         },
       ],
     },
+    {
+      label: "Activity Logs",
+      href: `/vendor/${vendorId}/api-logs`,
+      icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
+      // You can add subMenu or match properties if needed
+    },
   ];
 
   return (
@@ -217,9 +220,8 @@ export default function Sidebar({ vendor, vendorId }) {
 
       {/* Sidebar */}
       <div
-        className={`w-64 bg-white shadow-lg h-screen fixed top-0 left-0 z-20 overflow-y-auto transform transition-transform duration-300 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0`}
+        className={`w-64 bg-white shadow-lg h-screen fixed top-0 left-0 z-20 overflow-y-auto transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0`}
       >
         <div className="p-6 border-b border-gray-200">
           {/* Vendor Logo and Name */}
