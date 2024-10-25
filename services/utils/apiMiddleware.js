@@ -48,7 +48,6 @@ export async function authenticateAndAuthorize(request) {
 }
 
 
-
 export function withAuthAndLogging(handler, allowedRoles = []) {
     return async function (request, context = {}) {
         const startTime = Date.now();
@@ -59,14 +58,16 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
         let user = null;
         let vendorId = null;
         let requestData = {};
-        let requestFrom=null;
-        let endpoint=null;
-        let logType =null
+        let requestFrom = null;
+        let endpoint = null;
+        let logType = null;
 
         try {
             // **Capture request data**
             const urlObj = new URL(request.url);
-            endpoint = urlObj.pathname.startsWith('/api/v1') ? urlObj.pathname : `/api/v1${urlObj.pathname}`; // Ensure API version part
+            endpoint = urlObj.pathname.startsWith('/api/v1')
+                ? urlObj.pathname
+                : `/api/v1${urlObj.pathname}`; // Ensure API version part
             requestData = {
                 url: request.url,
                 method: request.method,
@@ -74,7 +75,9 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
             };
 
             if (request.method === 'GET' && urlObj.search) {
-                requestData.params = Object.fromEntries(urlObj.searchParams.entries()); // Capture query params for GET
+                requestData.params = Object.fromEntries(
+                    urlObj.searchParams.entries()
+                ); // Capture query params for GET
             } else if (request.method !== 'GET' && request.method !== 'HEAD') {
                 try {
                     requestData.payload = await request.clone().json();
@@ -84,7 +87,12 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
             }
 
             // **Authenticate and authorize**
-            const { authorized, user: authUser, source, status } = await authenticateAndAuthorize(request);
+            const {
+                authorized,
+                user: authUser,
+                source,
+                status,
+            } = await authenticateAndAuthorize(request);
             if (!authorized) {
                 responseStatus = status;
                 responseData = { error: 'Unauthorized' };
@@ -94,8 +102,8 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
 
             user = authUser;
             vendorId = user?.vendor;
-            requestFrom=source
-            logType= user.role
+            requestFrom = source;
+            logType = user.role;
             if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
                 responseStatus = 403;
                 responseData = { error: 'Forbidden' };
@@ -127,25 +135,25 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
             const duration = endTime - startTime;
 
             if (endpoint.startsWith('/api/v1/vendor')) {
-                //do vendor data logging---
+                // Prepare data for logging
                 const dataToSave = {
-                    vendor_id:vendorId,
+                    vendor_id: vendorId,
                     user: requestFrom == 'app' ? user.email : 'token',
                     endpoint,
                     method: request.method,
-                    request_data :JSON.stringify(requestData),
-                    response_data : JSON.stringify(responseData),
+                    request_data: JSON.stringify(requestData),
+                    response_data: JSON.stringify(responseData),
                     status: parseInt(responseStatus),
                     timestamp: new Date(startTime).toISOString(),
                     duration_ms: duration,
                     error: JSON.stringify(errorOccurred),
-                    log_type : logType,
-                    environment : process.env.APP_ENV
-
+                    log_type: logType,
+                    environment: process.env.APP_ENV,
                 };
-                await sendLogToFirehose(dataToSave)
+                // Initiate logging without awaiting
+                sendLogToFirehose(dataToSave)
             }
-            
+
             // **Save the API call log**
             //await saveApiCall(dataToSave);
         }
