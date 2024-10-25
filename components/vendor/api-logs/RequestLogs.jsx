@@ -48,7 +48,7 @@ export default function RequestLogs({ data }) {
                                     <td className="px-6 py-4 text-gray-600">{item.duration_ms}ms</td>
 
                                     <td className="px-6 py-4" >
-                                        <Link href={item.endpoint} className="text-gray-500 hover:text-blue-500">
+                                        <Link href="api-logs/details" className="text-gray-500 hover:text-blue-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 24 24"
