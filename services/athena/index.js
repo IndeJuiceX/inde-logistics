@@ -1,28 +1,13 @@
-// Import the necessary Athena SDK commands
-import { AthenaClient, StartQueryExecutionCommand, GetQueryResultsCommand } from '@aws-sdk/client-athena';
+import { AthenaClient, StartQueryExecutionCommand, GetQueryExecutionCommand, GetQueryResultsCommand } from '@aws-sdk/client-athena';
 
-// Initialize Athena client
-const athena = new AthenaClient({ region: 'your-region' });
+const athena = new AthenaClient({ region: process.env.AWS_REGION });
 
-export default async function handler(req, res) {
-    if (req.method !== 'GET') {
-        return res.status(405).json({ message: 'Only GET requests allowed' });
-    }
-
-    const { userId, endpoint, startDate, endDate } = req.query;
-
-    // Validate input parameters
-    if (!userId || !startDate || !endDate) {
-        return res.status(400).json({ message: 'Missing required query parameters' });
-    }
-
-    // Construct the SQL query
+export async function getLogs(vendorId) {
     const queryString = `
       SELECT * 
-      FROM api_logs 
-      WHERE user_id = '${userId}'
-      AND endpoint = '${endpoint}'
-      AND timestamp BETWEEN '${startDate}' AND '${endDate}'
+      FROM logs 
+      WHERE vendor_id = '${vendorId}'
+      AND environment = '${process.env.APP_ENV}'
       LIMIT 100;
     `;
 
@@ -30,46 +15,49 @@ export default async function handler(req, res) {
         // Start Athena query execution
         const startCommand = new StartQueryExecutionCommand({
             QueryString: queryString,
-            QueryExecutionContext: { Database: 'your-database-name' },
-            ResultConfiguration: { OutputLocation: 's3://your-athena-output-bucket/' }
+            QueryExecutionContext: { Database: 'logistics_logs' },
+            ResultConfiguration: { OutputLocation: 's3://logistics.indejuice.com/athena-temp/' }
         });
 
         const startResponse = await athena.send(startCommand);
         const queryExecutionId = startResponse.QueryExecutionId;
 
-        // Check for the status of the query execution
-        let queryStatus = null;
-        let queryResults = null;
-
-        while (queryStatus !== 'SUCCEEDED') {
-            const statusCommand = new GetQueryResultsCommand({
+        // Poll until the query succeeds
+        let queryStatus = 'RUNNING';
+        while (queryStatus === 'RUNNING') {
+            const statusCommand = new GetQueryExecutionCommand({
                 QueryExecutionId: queryExecutionId
             });
             const statusResponse = await athena.send(statusCommand);
             queryStatus = statusResponse.QueryExecution.Status.State;
 
             if (queryStatus === 'FAILED' || queryStatus === 'CANCELLED') {
-                throw new Error('Query failed or was cancelled');
+                throw new Error(`Query ${queryStatus}: ${statusResponse.QueryExecution.Status.StateChangeReason}`);
             }
 
-            if (queryStatus === 'SUCCEEDED') {
-                // Get query results
-                const resultCommand = new GetQueryResultsCommand({
-                    QueryExecutionId: queryExecutionId
-                });
-                const resultResponse = await athena.send(resultCommand);
-                queryResults = resultResponse;
-            }
-
-            // Add a delay before rechecking the query status
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Wait 2 seconds before checking again
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
-        // Return the query results to the client
-        return res.status(200).json(queryResults);
+        // Get the query results if succeeded
+        const resultCommand = new GetQueryResultsCommand({
+            QueryExecutionId: queryExecutionId
+        });
+        const resultResponse = await athena.send(resultCommand);
 
+        const rows = resultResponse.ResultSet.Rows;
+        const headers = rows[0].Data.map(item => item.VarCharValue); // Extract headers
+        const data = rows.slice(1).map(row => {
+            const values = row.Data.map(item => item.VarCharValue);
+            return headers.reduce((obj, header, index) => {
+                obj[header] = values[index];
+                return obj;
+            }, {});
+        });
+
+        return data; // Return formatted data
     } catch (error) {
         console.error('Error querying Athena:', error);
-        return res.status(500).json({ message: `Error querying Athena: ${error.message}` });
+        throw new Error(`Error querying Athena: ${error.message}`);
     }
 }
