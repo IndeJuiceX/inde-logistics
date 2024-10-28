@@ -1,4 +1,4 @@
-import { getProductByVendorSku } from '@/services/data/product';
+import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists } from '@/services/dynamo/wrapper';
 import { searchIndex } from '@/services/open-search/wrapper';
 
@@ -12,8 +12,8 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
             const { vendor_sku } = item;
 
             // Fetch the existing product by vendor_sku
-            const result = await getProductByVendorSku(vendorId, vendor_sku);
-            if (!result.success || !result.data || result.data.length === 0) {
+            const result = await getProductById(vendorId, vendor_sku);
+            if (!result.success || !result.data ) {
                 invalidItems.push({
                     item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
@@ -31,58 +31,15 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
             };
         }
 
-        // Step 2: Fetch existing shipment items to check for duplicates
-        const existingItemsResponse = await searchIndex(
-            {
-                bool: {
-                    must: [
-                        { term: { 'entity_type.keyword': 'StockShipmentItem' } },
-                        { term: { 'shipment_id.keyword': stockShipmentId } },
-                        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#' + vendorId } },
-                    ],
-                },
-            },
-            {},
-            0,
-            1000 // Adjust size as needed
-        );
-
-        const existingItemsHits = existingItemsResponse.hits.hits || [];
-        const existingVendorSkus = new Set(
-            existingItemsHits.map((hit) => hit._source.vendor_sku)
-        );
-
-        // Step 3: Check for duplicates
-        const duplicateItems = [];
-        const newItems = [];
-
-        for (const item of validItems) {
-            if (existingVendorSkus.has(item.vendor_sku)) {
-                duplicateItems.push({
-                    item: item.vendor_sku,
-                    error: `Item with SKU ${item.vendor_sku} already exists in the shipment`,
-                });
-            } else {
-                newItems.push(item);
-            }
-        }
-
-        if (duplicateItems.length > 0) {
-            return {
-                success: false,
-                error: 'Some items already exist in the shipment',
-                invalidItems: duplicateItems,
-            };
-        }
 
         // Step 4: Prepare items for batch write
         const itemsToPut = [];
         const createdAt = new Date().toISOString();
 
-        for (const item of newItems) {
+        for (const item of validItems) {
             const itemToPut = {
                 pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-                sk: `STOCKSHIPMENTITEM#${item.vendor_sku}`,
+                sk: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${item.vendor_sku}`,
                 entity_type: 'StockShipmentItem',
                 shipment_id: stockShipmentId,
                 vendor_sku: item.vendor_sku,

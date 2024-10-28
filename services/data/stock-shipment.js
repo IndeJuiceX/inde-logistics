@@ -345,7 +345,5 @@ export async function getStockShipmentById(vendorId,stockShipmentId) {
 }
 export async function checkShipmentExists(vendorId, stock_shipment_id) {
     const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
-    console.log('SHIPMENT DATA IS ---')
-    console.log(shipmentData)
     return shipmentData.success && shipmentData.data;
 }

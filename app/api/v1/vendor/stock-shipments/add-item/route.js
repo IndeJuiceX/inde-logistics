@@ -35,12 +35,12 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
       return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
     }
 
-    // Ensure stock_shipment field exists and is an object
-    if (!body.stock_shipment || typeof body.stock_shipment !== 'object') {
-      return NextResponse.json({ error: 'Invalid request format: stock_shipment field is required and must be an object' }, { status: 400 });
-    }
+    // // Ensure stock_shipment field exists and is an object
+    // if (!body.stock_shipment || typeof body.stock_shipment !== 'object') {
+    //   return NextResponse.json({ error: 'Invalid request format: stock_shipment field is required and must be an object' }, { status: 400 });
+    // }
 
-    const { stock_shipment_id, items } = body.stock_shipment;
+    const { stock_shipment_id, items } = body//.stock_shipment;
 
     // Validate that stock_shipment_id is present
     if (!stock_shipment_id) {
@@ -63,7 +63,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Validation failed for some items', invalidItems: validationResult.errors },
+        { error: 'Validation failed for some items', details: validationResult.errors },
         { status: 400 }
       );
     }
@@ -75,7 +75,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
     if (!stockShipmentResult.success) {
       return NextResponse.json(
-        { error: stockShipmentResult.error },
+        { error: stockShipmentResult.error , details : stockShipmentResult?.invalidItems || stockShipmentResult?.details  || []},
         { status: 400 }
       );
     }
