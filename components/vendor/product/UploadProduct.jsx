@@ -61,6 +61,7 @@ export default function UploadProduct({ vendorId }) {
                 alert('Products uploaded successfully');
                 setUploadResult(result);
             } else {
+                setUploadResult(result)
                 alert(`Failed to upload products: ${result.error}`);
             }
         } catch (error) {
