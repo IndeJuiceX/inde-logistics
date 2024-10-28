@@ -67,7 +67,6 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
 
     // Update the stock shipment
     const stockShipmentResult = await updateItemsStockInStockShipment(vendorId, stock_shipment_id, validItems);
-    console.log(stockShipmentResult)
     if (!stockShipmentResult.success) {
       return NextResponse.json(
         { error: stockShipmentResult.message, details: stockShipmentResult?.failedItems || [] },

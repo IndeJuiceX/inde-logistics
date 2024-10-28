@@ -290,8 +290,7 @@ export async function updateItemsStockInStockShipment(
             const pkVal = 'VENDORSTOCKSHIPMENTITEM#' + vendorId;
             const skVal = 'STOCKSHIPMENT#' + stockShipmentId + '#STOCKSHIPMENTITEM#' + vendor_sku;
 
-            console.log(pkVal)
-            console.log(skVal)
+          
             // Fields to update
             const updatedFields = {
                 stock_in: stock_in,
