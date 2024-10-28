@@ -1,5 +1,5 @@
 import { getProductById } from '@/services/data/product';
-import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists } from '@/services/dynamo/wrapper';
+import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';
 import { searchIndex } from '@/services/open-search/wrapper';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
@@ -13,7 +13,7 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
 
             // Fetch the existing product by vendor_sku
             const result = await getProductById(vendorId, vendor_sku);
-            if (!result.success || !result.data ) {
+            if (!result.success || !result.data) {
                 invalidItems.push({
                     item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
@@ -116,53 +116,35 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
 
 export async function removeItemsFromStockShipment(vendorId, stockShipmentId, vendorSkusToRemove) {
     try {
-        // Step 1: Fetch existing shipment items
-        const existingItemsResponse = await searchIndex(
-            {
-                bool: {
-                    must: [
-                        { term: { 'entity_type.keyword': 'StockShipmentItem' } },
-                        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#' + vendorId } },
-                        { term: { 'shipment_id.keyword': stockShipmentId } },
-                        { terms: { 'vendor_sku.keyword': vendorSkusToRemove } },
-                    ],
-                },
-            },
-            {},
-            0,
-            vendorSkusToRemove.length
-        );
 
-        const existingItemsHits = existingItemsResponse.hits.hits || [];
-        const existingVendorSkus = new Set(
-            existingItemsHits.map((hit) => hit._source.vendor_sku)
-        );
+        const stockShipmentItemsData = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#`)
 
-        // Check if all vendorSkusToRemove exist in the shipment
-        const notFoundSkus = vendorSkusToRemove.filter(
-            (sku) => !existingVendorSkus.has(sku)
-        );
-
-        if (notFoundSkus.length > 0) {
-            return {
-                success: false,
-                error: 'Some items to remove were not found in the shipment',
-                invalidItems: notFoundSkus.map((sku) => ({
-                    item: sku,
-                    error: `Item with SKU ${sku} not found in the shipment`,
-                })),
-            };
-        }
-
+        const existingItems = stockShipmentItemsData.data
         // Step 2: Prepare items for batch delete
         const itemsToDelete = [];
+        const invalidItems =[]
 
         for (const sku of vendorSkusToRemove) {
-            const deleteItem = {
-                pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
-                sk: `STOCKSHIPMENTITEM#${sku}`,
-            };
-            itemsToDelete.push(deleteItem);
+            const skuExists = existingItems.some(item => item.vendor_sku === sku);
+
+            if (skuExists) {
+                const deleteItem = {
+                    pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                    sk: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${sku}`,
+                };
+                itemsToDelete.push(deleteItem);
+            } else {
+                invalidItems.push({item : sku , error:`Item with sku ${sku} does not exist in the stock shipment` })
+            }
+
+        }
+
+        if(invalidItems.length > 0) {
+            return {
+                success: false,
+                error : 'Failed to remove items from the Stock Shipment',
+                details : invalidItems
+            }
         }
 
         // Step 3: Use batchWriteItems to delete items
@@ -186,7 +168,7 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
         if (batchDeleteResult.results.unprocessedItems.length > 0) {
             errors.push(
                 ...batchDeleteResult.results.unprocessedItems.map((item) => ({
-                    item: item.DeleteRequest.Key.sk.replace('STOCKSHIPMENTITEM#', ''),
+                    item: item.DeleteRequest.Key.sk.replace(`STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${item.vendor_sku}`, ''),
                     error: 'Unprocessed item during delete',
                 }))
             );
@@ -247,7 +229,7 @@ export async function updateItemsStockInStockShipment(
             const pkVal = 'VENDORSTOCKSHIPMENTITEM#' + vendorId;
             const skVal = 'STOCKSHIPMENT#' + stockShipmentId + '#STOCKSHIPMENTITEM#' + vendor_sku;
 
-          
+
             // Fields to update
             const updatedFields = {
                 stock_in: stock_in,
@@ -256,10 +238,10 @@ export async function updateItemsStockInStockShipment(
 
             // Attempt to update the item
             const result = await updateItemIfExists(pkVal, skVal, updatedFields);
-            
+
             if (!result.success) {
                 // Record failed SKU with reason
-                failedItems.push({ item:vendor_sku, error: result.error.message });
+                failedItems.push({ item: vendor_sku, error: result.error.message });
             }
         }
 
