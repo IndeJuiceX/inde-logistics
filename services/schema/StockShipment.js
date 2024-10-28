@@ -32,7 +32,7 @@ export const validateStockShipmentItems = (items) => {
       validatedItems.push(result.value);
     } else {
       invalidItems.push({
-        errors: result.errors,
+        error: result.errors.join(', '), // Convert errors array to a comma-separated string
         item: item.vendor_sku || item,
       });
     }

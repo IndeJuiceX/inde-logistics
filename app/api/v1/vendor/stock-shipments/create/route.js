@@ -40,7 +40,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
         if (!validationResult.success) {
             return NextResponse.json(
-                { error: 'Validation failed for some items', invalidItems: validationResult.errors },
+                { error: 'Validation failed for some items', details: validationResult.errors },
                 { status: 400 }
             );
         }
@@ -50,14 +50,14 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
         if (!stockShipmentResult.success) {
             return NextResponse.json(
-                { error: stockShipmentResult.error, invalidItems: stockShipmentResult.invalidItems },
+                { error: stockShipmentResult.error, details: stockShipmentResult.invalidItems },
                 { status: 400 }
             );
         }
 
         // Return success response
         return NextResponse.json(
-            { message: stockShipmentResult.message, shipment_id: stockShipmentResult.shipment_id },
+            { created: true, shipment_id: stockShipmentResult.shipment_id },
             { status: 201 }
         );
     } catch (error) {
