@@ -1,9 +1,9 @@
 import Joi from 'joi';
 
-// Define the product update schema using Joi
 export const getProductUpdateSchema = () => Joi.object({
   vendor_sku: Joi.string().required().label('vendor_sku'), // Current vendor SKU
-  //new_vendor_sku: Joi.string().optional().label('new_vendor_sku'), // For updating the SKU
+  // Uncomment if you want to allow updating the SKU
+  // new_vendor_sku: Joi.string().optional().label('new_vendor_sku'), // For updating the SKU
   status: Joi.string().valid('Active', 'Inactive').optional().label('status'),
   stock_available: Joi.number().integer().min(0).optional().label('stock_available'),
   name: Joi.string().optional().label('name'),
@@ -11,24 +11,31 @@ export const getProductUpdateSchema = () => Joi.object({
   sale_price: Joi.number().optional().label('sale_price'),
   brand_name: Joi.string().optional().label('brand_name'),
   image: Joi.string().uri().optional().label('image'),
-  attributes: Joi.object().pattern(
-    Joi.string(),
-    Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
-  ).optional().label('attributes'),
-  // You can uncomment the warehouse field if needed
-  /*warehouse: Joi.alternatives().try(
-    Joi.array().empty(),
-    Joi.object().pattern(Joi.string(), Joi.any())
-  ).optional().label('warehouse'),*/
+  attributes: Joi.object()
+    .pattern(
+      Joi.string(),
+      Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
+    )
+    .optional()
+    .label('attributes'),
 })
   .or(
-    'new_vendor_sku', 'status', 'stock', 'name', 'cost_price', 'sale_price',
-    'brand_name', 'image', 'attributes' /*, 'warehouse'*/
+    // Include 'new_vendor_sku' only if it's uncommented in the schema
+    // 'new_vendor_sku',
+    'status',
+    'stock_available',
+    'name',
+    'cost_price',
+    'sale_price',
+    'brand_name',
+    'image',
+    'attributes',
+    'warehouse' // Include if warehouse is uncommented
   )
   .unknown(false)
   .messages({
     'object.missing':
-      'At least one field (e.g., status, stock, name, etc.) must be provided for the update.',
+      'At least one field (e.g., status, stock_available, name, etc.) must be provided for the update.',
   });
 
 // Function to validate a single product update
