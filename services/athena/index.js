@@ -2,6 +2,33 @@ import { AthenaClient, StartQueryExecutionCommand, GetQueryExecutionCommand, Get
 
 const athena = new AthenaClient({ region: process.env.AWS_REGION });
 
+export async function getLog(vendorId, logType, logId) {
+    let whereConditions = `vendor_id = '${vendorId}' AND environment = '${process.env.APP_ENV}' AND log_type  = '${logType}' AND log_id= '${logId}'`;
+    const queryString = `
+      SELECT * 
+      FROM logs 
+      WHERE ${whereConditions}
+      LIMIT=1
+    `;
+    const startCommand = new StartQueryExecutionCommand({
+        QueryString: queryString,
+        QueryExecutionContext: { Database: 'logistics_logs' },
+        ResultConfiguration: { OutputLocation: 's3://logistics.indejuice.com/athena-temp/' }
+    });
+
+    const startResponse = await athena.send(startCommand);
+    const queryExecutionId = startResponse.QueryExecutionId;
+
+    // Poll until the query succeeds
+    await waitForQueryCompletion(queryExecutionId);
+
+    // **Get the query results with pagination**
+    const results = await getQueryResultsPaginated(queryExecutionId,1, nextToken);
+
+    return results;
+
+}
+
 export async function getLogs({ logType, vendorId, status, endpoint, method, limit = 10, nextToken }) {
     // SQL to repair partitions
     const repairQuery = `MSCK REPAIR TABLE logistics_logs.logs;`;
@@ -86,7 +113,7 @@ async function waitForQueryCompletion(queryExecutionId) {
 }
 
 // **Helper function to get paginated results**
-async function getQueryResultsPaginated(queryExecutionId,limit, nextToken) {
+async function getQueryResultsPaginated(queryExecutionId, limit, nextToken) {
     const resultCommandParams = {
         QueryExecutionId: queryExecutionId,
         MaxResults: limit//1000, // Adjust as needed (max 1000)
