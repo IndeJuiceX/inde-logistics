@@ -3,6 +3,8 @@ import { getVendorById } from '../data/vendor';
 import { NextResponse } from 'next/server';
 import { getLoggedInUser } from '@/app/actions';
 import { sendLogToFirehose } from '../firehose';
+import { v4 as uuidv4 } from 'uuid';
+
 export async function authenticateAndAuthorize(request) {
     let user = null;
     let source;
@@ -149,6 +151,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
                     error: JSON.stringify(errorOccurred),
                     log_type: logType,
                     environment: process.env.APP_ENV,
+                    log_id:uuidv4()
                 };
                 // Initiate logging without awaiting
                 sendLogToFirehose(dataToSave)
