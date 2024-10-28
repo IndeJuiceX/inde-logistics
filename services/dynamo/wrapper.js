@@ -545,7 +545,51 @@ const transactWriteItems = async (transactionItems) => {
         return { success: false, error };
     }
 };
-//export { updateOrInsert };
+
+const updateItemIfExists = async (pkVal, skVal, updatedFields, expressionAttributeNames) => {
+    const client = getClient();
+
+    let UpdateExpression = 'SET';
+    const ExpressionAttributeValues = {};
+    const ExpressionAttributeNames = expressionAttributeNames || {};
+
+    Object.entries(updatedFields).forEach(([key, value], index) => {
+        const attrName = `#attr${index}`;
+        const attrValue = `:val${index}`;
+
+        // Append the attribute and value to the update expression
+        UpdateExpression += ` ${attrName} = ${attrValue},`;
+        ExpressionAttributeValues[attrValue] = value;
+        ExpressionAttributeNames[attrName] = key;
+    });
+
+    // Remove trailing comma from the UpdateExpression
+    UpdateExpression = UpdateExpression.slice(0, -1);
+
+    // Add ConditionExpression to ensure the item exists
+    const params = {
+        TableName: TABLE_NAME,
+        Key: { pk: pkVal, sk: skVal },
+        UpdateExpression,
+        ExpressionAttributeValues,
+        ExpressionAttributeNames,
+        ReturnValues: 'ALL_NEW', // Optionally return all new attributes after update
+        ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)', // Ensure the item exists
+    };
+
+    try {
+        const data = await client.send(new UpdateCommand(params));
+        return { success: true, data: data.Attributes };
+    } catch (error) {
+        console.error('DynamoDB UpdateItem Error:', error);
+        if (error.name === 'ConditionalCheckFailedException') {
+            // Handle item not existing
+            return { success: false, error: new Error('Item does not exist') };
+        }
+        return { success: false, error };
+    }
+};
+
 
 
 
@@ -563,5 +607,6 @@ export {
     queryItemCount, 
     updateOrInsert, 
     transactWriteItems ,
-    queryItemsWithPkAndSk
+    queryItemsWithPkAndSk,
+    updateItemIfExists
 };

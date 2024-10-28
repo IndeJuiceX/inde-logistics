@@ -1,6 +1,6 @@
 import { getProductById, getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
-import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';
+import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk,getItem } from '@/services/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
@@ -336,113 +336,16 @@ export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveSta
 };
 
 
-
-/*export async function getStockShipmentDetails(vendorId, stockShipmentId) {
-    // const from = (page - 1) * pageSize;
-    // const size = pageSize;
-
-    // Get the stock shipment data
-    const stockShipmentData = await getStockShipmentById(vendorId, stockShipmentId);
-
-    // Extract the shipment object
-    const stockShipmentArray = stockShipmentData.data;
-    if (!stockShipmentArray || stockShipmentArray.length === 0) {
-        // Handle case where shipment is not found
-        return {
-            success: false,
-            error: 'Stock shipment not found.',
-        };
+export async function getStockShipmentById(vendorId,stockShipmentId) {
+    const data = await getItem(`VENDORSTOCKSHIPMENT#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}`);
+    if(data.success && data.data) {
+        data.data=cleanResponseData(data.data)
     }
-    const stockShipment = stockShipmentArray[0]; // Get the shipment object
-
-
-    // Build the query for shipment items
-    const shipmentItemsMust = [
-        { term: { 'entity_type.keyword': 'StockShipmentItem' } },
-        { term: { 'pk.keyword': 'VENDORSTOCKSHIPMENTITEM#' + vendorId } },
-        { term: { 'shipment_id.keyword': stockShipmentId } },
-    ];
-
-    // Fetch shipment items with pagination
-    const shipmentItemsResponse = await searchIndex(
-        {
-            bool: {
-                must: shipmentItemsMust,
-            },
-        },
-        {},
-        0,
-        10000
-    );
-
-    console.log('SHIPMENT ITEMS RESPOSNE----')
-    console.log(shipmentItemsResponse)
-    const shipmentItemsHits = shipmentItemsResponse.hits.hits;
-
-    // Get total number of shipment items for pagination
-    const totalHits = shipmentItemsResponse.hits.total.value;
-
-    // If no shipment items found
-    if (shipmentItemsHits.length === 0) {
-        return {
-            success: true,
-            data: [],
-        };
-    }
-
-    // Step 2: Extract Vendor SKUs from current page of items
-    const vendorSkus = shipmentItemsHits.map((hit) => hit._source.vendor_sku);
-    const uniqueVendorSkus = [...new Set(vendorSkus)];
-
-    // Step 3: Fetch Product Data
-    const productsMust = [
-        { term: { 'entity_type.keyword': 'Product' } },
-        { term: { 'pk.keyword': 'VENDORPRODUCT#' + vendorId } },
-        { terms: { 'vendor_sku.keyword': uniqueVendorSkus } },
-    ];
-
-    const productsResponse = await searchIndex(
-        {
-            bool: {
-                must: productsMust,
-            },
-        },
-        {},
-        0,
-        uniqueVendorSkus.length
-    );
-
-    // Create a map of vendor_sku to product data
-    const productDataMap = {};
-    productsResponse.hits.hits.forEach((hit) => {
-        const product = hit._source;
-        productDataMap[product.vendor_sku] = {
-            name: product.name,
-            image: product.image,
-            brand_name: product.brand_name,
-        };
-    });
-
-    // Step 4: Merge Shipment Items with Product Data
-    const shipmentItems = shipmentItemsHits.map((hit) => {
-        const item = hit._source;
-        const productInfo = productDataMap[item.vendor_sku] || {};
-
-        return {
-            vendor_sku: item.vendor_sku,
-            quantity: item.stock_in,
-            ...productInfo,
-        };
-    });
-
-    // Return the final data in the desired format
-    return {
-        success: true,
-        data: { stock_shipment: stockShipment, stock_shipment_items: shipmentItems }, // Shipment items as data
-    };
-}*/
-
+    return data;
+}
 export async function checkShipmentExists(vendorId, stock_shipment_id) {
     const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
-    return shipmentData.success && shipmentData.data.length > 0;
+    console.log('SHIPMENT DATA IS ---')
+    console.log(shipmentData)
+    return shipmentData.success && shipmentData.data;
 }
