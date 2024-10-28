@@ -40,6 +40,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
             return NextResponse.json(
                 {
                     error: 'Invalid order data',
+                    vendor_order_id: order?.vendor_order_id || 'UNKNOWN',
                     details: validationResult.errors, // This now includes detailed errors
                 },
                 { status: 400 }
@@ -64,7 +65,10 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
         const createResult = await createOrder(vendorId, validOrder);
 
         if (!createResult.success) {
-            return NextResponse.json({ error: 'Failed to create order', details: createResult.errors }, { status: 400 });
+            return NextResponse.json({
+                error: 'Failed to create order', vendor_order_id: order?.vendor_order_id || 'UNKNOWN',
+                details: createResult.errors
+            }, { status: 400 });
         }
 
         // Prepare the response payload
