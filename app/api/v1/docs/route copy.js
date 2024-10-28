@@ -52,7 +52,6 @@ export const GET = async () => {
     indexSpec.tags = indexSpec.tags || [];
     indexSpec.components = indexSpec.components || {};
     indexSpec.components.schemas = indexSpec.components.schemas || {};
-    indexSpec.components.securitySchemes = indexSpec.components.securitySchemes || {};
 
     // Combine all specs
     const allSpecs = [...productSpecs, ...orderSpecs, ...shipmentSpecs];
@@ -87,24 +86,6 @@ export const GET = async () => {
         ...schemaSpec,
       };
     });
-
-    // Load and merge security schemes
-    const securitySchemesSpec = loadYaml(
-      path.resolve(process.cwd(), 'app/docs/securitySchemes.yml')
-    );
-
-    // Merge 'components' from securitySchemesSpec into indexSpec.components
-    indexSpec.components = {
-      ...indexSpec.components,
-      ...securitySchemesSpec.components,
-    };
-
-    // *** Apply security globally ***
-    indexSpec.security = [
-      {
-        BearerAuth: [],
-      },
-    ];
 
     return new Response(JSON.stringify(indexSpec), {
       status: 200,

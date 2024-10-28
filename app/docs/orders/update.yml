@@ -1,0 +1,52 @@
+paths:
+  /v1/vendor/orders/update:
+    patch:
+      summary: Update order buyer information
+      description: >
+        Updates the buyer information for an order for the authenticated vendor. Only certain fields can be updated, and only if the order's status allows it.
+      tags:
+        - Order
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Payload containing the `vendor_order_id` and `buyer` information to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vendor_order_id
+                - buyer
+              properties:
+                vendor_order_id:
+                  type: string
+                  description: The vendor's order ID.
+                  example: 'ORDER12345'
+                buyer:
+                  $ref: '#/components/schemas/Buyer'
+      responses:
+        '200':
+          description: Order updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vendor_order_id:
+                    type: string
+                    description: The vendor's order ID.
+                    example: 'ORDER12345'
+                  updated:
+                    type: string
+                    description: Indicates the order was successfully updated.
+                    example: 'true'
+        '400':
+          description: Bad Request - Invalid request parameters or order cannot be updated.
+        '403':
+          description: Forbidden - User not authorized.
+        '404':
+          description: Not Found - Order not found.
+        '500':
+          description: Internal Server Error - An unexpected error occurred.
+          

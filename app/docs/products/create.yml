@@ -1,0 +1,33 @@
+paths:
+  /v1/vendor/products/create:
+    post:
+      summary: Add products
+      tags:
+        - Product
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: A JSON object containing an array of products to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - products
+              properties:
+                products:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/product"
+      responses:
+        "200":
+          description: Products uploaded successfully
+        "400":
+          description: Validation errors or request payload exceeds limits
+        "401":
+          description: Unauthorized - Missing or invalid API token
+        "413":
+          description: Payload exceeds the allowed size limit (5 MB)
+        "500":
+          description: Server error

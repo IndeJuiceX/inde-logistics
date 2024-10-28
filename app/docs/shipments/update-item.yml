@@ -1,0 +1,123 @@
+paths:
+  /v1/vendor/stock-shipments/update-item:
+    patch:
+      summary: Update items in a stock shipment
+      description: >
+        Updates the details of items in an existing stock shipment for the authenticated vendor.
+        The shipment must exist and belong to the vendor.
+      tags:
+        - Shipments
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Payload containing the `stock_shipment_id` and `items` to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - stock_shipment
+              properties:
+                stock_shipment:
+                  type: object
+                  required:
+                    - stock_shipment_id
+                    - items
+                  properties:
+                    stock_shipment_id:
+                      type: string
+                      description: ID of the stock shipment to update items in.
+                      example: "SHIPMENT12345"
+                    items:
+                      type: array
+                      description: List of items to update in the stock shipment.
+                      items:
+                        $ref: "#/components/schemas/StockShipments"
+      responses:
+        "200":
+          description: Items updated successfully in the stock shipment.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message.
+                    example: "Items updated in stock shipment successfully."
+                  shipment_id:
+                    type: string
+                    description: ID of the stock shipment.
+                    example: "SHIPMENT12345"
+        "400":
+          description: Bad Request - Invalid request format or validation errors.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating why the request failed.
+                    example: "Validation failed for some items."
+                  invalidItems:
+                    type: array
+                    description: Details about items that failed validation.
+                    items:
+                      type: object
+                      properties:
+                        item:
+                          $ref: "#/components/schemas/StockShipments"
+                        errors:
+                          type: array
+                          items:
+                            type: string
+                            example: "Quantity must be a positive integer."
+        "403":
+          description: Forbidden - User not authorized.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating lack of permission.
+                    example: "Forbidden"
+        "404":
+          description: Not Found - Shipment not found or does not belong to the vendor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the shipment was not found.
+                    example: "Shipment not found or does not belong to the vendor."
+        "413":
+          description: Payload Too Large - Payload exceeds size limit.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the payload is too large.
+                    example: "Payload exceeds size limit of 2MB."
+        "500":
+          description: Internal Server Error - An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating a server error.
+                    example: "Server error"
+                  details:
+                    type: string
+                    description: Additional details about the error (optional).

@@ -1,0 +1,84 @@
+paths:
+  /v1/vendor/stock-shipments:
+    get:
+      summary: Retrieve stock shipment(s)
+      description: >
+        Retrieves stock shipment details for the authenticated vendor. If `stock_shipment_id` is provided,
+        retrieves the details of that specific stock shipment. Otherwise, returns a paginated list of all stock shipments.
+      tags:
+        - Shipments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: stock_shipment_id
+          in: query
+          description: The ID of the stock shipment to retrieve.
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination (defaults to 1).
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: Number of stock shipments per page (defaults to 20).
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful retrieval of stock shipment(s).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/StockShipments'
+                      - type: array
+                        items:
+                          $ref: '#/components/schemas/StockShipments'
+                    description: >
+                      If `stock_shipment_id` is provided, `data` is a single stock shipment object.
+                      Otherwise, `data` is an array of stock shipment objects.
+                  success:
+                    type: boolean
+                    example: true
+                  total:
+                    type: integer
+                    description: Total number of stock shipments.
+                    example: 100
+                  page:
+                    type: integer
+                    description: Current page number.
+                    example: 1
+                  page_size:
+                    type: integer
+                    description: Number of items per page.
+                    example: 20
+        '403':
+          description: Forbidden - User not authorized.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Forbidden'
+        '500':
+          description: Internal Server Error - An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Failed to fetch Stock Shipments'

@@ -1,0 +1,43 @@
+paths:
+  /v1/vendor/orders/create:
+    post:
+      summary: Create a new order
+      description: >
+        Creates a new order for the authenticated vendor. The order data must conform to the required schema.
+      tags:
+        - Order
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Order data to create a new order.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+      responses:
+        "201":
+          description: Order created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: boolean
+                    description: Indicates the order was successfully created.
+                    example: true
+                  vendor_order_id:
+                    type: string
+                    description: The vendor's order ID of the created order.
+                    example: "ORDER12345"
+        "400":
+          description: Bad Request - Invalid order data or request parameters.
+        "403":
+          description: Forbidden - User not authorized.
+        "409":
+          description: Conflict - Order already exists.
+        "413":
+          description: Payload Too Large - Payload exceeds the size limit.
+        "500":
+          description: Internal Server Error - An unexpected error occurred.

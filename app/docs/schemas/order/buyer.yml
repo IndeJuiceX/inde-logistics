@@ -1,0 +1,36 @@
+Buyer:
+  type: object
+  description: Buyer information
+  properties:
+    name:
+      type: string
+    phone:
+      type: string
+    email:
+      type: string
+      format: email
+    address_line_1:
+      type: string
+    address_line_2:
+      type: string
+      nullable: true
+    address_line_3:
+      type: string
+      nullable: true
+    address_line_4:
+      type: string
+      nullable: true
+    city:
+      type: string
+    postcode:
+      type: string
+    country:
+      type: string
+  required:
+    - name
+    - phone
+    - email
+    - address_line_1
+    - city
+    - postcode
+    - country

@@ -1,0 +1,11 @@
+OrderUpdate:
+  type: object
+  description: Order update information
+  properties:
+    vendor_order_id:
+      type: string
+    buyer:
+      $ref: "#/components/schemas/Buyer"
+  required:
+    - vendor_order_id
+    - buyer
