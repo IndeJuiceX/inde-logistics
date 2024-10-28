@@ -17,7 +17,9 @@ export default function RequestLogs({ data, vendorId }) {
                 return;
             }
             const data = await response.json();
-            setLogs(data);
+            console.log('logs',data);
+            
+            setLogs(data.data);
             setLoading(false);
             return data
         }
