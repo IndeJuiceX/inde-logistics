@@ -46,7 +46,7 @@ export const validateProducts = (products) => {
       validatedProducts.push(result.value);
     } else {
       invalidProducts.push({
-        errors: result.errors,
+        errors: result.errors.join(','),
         product: product.vendor_sku,
       });
     }

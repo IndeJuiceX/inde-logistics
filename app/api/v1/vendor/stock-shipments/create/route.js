@@ -57,7 +57,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
         // Return success response
         return NextResponse.json(
-            { created: true, shipment_id: stockShipmentResult.shipment_id },
+            { created: true, stock_shipment_id: stockShipmentResult.shipment_id },
             { status: 201 }
         );
     } catch (error) {
