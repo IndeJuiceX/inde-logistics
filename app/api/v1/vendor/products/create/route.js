@@ -82,6 +82,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
                 sk: sk,
                 entity_type: 'Product',
                 product_id: productId,
+                stock_available : process.env.APP_ENV != 'Production'? Math.floor(Math.random() * 50) :0,
                 ...product
             };
         });
