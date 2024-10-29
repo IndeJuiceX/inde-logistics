@@ -25,6 +25,8 @@ import {
    */
   export async function runAthenaQuery({ queryString, limit, nextToken, queryExecutionId }) {
     try {
+      console.log('queryString',queryString);
+      
       // If no existing queryExecutionId, start a new query
       if (!queryExecutionId) {
         const startCommand = new StartQueryExecutionCommand({

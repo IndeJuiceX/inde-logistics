@@ -1,11 +1,15 @@
 'use client';
-import convertTime from "@/services/utils/convertTime";
+import { convertTime } from "@/services/utils/convertTime";
 import { useState, useEffect } from "react";
 import RequestLabel from "./RequestLabel";
 
 export default function RequestDetails({ logId }) {
-    const [data, setData] = useState([]);
+    const [data, setData] = useState({});
     const [loading, setLoading] = useState(true);
+
+    const [activeTab, setActiveTab] = useState("Payload");
+    const [payload, setPayload] = useState({});
+    const [response, setResponse] = useState({});
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -15,52 +19,45 @@ export default function RequestDetails({ logId }) {
                 return;
             }
             const data = await response.json();
-            console.log('detials page', data);
+            console.log('details page', data);
 
-            // setData(data.data[requestId]);
-            // setLoading(false);
+            setData(data);
+            setLoading(false);
             return data
         }
+
         if (logId) {
             fetchLogs();
         }
     }, [logId]);
 
+    useEffect(() => {
+        if (data && data.request_data) {
+            try {
+                const requestData = JSON.parse(data.request_data);
+                console.log('data.request_data', requestData.payload);
 
-
-    const [activeTab, setActiveTab] = useState("Payload");
-    const [payload, setPayload] = useState(data.request_data);
-    const [response, setResponse] = useState(data.response_data ? JSON.parse(data.response_data) : {});
-
-    // Sample JSON data for each tab
-    const payloadData = {
-        example: "payload data here",
-    };
-
-    // const headersData = {
-    //     "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-    //     "accept-encoding": "gzip, deflate, br, zstd",
-    //     referer: "http://localhost:3000/",
-    //     "sec-fetch-dest": "empty",
-    //     "sec-fetch-mode": "cors",
-    //     "sec-fetch-site": "same-site",
-    // };
-
-    // const sessionData = {
-    //     sessionId: "abc123",
-    //     userId: "user789",
-    // };
-
-    // const responseData = {
-    //     message: "Bad Request",
-    //     statusCode: 400,
-    // };
+                setPayload(requestData.payload);
+            } catch (error) {
+                console.error("Error parsing request_data", error);
+                setPayload({});
+            }
+        }
+        if (data && data.response_data) {
+            try {
+                setResponse(JSON.parse(data.response_data));
+            } catch (error) {
+                console.error("Error parsing response_data", error);
+                setResponse({});
+            }
+        }
+    }, [data]);
 
     // Function to render the content based on the active tab
     const renderTabContent = () => {
         switch (activeTab) {
             case "Payload":
-                return <pre>{JSON.stringify(payloadData, null, 2)}</pre>;
+                return <pre>{JSON.stringify(payload, null, 2)}</pre>;
             case "Response":
                 return <pre>{JSON.stringify(response, null, 2)}</pre>;
             default:
@@ -69,7 +66,6 @@ export default function RequestDetails({ logId }) {
     };
 
     return (
-
         <div className="p-6 space-y-6">
             {loading && <p>Loading...</p>}
             {!loading && (
@@ -81,22 +77,22 @@ export default function RequestDetails({ logId }) {
                                 <p className="font-semibold text-gray-500">Time</p>
                                 <p>{convertTime(data.timestamp)}</p>
                             </div>
-                            <div>
-                                <p className="font-semibold text-gray-500">Hostname</p>
-                                <p>36e7f6c38a5f</p>
-                            </div>
+                            {/* <div>
+                <p className="font-semibold text-gray-500">Hostname</p>
+                <p>36e7f6c38a5f</p>
+              </div> */}
                             <div>
                                 <p className="font-semibold text-gray-500">Method</p>
                                 <RequestLabel type="method" value={data.method} />
                             </div>
-                            <div>
-                                <p className="font-semibold text-gray-500">Controller Action</p>
-                                <p>App\Http\Controllers\Api\V1\Store\CartController@getCarts</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-500">Middleware</p>
-                                <p>api</p>
-                            </div>
+                            {/* <div>
+                <p className="font-semibold text-gray-500">Controller Action</p>
+                <p>App\Http\Controllers\Api\V1\Store\CartController@getCarts</p>
+              </div> */}
+                            {/* <div>
+                <p className="font-semibold text-gray-500">Middleware</p>
+                <p>api</p>
+              </div> */}
                             <div>
                                 <p className="font-semibold text-gray-500">EndPoint</p>
                                 <p>{data.endpoint}</p>
@@ -109,10 +105,10 @@ export default function RequestDetails({ logId }) {
                                 <p className="font-semibold text-gray-500">Duration</p>
                                 <p>{data.duration_ms} ms</p>
                             </div>
-                            <div>
-                                <p className="font-semibold text-gray-500">IP Address</p>
-                                <p>192.168.65.1</p>
-                            </div>
+                            {/* <div>
+                <p className="font-semibold text-gray-500">IP Address</p>
+                <p>192.168.65.1</p>
+              </div> */}
                             <div>
                                 <p className="font-semibold text-gray-500">Error</p>
                                 <p>{data.error ? 'True' : 'false'}</p>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequestLabel from "@/components/vendor/api-logs/RequestLabel";
+import { getDateAndTime } from "@/services/utils/convertTime";
 
 export default function RequestLogs({ data, vendorId }) {
     const [loading, setLoading] = useState(true);
@@ -27,7 +28,6 @@ export default function RequestLogs({ data, vendorId }) {
             return;
         }
         const data = await response.json();
-        console.log('logs', data);
 
         if (nextButton) {
             // setNextTokens([...nextTokens, { [page]: data.nextToken }]);
@@ -113,7 +113,7 @@ export default function RequestLogs({ data, vendorId }) {
                                     <RequestLabel type={'status'} value={item.status} />
                                 </td>
                                 <td className="px-6 py-4 text-gray-600">{item.duration_ms}ms</td>
-                                <td className="px-6 py-4 text-gray-600">{item.timestamp}</td>
+                                <td className="px-6 py-4 text-gray-600">{getDateAndTime(item.timestamp)}</td>
                                 <td className="px-6 py-4" >
                                     <Link href={`api-logs/${item.log_id}`} className="text-gray-500 hover:text-blue-500">
                                         <svg

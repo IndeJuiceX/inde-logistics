@@ -9,6 +9,9 @@ import { runAthenaQuery } from "@/services/athena";
    */
   export async function getVendorLogById(vendorId,logId) {
     // Construct WHERE conditions
+    console.log('vendorId',vendorId);
+    console.log('logId',logId);
+    
     const whereConditions = `
       vendor_id = '${vendorId}'
       AND environment = '${process.env.APP_ENV}'
@@ -27,7 +30,8 @@ import { runAthenaQuery } from "@/services/athena";
     try {
       // Execute the query using the reusable function
       const result = await runAthenaQuery({ queryString });
-  
+      console.log('result',result);
+      
       // Return the first record or null if not found
       return result.data[0] || null;
     } catch (error) {

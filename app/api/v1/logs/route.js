@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
-import { getLogs } from '@/services/data/log';
+import { getLogs,getVendorLogById } from '@/services/data/log';
 const handler = async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
@@ -14,7 +14,7 @@ const handler = async (request, { params, user }) => {
         const logId = searchParams.get('log_id'); // e.g., '200'
 
         if (logId) {
-            const logsResponse = await getVendorLogById({ vendorId, logId });
+            const logsResponse = await getVendorLogById( vendorId, logId );
             return NextResponse.json(logsResponse, { status: 200 });
         }
 
@@ -22,7 +22,7 @@ const handler = async (request, { params, user }) => {
         const status = searchParams.get('status'); // e.g., '200'
         const endpoint = searchParams.get('endpoint'); // e.g., '/api/v1/vendor/orders'
         const method = searchParams.get('method'); // e.g., 'GET'
-        const limit = parseInt(searchParams.get('limit')) || 5; // Default to 100
+        const limit = parseInt(searchParams.get('limit')) || 26; // Default to 100
         const nextToken = searchParams.get('next'); // For pagination
         const queryExecutionId = searchParams.get('queryExecutionId') || null; // For pagination
 
