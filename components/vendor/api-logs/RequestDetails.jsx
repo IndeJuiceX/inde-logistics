@@ -15,8 +15,9 @@ export default function RequestDetails({ requestId }) {
                 return;
             }
             const data = await response.json();
+            console.log('detials page', data);
 
-            setData(data[requestId]);
+            setData(data.data[requestId]);
             setLoading(false);
             return data
         }
