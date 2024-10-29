@@ -27,6 +27,7 @@ export default function RequestLogs({ data, vendorId }) {
             return;
         }
         const data = await response.json();
+        console.log('logs', data);
 
         if (nextButton) {
             // setNextTokens([...nextTokens, { [page]: data.nextToken }]);
@@ -49,7 +50,7 @@ export default function RequestLogs({ data, vendorId }) {
         setNextTokens([...nextTokens, { [nextPage]: currentToken }]);
         setPage(nextPage);
         setSelectedPage(nextPage);
-        fetchLogs(true,currentToken);
+        fetchLogs(true, currentToken);
     }
 
     const handlePageClick = (pageNumber) => {
@@ -114,7 +115,7 @@ export default function RequestLogs({ data, vendorId }) {
                                 <td className="px-6 py-4 text-gray-600">{item.duration_ms}ms</td>
                                 <td className="px-6 py-4 text-gray-600">{item.timestamp}</td>
                                 <td className="px-6 py-4" >
-                                    <Link href={`api-logs/${idx}`} className="text-gray-500 hover:text-blue-500">
+                                    <Link href={`api-logs/${item.log_id}`} className="text-gray-500 hover:text-blue-500">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 24 24"

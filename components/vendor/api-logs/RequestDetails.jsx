@@ -3,13 +3,13 @@ import convertTime from "@/services/utils/convertTime";
 import { useState, useEffect } from "react";
 import RequestLabel from "./RequestLabel";
 
-export default function RequestDetails({ requestId }) {
+export default function RequestDetails({ logId }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchLogs = async () => {
-            const response = await fetch(`/api/v1/logs`);
+            const response = await fetch(`/api/v1/logs?log_id=${logId}`);
             if (!response.ok) {
                 console.error("Failed to fetch logs");
                 return;
@@ -17,14 +17,14 @@ export default function RequestDetails({ requestId }) {
             const data = await response.json();
             console.log('detials page', data);
 
-            setData(data.data[requestId]);
-            setLoading(false);
+            // setData(data.data[requestId]);
+            // setLoading(false);
             return data
         }
-        if (requestId) {
+        if (logId) {
             fetchLogs();
         }
-    }, [requestId]);
+    }, [logId]);
 
 
 

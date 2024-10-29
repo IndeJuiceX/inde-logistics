@@ -11,6 +11,14 @@ const handler = async (request, { params, user }) => {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
+        const logId = searchParams.get('log_id'); // e.g., '200'
+
+        if (logId) {
+            const logsResponse = await getVendorLogById({ vendorId, logId });
+            return NextResponse.json(logsResponse, { status: 200 });
+        }
+
+
         const status = searchParams.get('status'); // e.g., '200'
         const endpoint = searchParams.get('endpoint'); // e.g., '/api/v1/vendor/orders'
         const method = searchParams.get('method'); // e.g., 'GET'
