@@ -158,24 +158,16 @@ export default function Orders({ vendorId }) {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div className="flex space-x-2">
-                                                    {/* <button
-                                                        onClick={() => handleViewOrder(order.vendor_order_id)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        View
-                                                    </button> */}
                                                     <Link className="text-blue-600 hover:text-blue-900" href={`/vendor/${vendorId}/orders/${order.vendor_order_id}`}>View </Link>
 
                                                     {order.status === 'Accepted' && (
                                                         <>
-
-                                                            {/* <button
+                                                            <button
                                                                 onClick={() => handleCancelOrder(order.vendor_order_id)}
                                                                 className="text-red-600 hover:text-red-900"
                                                             >
                                                                 Cancel
-                                                            </button> */}
-                                                            <Link className="text-red-600 hover:text-red-900" href={`/vendor/${vendorId}/orders/${order.vendor_order_id}`}>Cancel </Link>
+                                                            </button>
                                                         </>
                                                     )}
                                                 </div>
