@@ -169,7 +169,7 @@ export const getAllVendorProducts = async (vendorId, pageSize = 25, exclusiveSta
 
             return {
                 success: true,
-                data: cleanResponseData(result.data),
+                data: cleanResponseData(result.data,['warehouse']),
                 hasMore: hasMore,
                 lastEvaluatedKey: result.lastEvaluatedKey,
             };

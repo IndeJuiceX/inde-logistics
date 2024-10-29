@@ -1,13 +1,14 @@
 openapi: 3.0.0
 info:
-  title: Vendor Product Catalogue API
+  title: Vendor Logistics Management API
   version: 1.0.0
   description: >
-    API documentation for the Vendor Product Catalogue system.
-    This API allows vendors to upload and update product batches
-    with a maximum payload size of 2 MB.
+    API documentation for the Vendor Logistics Management System.
+    This API enables vendors to manage their products, stock shipments, and orders within our third-party logistics platform.
+    Endpoints like **products** and **stock shipments** that support bulk uploads have a maximum payload size of **2 MB**.
+
 servers:
-  - url: http://localhost:3002/api
+  - url: http://localhost:3000/api/v1/vendor
 tags:
   - name: Product
     description: Operations related to products

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-// import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateProductUpdates } from '@/services/schema';
 import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
-import { getProductByVendorSku, getProductById } from '@/services/data/product';
+import { getProductById } from '@/services/data/product';
 import { uploadToS3 } from '@/services/s3';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
@@ -83,11 +82,6 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
                 }
             }
 
-            // If both vendor_sku and new_vendor_sku are present, update the SKU
-            // if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
-            //     updateExpressions.vendor_sku = new_vendor_sku;
-            //     hasUpdates = true;
-            // }
 
             // If no fields have been updated, skip this product
             if (!hasUpdates) {
@@ -136,12 +130,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
                     historySnapshot.changes[`new_${key}`] = value;
                 }
             }
-            // if (vendor_sku && new_vendor_sku && new_vendor_sku !== vendor_sku) {
-            //     historySnapshot.changes.old_vendor_sku = vendor_sku;
-            //     historySnapshot.changes.new_vendor_sku = new_vendor_sku;
-            // }
-
-            // Upload the history object to S3
+    
             try {
 
                 const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));
