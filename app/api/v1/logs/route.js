@@ -16,7 +16,8 @@ const handler = async (request, { params, user }) => {
         const endpoint = searchParams.get('endpoint'); // e.g., '/api/v1/vendor/orders'
         const method = searchParams.get('method'); // e.g., 'GET'
         const limit = parseInt(searchParams.get('limit')) || 5; // Default to 100
-        const nextToken = searchParams.get('nextToken'); // For pagination
+        const nextToken = searchParams.get('next'); // For pagination
+        const queryExecutionId = searchParams.get('queryExecutionId') || null; // For pagination
 
         // **Call getLogs with filters and pagination params**
         try {
@@ -28,6 +29,7 @@ const handler = async (request, { params, user }) => {
                 method,
                 limit,
                 nextToken,
+                queryExecutionId,
             });
             return NextResponse.json(logsResponse, { status: 200 });
         } catch (error) {

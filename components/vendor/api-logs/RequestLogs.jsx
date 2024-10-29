@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequestLabel from "@/components/vendor/api-logs/RequestLabel";
@@ -9,10 +9,11 @@ export default function RequestLogs({ data, vendorId }) {
     const [searchTag, setSearchTag] = useState("");
     const [nextTokens, setNextTokens] = useState([]);
     const [currentToken, setCurrentToken] = useState(null);
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const [currentQueryExecutionId, setCurrentQueryExecutionId] = useState(null);
+    const [selectedPage, setSelectedPage] = useState(0);
 
-    const fetchLogs = async (nextToken = null) => {
+    const fetchLogs = async (nextButton = false, nextToken = null) => {
         setLoading(true);
         let url = `/api/v1/logs`;
         if (nextToken) {
@@ -26,41 +27,47 @@ export default function RequestLogs({ data, vendorId }) {
             return;
         }
         const data = await response.json();
-        console.log('logs', data);
 
-        setNextTokens([...nextTokens, { [page + 1]: currentToken }]);
+        if (nextButton) {
+            // setNextTokens([...nextTokens, { [page]: data.nextToken }]);
+            setCurrentToken(data.nextToken);
+        }
         setCurrentQueryExecutionId(data.queryExecutionId);
         setLogs(data.data);
         setLoading(false);
-        return data
+        return data;
     }
 
     useEffect(() => {
         if (vendorId) {
-            fetchLogs();
+            fetchLogs(true);
         }
     }, [vendorId]);
 
     const handleNext = () => {
-        console.log('Next clicked');
-        setPage(page + 1);
-        // setNextTokens([...nextTokens, { [page + 1]: currentToken }]);
-        fetchLogs(currentToken);
+        const nextPage = page + 1;
+        setNextTokens([...nextTokens, { [nextPage]: currentToken }]);
+        setPage(nextPage);
+        setSelectedPage(nextPage);
+        fetchLogs(true,currentToken);
     }
 
     const handlePageClick = (pageNumber) => {
-        console.log('Page clicked', pageNumber);
-        console.log('nextTokens', nextTokens[pageNumber]);
-
-        // setPage(pageNumber);
-        // fetchLogs(nextTokens[pageNumber]);
+        const selectedToken = getValueByPageNumber(pageNumber);
+        setSelectedPage(pageNumber);
+        if (pageNumber === 1) {
+            fetchLogs(false);
+        }
+        else {
+            fetchLogs(false, selectedToken);
+        }
     }
 
-    useEffect(() => {
-        console.log('nextTokens', nextTokens);
-        console.log('page', page);
 
-    }, [nextTokens, page]);
+    function getValueByPageNumber(pageNumber) {
+        const foundObject = nextTokens.find(obj => obj.hasOwnProperty(pageNumber));
+        return foundObject ? foundObject[pageNumber] : null;
+    }
 
     return (
         <div className="p-6">
@@ -126,27 +133,22 @@ export default function RequestLogs({ data, vendorId }) {
                         ))}
                     </tbody>
                 </table>
-                {/* {!loading && ( */}
                 <div className="flex space-x-2 mt-4">
-                    {/* Generate buttons for each page from 1 up to current page */}
-                    {Array.from({ length: page }, (_, index) => (
+                    {page > 1 && Array.from({ length: page }, (_, index) => (
                         <button
                             key={index + 1}
                             onClick={() => handlePageClick(index + 1)}
-                            className={`${index + 1 === page ? 'bg-blue-600' : 'bg-blue-500'
+                            className={`${index + 1 === selectedPage ? 'bg-blue-600' : 'bg-blue-500'
                                 } hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
                             disabled={loading}
                         >
                             {index + 1}
                         </button>
                     ))}
-
-                    {/* Next button */}
                     <button onClick={handleNext} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={loading}>
                         Next
                     </button>
                 </div>
-                {/* )} */}
             </div>
         </div>
     );
