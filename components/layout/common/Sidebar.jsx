@@ -148,6 +148,22 @@ export default function Sidebar({ vendor, vendorId }) {
       label: "Orders",
       href: `/vendor/${vendorId}/orders`,
       icon: <ShoppingCartIcon className="w-5 h-5" />,
+      match: (path) => {
+        const viewOrdersPath = `/vendor/${vendorId}/orders`;
+        const viewOrderPattern = new RegExp(
+          `^/vendor/${vendorId}/orders/[\\w-]+$`
+        );
+
+        return path === viewOrdersPath || viewOrderPattern.test(path);
+      },
+      subMenu: [
+        {
+          label: "Create Order",
+          href: `/vendor/${vendorId}/orders/create`,
+          icon: <PlusCircleIcon className="w-5 h-5" />,
+        },
+      ],
+
     },
     {
       label: "Stock Shipments",
