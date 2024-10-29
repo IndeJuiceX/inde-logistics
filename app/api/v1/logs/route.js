@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getAllOrders, getOrderDetails } from '@/services/data/order';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getLogs } from '@/services/data/log';
 const handler = async (request, { params, user }) => {
