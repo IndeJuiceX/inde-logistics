@@ -82,7 +82,7 @@ import { runAthenaQuery } from "@/services/athena";
   
     // Construct the SQL query
     const queryString = `
-      SELECT method, endpoint, status, duration_ms, timestamp
+      SELECT method, endpoint, status, duration_ms, timestamp,log_id
       FROM logs
       WHERE ${whereConditions}
       ORDER BY timestamp DESC
