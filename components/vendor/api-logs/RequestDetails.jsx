@@ -2,8 +2,9 @@
 import { convertTime } from "@/services/utils/convertTime";
 import { useState, useEffect } from "react";
 import RequestLabel from "./RequestLabel";
+import Breadcrumbs from "@/components/layout/common/Breadcrumbs";
 
-export default function RequestDetails({ logId }) {
+export default function RequestDetails({ logId, vendorId }) {
     const [data, setData] = useState({});
     const [loading, setLoading] = useState(true);
 
@@ -64,79 +65,86 @@ export default function RequestDetails({ logId }) {
                 return null;
         }
     };
-
+    const breadCrumbLinks = [
+        { text: 'Home', url: `/vendor/${vendorId}/dashboard` },
+        { text: 'Logs', url: `/vendor/${vendorId}/api-logs` },
+        { text: 'Logs Details' }
+    ];
     return (
-        <div className="p-6 space-y-6">
-            {loading && <p>Loading...</p>}
-            {!loading && (
-                <>
-                    <div className="bg-white shadow rounded-lg p-6">
-                        <h2 className="text-xl font-bold mb-4">Request Details</h2>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="font-semibold text-gray-500">Time</p>
-                                <p>{convertTime(data.timestamp)}</p>
-                            </div>
-                            {/* <div>
+        <>
+            <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />
+            <div className="p-6 space-y-6">
+                {loading && <p>Loading...</p>}
+                {!loading && (
+                    <>
+                        <div className="bg-white shadow rounded-lg p-6">
+                            <h2 className="text-xl font-bold mb-4">Request Details</h2>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="font-semibold text-gray-500">Time</p>
+                                    <p>{convertTime(data.timestamp)}</p>
+                                </div>
+                                {/* <div>
                 <p className="font-semibold text-gray-500">Hostname</p>
                 <p>36e7f6c38a5f</p>
               </div> */}
-                            <div>
-                                <p className="font-semibold text-gray-500">Method</p>
-                                <RequestLabel type="method" value={data.method} />
-                            </div>
-                            {/* <div>
+                                <div>
+                                    <p className="font-semibold text-gray-500">Method</p>
+                                    <RequestLabel type="method" value={data.method} />
+                                </div>
+                                {/* <div>
                 <p className="font-semibold text-gray-500">Controller Action</p>
                 <p>App\Http\Controllers\Api\V1\Store\CartController@getCarts</p>
               </div> */}
-                            {/* <div>
+                                {/* <div>
                 <p className="font-semibold text-gray-500">Middleware</p>
                 <p>api</p>
               </div> */}
-                            <div>
-                                <p className="font-semibold text-gray-500">EndPoint</p>
-                                <p>{data.endpoint}</p>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-500">Status</p>
-                                <RequestLabel type="status" value={data.status} />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-500">Duration</p>
-                                <p>{data.duration_ms} ms</p>
-                            </div>
-                            {/* <div>
+                                <div>
+                                    <p className="font-semibold text-gray-500">EndPoint</p>
+                                    <p>{data.endpoint}</p>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-500">Status</p>
+                                    <RequestLabel type="status" value={data.status} />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-gray-500">Duration</p>
+                                    <p>{data.duration_ms} ms</p>
+                                </div>
+                                {/* <div>
                 <p className="font-semibold text-gray-500">IP Address</p>
                 <p>192.168.65.1</p>
               </div> */}
-                            <div>
-                                <p className="font-semibold text-gray-500">Error</p>
-                                <p>{data.error ? 'True' : 'false'}</p>
+                                <div>
+                                    <p className="font-semibold text-gray-500">Error</p>
+                                    <p>{typeof data.error === 'string' ? 'false' : 'True'}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="bg-white shadow rounded-lg p-6">
-                        <div className="flex space-x-6 border-b mb-4">
-                            {["Payload", "Response"].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`pb-2 ${activeTab === tab
-                                        ? "border-blue-500 text-blue-500"
-                                        : "border-transparent text-gray-500"
-                                        } hover:text-blue-500 hover:border-blue-500 border-b-2 font-medium`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
+                        <div className="bg-white shadow rounded-lg p-6">
+                            <div className="flex space-x-6 border-b mb-4">
+                                {["Payload", "Response"].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`pb-2 ${activeTab === tab
+                                            ? "border-blue-500 text-blue-500"
+                                            : "border-transparent text-gray-500"
+                                            } hover:text-blue-500 hover:border-blue-500 border-b-2 font-medium`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
 
-                        <div className="bg-gray-900 text-green-500 p-4 rounded-lg">
-                            {renderTabContent()}
+                            <div className="bg-gray-900 text-green-500 p-4 rounded-lg">
+                                {renderTabContent()}
+                            </div>
                         </div>
-                    </div>
-                </>
-            )}
-        </div>
+                    </>
+                )}
+            </div>
+        </>
     );
 }
