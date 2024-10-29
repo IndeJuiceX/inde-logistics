@@ -1,6 +1,6 @@
 import { getProductById, getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
-import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk,getItem } from '@/services/dynamo/wrapper';
+import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk, getItem, deleteItemWithPkAndSk } from '@/services/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
@@ -336,10 +336,10 @@ export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveSta
 };
 
 
-export async function getStockShipmentById(vendorId,stockShipmentId) {
+export async function getStockShipmentById(vendorId, stockShipmentId) {
     const data = await getItem(`VENDORSTOCKSHIPMENT#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}`);
-    if(data.success && data.data) {
-        data.data=cleanResponseData(data.data)
+    if (data.success && data.data) {
+        data.data = cleanResponseData(data.data)
     }
     return data;
 }
@@ -347,3 +347,35 @@ export async function checkShipmentExists(vendorId, stock_shipment_id) {
     const shipmentData = await getStockShipmentById(vendorId, stock_shipment_id);
     return shipmentData.success && shipmentData.data;
 }
+export async function deleteStockShipmentWithItems(vendorId, stockShipmentId) {
+    //check if the shipment exists
+    const check = await checkShipmentExists(vendorId, stockShipmentId)
+    const errorItems = []
+    if (check) {
+        //get all the shipmentites for this shipment and prep delete
+        const stockShipmentItemsData = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#`)
+        const existingItems = stockShipmentItemsData.data
+        for (const item of existingItems) {
+
+            const res = await deleteItemWithPkAndSk(item.pk,item.sk)
+            if (!res.success) {
+                const skParts = item.sk.split('#');
+                const vendorSku = skParts[skParts.length - 1]; // Extract the vendor_sku part
+                errorItems.push({ error: res.error, item: vendorSku })
+            }
+        }
+        if (errorItems.length > 0) {
+            return { success: false, error: errorItems }
+        }
+        // now remove the stockshipment entry 
+        const delResponse = await deleteItemWithPkAndSk(`VENDORSTOCKSHIPMENT#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}`)
+        if (delResponse.success) {
+            return { success: true }
+        }
+        return {success:false , error : delResponse.error }
+    } else {
+        return { success: false, error: 'Stock Shipment not found' }
+    }
+    //prepare the bulk delete 
+}
+

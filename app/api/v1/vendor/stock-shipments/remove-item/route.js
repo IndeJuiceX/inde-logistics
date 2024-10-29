@@ -5,7 +5,7 @@ import { validateVendorSkuArray } from '@/services/schema';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { checkShipmentExists } from '@/services/data/stock-shipment';
 import { removeItemsFromStockShipment } from '@/services/data/stock-shipment-item';
-
+import { deleteStockShipmentWithItems } from '@/services/data/stock-shipment';
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const DELETE = withAuthAndLogging(async (request, { params, user }) => {
@@ -36,11 +36,7 @@ export const DELETE = withAuthAndLogging(async (request, { params, user }) => {
       return NextResponse.json({ error: 'Invalid JSON format' }, { status: 400 });
     }
 
-    // // Ensure stock_shipment field exists and is an object
-    // if (!body.stock_shipment || typeof body.stock_shipment !== 'object') {
-    //   return NextResponse.json({ error: 'Invalid request format: stock_shipment field is required and must be an object' }, { status: 400 });
-    // }
-
+    
     const { stock_shipment_id, items } = body//.stock_shipment;
 
     // Validate that stock_shipment_id is present
@@ -48,8 +44,23 @@ export const DELETE = withAuthAndLogging(async (request, { params, user }) => {
       return NextResponse.json({ error: 'stock_shipment_id is required' }, { status: 400 });
     }
 
+    if (!items) {
+      const res = await deleteStockShipmentWithItems(vendorId, stock_shipment_id)
+      
+      if (res.success) {
+        return NextResponse.json(
+          { message: 'Stock Shipment Deleted Successfully' },
+          { status: 200 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'Failed to delete stock shipment', details: res?.error || [] },
+        { status: 400 }
+      );
+    }
+
     // Validate that items field exists and is an array
-    if (!items || !Array.isArray(items)) {
+    if (items && !Array.isArray(items)) {
       return NextResponse.json({ error: 'Invalid request format: items field is required and must be an array' }, { status: 400 });
     }
 
@@ -76,7 +87,7 @@ export const DELETE = withAuthAndLogging(async (request, { params, user }) => {
 
     if (!stockShipmentResult.success) {
       return NextResponse.json(
-        { error: stockShipmentResult.error , details : stockShipmentResult?.details || []},
+        { error: stockShipmentResult.error, details: stockShipmentResult?.details || [] },
         { status: 400 }
       );
     }

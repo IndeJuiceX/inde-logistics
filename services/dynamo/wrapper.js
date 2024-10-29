@@ -91,31 +91,7 @@ const queryItemsWithPkAndSk = async (pkValue, skPrefix = null) => {
 };
 
 
-// Query items with optional sk prefix
-/*const queryItems = async (pkValue, skPrefix = null) => {
-    const client = getClient()
 
-    let params = {
-        TableName: TABLE_NAME,
-        KeyConditionExpression: 'pk = :pkValue',
-        ExpressionAttributeValues: {
-            ':pkValue': pkValue,
-        },
-    };
-
-    if (skPrefix) {
-        params.KeyConditionExpression += ' AND begins_with(sk, :skPrefix)';
-        params.ExpressionAttributeValues[':skPrefix'] = skPrefix;
-    }
-
-    try {
-        const data = await client.send(new QueryCommand(params));
-        return { success: true, data: data.Items };
-    } catch (error) {
-        console.error('DynamoDB QueryItems Error:', error);
-        return { success: false, error };
-    }
-};*/
 
 // Delete an item by pk and sk
 const deleteItem = async (pk, sk) => {
@@ -297,24 +273,7 @@ const batchWriteItems = async (items, operationType = 'Put') => {
 // Custom validation function for checking invalid attributes
 const validateItem = (item, operationType) => {
     return true;
-    if (operationType === 'Delete') {
-        // Check for pk and sk in the item for delete operation
-        if (!item.pk || !item.sk) {
-            console.error(`Delete request missing pk or sk: ${JSON.stringify(item)}`);
-            return false;
-        }
-    } else if (operationType === 'Put') {
-        // For Put, check for any invalid values (nulls, empty strings, etc.)
-        for (let key in item) {
-            const value = item[key];
-
-            if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
-                console.error(`Invalid attribute found for key ${key}: ${value}`);
-                return false;  // Invalid item
-            }
-        }
-    }
-    return true;  // Valid item
+   
 };
 
 
@@ -589,7 +548,38 @@ const updateItemIfExists = async (pkVal, skVal, updatedFields, expressionAttribu
         return { success: false, error };
     }
 };
-
+/**
+ * Deletes an item from DynamoDB based on the provided partition key (pk) and sort key (sk).
+ *
+ * @param {string} pkVal - The value of the partition key.
+ * @param {string} skVal - The value of the sort key.
+ * @returns {Promise<{ success: boolean, error?: Error }>}
+ */
+const deleteItemWithPkAndSk = async (pkVal, skVal) => {
+    const client = getClient(); // Initialize your DynamoDB DocumentClient
+  
+    const params = {
+      TableName: TABLE_NAME,
+      Key: { pk: pkVal, sk: skVal },
+      ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)', // Ensure the item exists
+    };
+  
+    try {
+      await client.send(new DeleteCommand(params));
+      return { success: true };
+    } catch (error) {
+      console.error('DynamoDB DeleteItem Error:', error);
+  
+      if (error.name === 'ConditionalCheckFailedException') {
+        // The item does not exist
+        return { success: false, error: 'Item does not exist' };
+      }
+  
+      // Handle other potential errors
+      return { success: false, error };
+    }
+  };
+  
 
 
 
@@ -608,5 +598,8 @@ export {
     updateOrInsert, 
     transactWriteItems ,
     queryItemsWithPkAndSk,
-    updateItemIfExists
+    updateItemIfExists,
+    deleteItemWithPkAndSk
 };
+
+
