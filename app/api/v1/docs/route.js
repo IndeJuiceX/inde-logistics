@@ -1,6 +1,8 @@
+// app/api/v1/docs/route.js (or route.ts if using TypeScript)
+
 import fs from 'fs';
 import path from 'path';
-import YAML from 'yaml'; // Import the YAML module
+import YAML from 'yaml'; // Ensure you have this installed via npm/yarn
 
 // Define the loadYaml function
 const loadYaml = (filePath) => {
@@ -103,6 +105,14 @@ export const GET = async () => {
     indexSpec.security = [
       {
         BearerAuth: [],
+      },
+    ];
+
+    // **Inject the dynamic server URL from NEXTAUTH_URL**
+    const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3002';
+    indexSpec.servers = [
+      {
+        url: `${NEXTAUTH_URL}/api/v1/vendor`,
       },
     ];
 
