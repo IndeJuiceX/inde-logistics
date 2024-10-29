@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequestLabel from "@/components/vendor/api-logs/RequestLabel";
 import { getDateAndTime } from "@/services/utils/convertTime";
+import FilterLog from "./FilterLog";
 
 export default function RequestLogs({ data, vendorId }) {
     const [loading, setLoading] = useState(true);
@@ -13,8 +14,17 @@ export default function RequestLogs({ data, vendorId }) {
     const [page, setPage] = useState(1);
     const [currentQueryExecutionId, setCurrentQueryExecutionId] = useState(null);
     const [selectedPage, setSelectedPage] = useState(0);
+    // const [queryString, setQueryString] = useState(null);
 
-    const fetchLogs = async (nextButton = false, nextToken = null) => {
+    // State to hold filter data
+    const [filters, setFilters] = useState({
+        filterType: '',
+        startTime: '',
+        endTime: '',
+        // Add other filters as needed
+    });
+
+    const fetchLogs = async (nextButton = false, nextToken = null, queryString = null) => {
         setLoading(true);
         let url = `/api/v1/logs`;
         if (nextToken) {
@@ -22,6 +32,15 @@ export default function RequestLogs({ data, vendorId }) {
             const encodeCurrentQueryExecutionId = encodeURIComponent(currentQueryExecutionId);
             url = `/api/v1/logs?next=${encodedNextToken}&queryExecutionId=${encodeCurrentQueryExecutionId}`;
         }
+
+        if (queryString && nextToken) {
+            url += `&${queryString}`;
+        }
+
+        if (queryString && !nextToken) {
+            url = `/api/v1/logs?${queryString}`;
+        }
+
         const response = await fetch(url);
         if (!response.ok) {
             console.error("Failed to fetch logs");
@@ -70,6 +89,39 @@ export default function RequestLogs({ data, vendorId }) {
         return foundObject ? foundObject[pageNumber] : null;
     }
 
+    const handleFilterChange = (newFilters) => {
+        setFilters(newFilters);
+        // Fetch logs based on new filters
+        console.log('newFilters', newFilters);
+        // Create a URLSearchParams instance
+        const searchParams = new URLSearchParams(newFilters);
+
+        // Convert to string for use in URL
+        const queryString = searchParams.toString();
+        // setQueryString(queryString);
+        console.log('queryString', queryString);
+        // fetchFilterLogs(true)
+        fetchLogs(false, null, queryString);
+
+        // fetchLogs(newFilters, searchTag, selectedPage);
+    };
+
+    const fetchFilterLogs = async (querySting) => {
+        let url = `/api/v1/logs`;
+        if (querySting) {
+
+            url = `/api/v1/logs?${querySting}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error("Failed to fetch logs");
+            return;
+        }
+        const data = await response.json();
+        console.log('data', data);
+
+    };
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
@@ -82,6 +134,7 @@ export default function RequestLogs({ data, vendorId }) {
                     onChange={(e) => setSearchTag(e.target.value)}
                 />
             </div>
+            <FilterLog onFilterChange={handleFilterChange} />
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white rounded-lg shadow">
                     <thead>
