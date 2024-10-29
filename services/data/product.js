@@ -1,6 +1,5 @@
 // services/data/vendor.js
 import { getItem, queryItems, putItem, deleteItem } from '@/services/dynamo/wrapper';
-import { searchIndex } from '@/services/open-search/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
 export const getProductById = async (vendorId, productUUID) => {
