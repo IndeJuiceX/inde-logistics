@@ -174,12 +174,12 @@ import {
    * @param {string} logId - The ID of the log.
    * @returns {Promise<Object|null>} - The log entry or null if not found.
    */
-  export async function getVendorLogById(vendorId, logType, logId) {
+  export async function getVendorLogById(vendorId,logId) {
     // Construct WHERE conditions
     const whereConditions = `
       vendor_id = '${vendorId}'
       AND environment = '${process.env.APP_ENV}'
-      AND log_type = '${logType}'
+      AND log_type = 'vendor'
       AND log_id = '${logId}'
     `;
   
