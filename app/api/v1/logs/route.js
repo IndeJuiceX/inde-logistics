@@ -29,9 +29,7 @@ const handler = async (request, { params, user }) => {
         const startTime = searchParams.get('start_time') || null; // e.g., '2022-01-01T00:00:00Z'
         const endTime = searchParams.get('end_time') || null; // e.g., '2022-01-31T23:59:59Z'
 
-        console.log('startTime', startTime);
-        console.log('endTime', endTime);
-        
+       
         // const filters = {
         //     timestamp: { startTime, endTime },
         // };

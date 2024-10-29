@@ -1,4 +1,3 @@
-import { searchIndex } from '@/services/open-search/wrapper';
 
 export async function getUniqueBrandNames(vendorId, size = 20, searchTerm = '') {
 
