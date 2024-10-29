@@ -1,0 +1,15 @@
+StockShipmentItem:
+  type: object
+  required:
+    - vendor_sku
+    - stock_in
+  properties:
+    vendor_sku:
+      type: string
+      description: Vendor SKU of the item.
+      example: "123412"
+    stock_in:
+      type: integer
+      description: Quantity of stock.
+      example: 1
+      minimum: 1
