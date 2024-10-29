@@ -13,8 +13,8 @@ export default function RequestLogs({ data, vendorId }) {
     const [currentToken, setCurrentToken] = useState(null);
     const [page, setPage] = useState(1);
     const [currentQueryExecutionId, setCurrentQueryExecutionId] = useState(null);
-    const [selectedPage, setSelectedPage] = useState(0);
-    // const [queryString, setQueryString] = useState(null);
+    const [selectedPage, setSelectedPage] = useState(1);
+    const [queryString, setQueryString] = useState('');
 
     // State to hold filter data
     const [filters, setFilters] = useState({
@@ -24,34 +24,39 @@ export default function RequestLogs({ data, vendorId }) {
         // Add other filters as needed
     });
 
-    const fetchLogs = async (nextButton = false, nextToken = null, queryString = null) => {
+    const fetchLogs = async (nextToken = null, queryString = null) => {
         setLoading(true);
         let url = `/api/v1/logs`;
+        const params = new URLSearchParams();
+
         if (nextToken) {
-            const encodedNextToken = encodeURIComponent(nextToken);
-            const encodeCurrentQueryExecutionId = encodeURIComponent(currentQueryExecutionId);
-            url = `/api/v1/logs?next=${encodedNextToken}&queryExecutionId=${encodeCurrentQueryExecutionId}`;
+            params.append('next', nextToken);
+        }
+        if (currentQueryExecutionId) {
+            params.append('queryExecutionId', currentQueryExecutionId);
+        }
+        // Append query parameters from queryString
+        if (queryString) {
+            const queryParams = new URLSearchParams(queryString);
+            for (const [key, value] of queryParams.entries()) {
+                params.append(key, value);
+            }
         }
 
-        if (queryString && nextToken) {
-            url += `&${queryString}`;
-        }
-
-        if (queryString && !nextToken) {
-            url = `/api/v1/logs?${queryString}`;
+        if (params.toString()) {
+            url += `?${params.toString()}`;
         }
 
         const response = await fetch(url);
         if (!response.ok) {
             console.error("Failed to fetch logs");
+            setLoading(false);
             return;
         }
         const data = await response.json();
 
-        if (nextButton) {
-            // setNextTokens([...nextTokens, { [page]: data.nextToken }]);
-            setCurrentToken(data.nextToken);
-        }
+        // Always update currentToken and currentQueryExecutionId
+        setCurrentToken(data.nextToken);
         setCurrentQueryExecutionId(data.queryExecutionId);
         setLogs(data.data);
         setLoading(false);
@@ -60,7 +65,13 @@ export default function RequestLogs({ data, vendorId }) {
 
     useEffect(() => {
         if (vendorId) {
-            fetchLogs(true);
+            // Reset pagination and query state
+            setCurrentQueryExecutionId(null);
+            setNextTokens([]);
+            setPage(1);
+            setSelectedPage(1);
+            setCurrentToken(null);
+            fetchLogs(null, queryString);
         }
     }, [vendorId]);
 
@@ -69,20 +80,19 @@ export default function RequestLogs({ data, vendorId }) {
         setNextTokens([...nextTokens, { [nextPage]: currentToken }]);
         setPage(nextPage);
         setSelectedPage(nextPage);
-        fetchLogs(true, currentToken);
+        fetchLogs(currentToken, queryString);
     }
 
     const handlePageClick = (pageNumber) => {
         const selectedToken = getValueByPageNumber(pageNumber);
         setSelectedPage(pageNumber);
         if (pageNumber === 1) {
-            fetchLogs(false);
+            fetchLogs(null, queryString);
         }
         else {
-            fetchLogs(false, selectedToken);
+            fetchLogs(selectedToken, queryString);
         }
     }
-
 
     function getValueByPageNumber(pageNumber) {
         const foundObject = nextTokens.find(obj => obj.hasOwnProperty(pageNumber));
@@ -91,35 +101,19 @@ export default function RequestLogs({ data, vendorId }) {
 
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
-        // Fetch logs based on new filters
-        console.log('newFilters', newFilters);
         // Create a URLSearchParams instance
         const searchParams = new URLSearchParams(newFilters);
-
         // Convert to string for use in URL
         const queryString = searchParams.toString();
-        // setQueryString(queryString);
-        console.log('queryString', queryString);
-        // fetchFilterLogs(true)
-        fetchLogs(false, null, queryString);
-
-        // fetchLogs(newFilters, searchTag, selectedPage);
-    };
-
-    const fetchFilterLogs = async (querySting) => {
-        let url = `/api/v1/logs`;
-        if (querySting) {
-
-            url = `/api/v1/logs?${querySting}`;
-        }
-        const response = await fetch(url);
-        if (!response.ok) {
-            console.error("Failed to fetch logs");
-            return;
-        }
-        const data = await response.json();
-        console.log('data', data);
-
+        setQueryString(queryString);
+        // Reset pagination state
+        setCurrentQueryExecutionId(null);
+        setNextTokens([]);
+        setPage(1);
+        setSelectedPage(1);
+        setCurrentToken(null);
+        // Fetch logs based on new filters
+        fetchLogs(null, queryString);
     };
 
     return (
@@ -157,6 +151,14 @@ export default function RequestLogs({ data, vendorId }) {
                             </tr>
                         )}
 
+                        {!loading && logs.length === 0 && (
+                            <tr>
+                                <td colSpan="7" className="text-center py-4">
+                                    No data available
+                                </td>
+                            </tr>
+                        )}
+
                         {!loading && logs.map((item, idx) => (
                             <tr key={idx} className="border-b border-gray-200">
                                 <td className="px-6 py-4">{idx + 1}</td>
@@ -188,7 +190,7 @@ export default function RequestLogs({ data, vendorId }) {
                     </tbody>
                 </table>
                 <div className="flex space-x-2 mt-4">
-                    {page > 1 && Array.from({ length: page }, (_, index) => (
+                    {Array.from({ length: page }, (_, index) => (
                         <button
                             key={index + 1}
                             onClick={() => handlePageClick(index + 1)}
