@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/stock-shipments:
+  /stock-shipments:
     get:
       summary: Retrieve stock shipment(s)
       description: >

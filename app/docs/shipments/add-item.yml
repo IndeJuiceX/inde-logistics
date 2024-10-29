@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/stock-shipments/add-item:
+  /stock-shipments/add-item:
     post:
       summary: Add items to a stock shipment
       description: >

@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/stock-shipments/remove-item:
+  /stock-shipments/remove-item:
     delete:
       summary: Remove items from a stock shipment
       description: >

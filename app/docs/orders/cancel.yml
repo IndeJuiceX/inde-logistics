@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/orders/cancel:
+  /orders/cancel:
     patch:
       summary: Cancel an order
       description: >

@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/stock-shipments/create:
+  /stock-shipments/create:
     post:
       summary: Create a new stock shipment
       description: >
