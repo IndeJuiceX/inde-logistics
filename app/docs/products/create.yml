@@ -28,6 +28,6 @@ paths:
         "401":
           description: Unauthorized - Missing or invalid API token
         "413":
-          description: Payload exceeds the allowed size limit (5 MB)
+          description: Payload exceeds the allowed size limit (2 MB)
         "500":
           description: Server error
