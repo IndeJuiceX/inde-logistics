@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequestLabel from "@/components/vendor/api-logs/RequestLabel";
+import { getDateAndTime } from "@/services/utils/convertTime";
+import FilterLog from "./FilterLog";
 
 export default function RequestLogs({ data, vendorId }) {
     const [loading, setLoading] = useState(true);
@@ -11,27 +13,50 @@ export default function RequestLogs({ data, vendorId }) {
     const [currentToken, setCurrentToken] = useState(null);
     const [page, setPage] = useState(1);
     const [currentQueryExecutionId, setCurrentQueryExecutionId] = useState(null);
-    const [selectedPage, setSelectedPage] = useState(0);
+    const [selectedPage, setSelectedPage] = useState(1);
+    const [queryString, setQueryString] = useState('');
 
-    const fetchLogs = async (nextButton = false, nextToken = null) => {
+    // State to hold filter data
+    const [filters, setFilters] = useState({
+        filterType: '',
+        startTime: '',
+        endTime: '',
+        // Add other filters as needed
+    });
+
+    const fetchLogs = async (nextToken = null, queryString = null) => {
         setLoading(true);
         let url = `/api/v1/logs`;
+        const params = new URLSearchParams();
+
         if (nextToken) {
-            const encodedNextToken = encodeURIComponent(nextToken);
-            const encodeCurrentQueryExecutionId = encodeURIComponent(currentQueryExecutionId);
-            url = `/api/v1/logs?next=${encodedNextToken}&queryExecutionId=${encodeCurrentQueryExecutionId}`;
+            params.append('next', nextToken);
         }
+        if (currentQueryExecutionId) {
+            params.append('queryExecutionId', currentQueryExecutionId);
+        }
+        // Append query parameters from queryString
+        if (queryString) {
+            const queryParams = new URLSearchParams(queryString);
+            for (const [key, value] of queryParams.entries()) {
+                params.append(key, value);
+            }
+        }
+
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+
         const response = await fetch(url);
         if (!response.ok) {
             console.error("Failed to fetch logs");
+            setLoading(false);
             return;
         }
         const data = await response.json();
 
-        if (nextButton) {
-            // setNextTokens([...nextTokens, { [page]: data.nextToken }]);
-            setCurrentToken(data.nextToken);
-        }
+        // Always update currentToken and currentQueryExecutionId
+        setCurrentToken(data.nextToken);
         setCurrentQueryExecutionId(data.queryExecutionId);
         setLogs(data.data);
         setLoading(false);
@@ -40,7 +65,13 @@ export default function RequestLogs({ data, vendorId }) {
 
     useEffect(() => {
         if (vendorId) {
-            fetchLogs(true);
+            // Reset pagination and query state
+            setCurrentQueryExecutionId(null);
+            setNextTokens([]);
+            setPage(1);
+            setSelectedPage(1);
+            setCurrentToken(null);
+            fetchLogs(null, queryString);
         }
     }, [vendorId]);
 
@@ -49,25 +80,41 @@ export default function RequestLogs({ data, vendorId }) {
         setNextTokens([...nextTokens, { [nextPage]: currentToken }]);
         setPage(nextPage);
         setSelectedPage(nextPage);
-        fetchLogs(true,currentToken);
+        fetchLogs(currentToken, queryString);
     }
 
     const handlePageClick = (pageNumber) => {
         const selectedToken = getValueByPageNumber(pageNumber);
         setSelectedPage(pageNumber);
         if (pageNumber === 1) {
-            fetchLogs(false);
+            fetchLogs(null, queryString);
         }
         else {
-            fetchLogs(false, selectedToken);
+            fetchLogs(selectedToken, queryString);
         }
     }
-
 
     function getValueByPageNumber(pageNumber) {
         const foundObject = nextTokens.find(obj => obj.hasOwnProperty(pageNumber));
         return foundObject ? foundObject[pageNumber] : null;
     }
+
+    const handleFilterChange = (newFilters) => {
+        setFilters(newFilters);
+        // Create a URLSearchParams instance
+        const searchParams = new URLSearchParams(newFilters);
+        // Convert to string for use in URL
+        const queryString = searchParams.toString();
+        setQueryString(queryString);
+        // Reset pagination state
+        setCurrentQueryExecutionId(null);
+        setNextTokens([]);
+        setPage(1);
+        setSelectedPage(1);
+        setCurrentToken(null);
+        // Fetch logs based on new filters
+        fetchLogs(null, queryString);
+    };
 
     return (
         <div className="p-6">
@@ -81,6 +128,7 @@ export default function RequestLogs({ data, vendorId }) {
                     onChange={(e) => setSearchTag(e.target.value)}
                 />
             </div>
+            <FilterLog onFilterChange={handleFilterChange} />
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white rounded-lg shadow">
                     <thead>
@@ -103,6 +151,14 @@ export default function RequestLogs({ data, vendorId }) {
                             </tr>
                         )}
 
+                        {!loading && logs.length === 0 && (
+                            <tr>
+                                <td colSpan="7" className="text-center py-4">
+                                    No data available
+                                </td>
+                            </tr>
+                        )}
+
                         {!loading && logs.map((item, idx) => (
                             <tr key={idx} className="border-b border-gray-200">
                                 <td className="px-6 py-4">{idx + 1}</td>
@@ -112,9 +168,9 @@ export default function RequestLogs({ data, vendorId }) {
                                     <RequestLabel type={'status'} value={item.status} />
                                 </td>
                                 <td className="px-6 py-4 text-gray-600">{item.duration_ms}ms</td>
-                                <td className="px-6 py-4 text-gray-600">{item.timestamp}</td>
+                                <td className="px-6 py-4 text-gray-600">{getDateAndTime(item.timestamp)}</td>
                                 <td className="px-6 py-4" >
-                                    <Link href={`api-logs/${idx}`} className="text-gray-500 hover:text-blue-500">
+                                    <Link href={`api-logs/${item.log_id}`} className="text-gray-500 hover:text-blue-500">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 24 24"
@@ -134,7 +190,7 @@ export default function RequestLogs({ data, vendorId }) {
                     </tbody>
                 </table>
                 <div className="flex space-x-2 mt-4">
-                    {page > 1 && Array.from({ length: page }, (_, index) => (
+                    {Array.from({ length: page }, (_, index) => (
                         <button
                             key={index + 1}
                             onClick={() => handlePageClick(index + 1)}

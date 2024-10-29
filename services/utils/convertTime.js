@@ -1,4 +1,4 @@
-export default function convertTime(timestamp) {
+export function convertTime(timestamp) {
     const date = new Date(timestamp);
 
     // Use Intl.DateTimeFormat for better localization and formatting
@@ -33,7 +33,17 @@ export default function convertTime(timestamp) {
 
     return `${formattedDateWithSuffix} (${relativeTime})`;
 }
-
+export function getDateAndTime(timestamp) {
+    const formattedTimestamp = new Date(timestamp).toLocaleString("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
+    return formattedTimestamp;
+}
 function getDaySuffix(day) {
     if (day >= 11 && day <= 13) {
         return 'th';

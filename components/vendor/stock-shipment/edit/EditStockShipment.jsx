@@ -105,7 +105,7 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
         );
 
         const requestBody = {
-            stock_shipment: {
+            // stock_shipment: {
                 stock_shipment_id: stockShipmentId,
                 items: [
                     {
@@ -113,7 +113,7 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
                         stock_in: quantity,
                     },
                 ],
-            },
+            // },
         };
 
         if (existingItem) {
@@ -180,10 +180,10 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
     // Handle product removal (Remove Item)
     const handleRemoveProduct = async (vendor_sku) => {
         const requestBody = {
-            stock_shipment: {
+            // stock_shipment: {
                 stock_shipment_id: stockShipmentId,
                 items: [vendor_sku],
-            },
+            // },
         };
 
         try {

@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/upload-products:
+  /upload-products:
     post:
       summary: Upload product catalog
       tags:

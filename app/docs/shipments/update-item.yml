@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/stock-shipments/update-item:
+  /stock-shipments/update-item:
     patch:
       summary: Update items in a stock shipment
       description: >
@@ -15,25 +15,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - stock_shipment
-              properties:
-                stock_shipment:
-                  type: object
-                  required:
-                    - stock_shipment_id
-                    - items
-                  properties:
-                    stock_shipment_id:
-                      type: string
-                      description: ID of the stock shipment to update items in.
-                      example: "SHIPMENT12345"
-                    items:
-                      type: array
-                      description: List of items to update in the stock shipment.
-                      items:
-                        $ref: "#/components/schemas/StockShipments"
+              $ref: "#/components/schemas/UpdateStockShipment"
       responses:
         "200":
           description: Items updated successfully in the stock shipment.

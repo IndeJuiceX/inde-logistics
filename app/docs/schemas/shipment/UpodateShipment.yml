@@ -1,0 +1,28 @@
+UpdateStockShipment:
+  type: object
+  required:
+    - stock_shipment_id
+    - items
+  properties:
+    stock_shipment_id:
+      type: string
+      description: ID of the stock shipment to update.
+      example: "SHIPMENT12345"
+    items:
+      type: array
+      description: List of items to update in the stock shipment.
+      items:
+        type: object
+        required:
+          - vendor_sku
+          - stock_in
+        properties:
+          vendor_sku:
+            type: string
+            description: Vendor SKU of the item.
+            example: "10000"
+          stock_in:
+            type: integer
+            description: Quantity of stock to add.
+            example: 4
+            minimum: 1 # Ensures stock_in must be greater than 0

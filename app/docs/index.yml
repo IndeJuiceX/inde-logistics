@@ -8,7 +8,7 @@ info:
     Endpoints like **products** and **stock shipments** that support bulk uploads have a maximum payload size of **2 MB**.
 
 servers:
-  - url: http://localhost:3000/api/v1/vendor
+  - url: http://localhost:3002/api/v1/vendor
 tags:
   - name: Product
     description: Operations related to products

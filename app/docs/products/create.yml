@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/products/create:
+  /products/create:
     post:
       summary: Add products
       tags:

@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/orders/update:
+  /orders/update:
     patch:
       summary: Update order buyer information
       description: >

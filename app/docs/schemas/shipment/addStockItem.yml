@@ -1,0 +1,15 @@
+AddStockShipmentItem:
+  type: object
+  required:
+    - stock_shipment_id
+    - items
+  properties:
+    stock_shipment_id:
+      type: string
+      description: ID of the stock shipment to which items will be added.
+      example: "SHIPMENT12345"
+    items:
+      type: array
+      description: List of items to add to the stock shipment.
+      items:
+        $ref: "#/components/schemas/StockShipmentItem"

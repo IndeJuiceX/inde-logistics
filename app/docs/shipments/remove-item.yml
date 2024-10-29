@@ -1,5 +1,5 @@
 paths:
-  /v1/vendor/stock-shipments/remove-item:
+  /stock-shipments/remove-item:
     delete:
       summary: Remove items from a stock shipment
       description: >
@@ -15,27 +15,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - stock_shipment
-              properties:
-                stock_shipment:
-                  type: object
-                  required:
-                    - stock_shipment_id
-                    - items
-                  properties:
-                    stock_shipment_id:
-                      type: string
-                      description: ID of the stock shipment from which to remove items.
-                      example: 'SHIPMENT12345'
-                    items:
-                      type: array
-                      description: List of vendor SKUs of the items to remove.
-                      items:
-                        type: string
-                        description: Vendor SKU of the item.
-                        example: 'SKU12345'
+              $ref: '#/components/schemas/RemoveStockShipment'
       responses:
         '200':
           description: Items removed successfully from the stock shipment.
