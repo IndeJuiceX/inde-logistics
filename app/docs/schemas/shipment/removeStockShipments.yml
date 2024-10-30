@@ -1,16 +1,20 @@
-RemoveStockShipment:
+DeleteStockShipment:
   type: object
   required:
-    - stock_shipment_id # Only stock_shipment_id is required now
+    - stock_shipment_id
   properties:
     stock_shipment_id:
       type: string
-      description: ID of the stock shipment from which to remove items.
+      description: The ID of the stock shipment to delete or modify.
       example: "SHIPMENT12345"
     items:
       type: array
-      description: List of vendor SKUs of the items to remove.
+      description: List of items to remove from the stock shipment. If omitted, the entire shipment will be deleted.
       items:
-        type: string
+        type: object
         description: Vendor SKU of the item.
         example: "SKU12345"
+        properties:
+          vendor_sku:
+            type: string
+            description: The SKU of the item to remove from the shipment.
