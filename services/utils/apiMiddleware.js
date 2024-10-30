@@ -20,7 +20,7 @@ export async function authenticateAndAuthorize(request) {
     // 2. If user is not in the session, check for Authorization header (for API requests)
     if (!user) {
         const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if (!authHeader || !authHeader?.startsWith('Bearer ')) {
             return { authorized: false, status: 401 }; // Unauthorized
         }
 
@@ -69,7 +69,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
         try {
             // **Capture request data**
             const urlObj = new URL(request.url);
-            endpoint = urlObj.pathname.startsWith('/api/v1')
+            endpoint = urlObj?.pathname?.startsWith('/api/v1')
                 ? urlObj.pathname
                 : `/api/v1${urlObj.pathname}`; // Ensure API version part
             requestData = {
@@ -138,7 +138,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
             const endTime = Date.now();
             const duration = endTime - startTime;
 
-            if (endpoint.startsWith('/api/v1/vendor')) {
+            if (endpoint?.startsWith('/api/v1/vendor')) {
                 // Prepare data for logging
                 const dataToSave = {
                     vendor_id: vendorId,
