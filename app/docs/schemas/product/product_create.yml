@@ -1,4 +1,4 @@
-product:
+product_create:
   type: object
   required:
     - vendor_sku

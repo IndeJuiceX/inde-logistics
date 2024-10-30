@@ -19,7 +19,7 @@ paths:
                 products:
                   type: array
                   items:
-                    $ref: "#/components/schemas/product"
+                    $ref: "#/components/schemas/product_create"
       responses:
         "200":
           description: Products uploaded successfully
