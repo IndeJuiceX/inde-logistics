@@ -17,9 +17,9 @@ export default function VendorDetails() {
     // Fetch vendor details from the API when the component loads
     const fetchVendor = async () => {
       try {
-        const response = await fetch(`/api/v1/admin/vendor?vendor_id=${vendorId}`);
+        const response = await fetch(`/api/v1/admin/vendor/${vendorId}`);
         const data = await response.json();
-
+        
         if (response.ok) {
           setVendor(data);
           setVendorData(data); // Set vendorData for editing
