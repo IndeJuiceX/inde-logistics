@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'stringwhichisasecretforoutnew3plsy
 
 export async function POST(req) {
   try {
-    const { companyName, companyNumber, phone, email, shippingCode } = await req.json();
+    const { companyName, companyNumber, phone, email } = await req.json();
 
     const vendorId = crypto.createHash('md5').update(`${companyName}${companyNumber}${email}`).digest('hex').slice(0, 8);
     //`VENDOR#${uuidv4()}`;
@@ -29,9 +29,8 @@ export async function POST(req) {
       company_number: companyNumber,
       phone: phone,
       email: email,
-      shipping_code: shippingCode,
       api_key: apiKey,
-      status: 'Active',
+      status: 'Inactive',
     };
 
     const result = await putItem(vendorData);

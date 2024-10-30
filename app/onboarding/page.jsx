@@ -10,7 +10,7 @@ export default function VendorOnboarding() {
     companyNumber: '',
     phone: '',
     email: '',
-    shippingCode: '',
+    //shippingCode: '',
   });
 
   const [submissionResult, setSubmissionResult] = useState(null);
@@ -60,10 +60,7 @@ export default function VendorOnboarding() {
           <label className="form-label">Email:</label>
           <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-input" required />
         </div>
-        <div className="form-group">
-          <label className="form-label">Shipping Code:</label>
-          <input type="text" name="shippingCode" value={formData.shippingCode} onChange={handleChange} className="form-input" required />
-        </div>
+       
         <button type="submit" className="submit-button">Submit</button>
       </form>
       {submissionResult && <p className="result-message">{submissionResult}</p>}
