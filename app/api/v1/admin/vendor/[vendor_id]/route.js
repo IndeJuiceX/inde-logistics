@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server';
 // Fetch the vendor by their ID
 export async function GET(request, { params }) {
   try {
-    const { vendorId } = params; // Extract vendorId from the URL
-
+    const { vendor_id } = params; // Extract vendorId from the URL
+    const vendorId = vendor_id
     if (!vendorId) {
       return NextResponse.json({ error: 'Vendor ID is required' }, { status: 400 });
     }
