@@ -293,10 +293,13 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
         };
     });
 
+    const [shipmentObj] = shipment
+    const cleanShipment = cleanResponseData(shipmentObj)
+    cleanShipment.items = stockShipmentItems
     // Return the final data in the desired format
     return {
         success: true,
-        data: { stock_shipment: shipment, stock_shipment_items: stockShipmentItems }, // Shipment items as data
+        data: cleanShipment//{ stock_shipment: shipment, stock_shipment_items: stockShipmentItems }, // Shipment items as data
     };
 
 }

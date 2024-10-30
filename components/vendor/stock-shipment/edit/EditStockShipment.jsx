@@ -72,7 +72,7 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
 
                 if (response.ok && data.success) {
                     // Extract shipment items and populate selectedItems
-                    const { stock_shipment_items } = data.data;
+                    const  stock_shipment_items  = data.data.items;
                     const existingItems = stock_shipment_items.map((item) => ({
                         ...item,
                         quantity: item.quantity, // Ensure to include quantity

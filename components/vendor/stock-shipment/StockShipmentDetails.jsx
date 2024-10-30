@@ -22,13 +22,13 @@ export default function StockShipmentDetails({ vendorId, stockShipmentId }) {
                 const data = await response.json();
                 console.log(data)
                 if (response.ok && data.success) {
-                    const {
-                        stock_shipment,
-                        stock_shipment_items,
-                    } = data.data;
+                    // const {
+                    //     stock_shipment,
+                    //     stock_shipment_items,
+                    // } = data.data;
 
-                    setStockShipment(stock_shipment);
-                    setStockShipmentItems(stock_shipment_items || []);
+                    setStockShipment(data.data);
+                    setStockShipmentItems(data.data.items || []);
                 } else {
                     console.error('Error fetching shipment details:', data.error);
                     // Optionally, you can redirect the user or show an error message
