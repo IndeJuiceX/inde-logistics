@@ -12,7 +12,8 @@ export const getProductSchema = () => Joi.object({
   image: Joi.string().uri().optional().label('image'),
   attributes: Joi.object().pattern(
     Joi.string(),
-    Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
+    Joi.string()
+   // Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
   ).optional().label('attributes'),
   warehouse: Joi.alternatives().try(
     Joi.array().empty(),

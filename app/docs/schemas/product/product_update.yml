@@ -38,4 +38,4 @@ product_update:
       example:
         color: "Blue"
         size: "Large"
-        nicotine: ["6mg", "12mg"]
+        nicotine: "6mg"

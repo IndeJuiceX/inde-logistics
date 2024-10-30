@@ -37,4 +37,4 @@ product:
       example:
         color: "Red"
         size: "Medium"
-        nicotine: ["0mg", "3mg"]
+        nicotine: "0mg"

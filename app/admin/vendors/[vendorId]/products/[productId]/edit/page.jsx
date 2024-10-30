@@ -117,10 +117,10 @@ export default function EditProductPage() {
 
     let updatedValue = value;
 
-    if (name === 'nicotine') {
-      // If nicotine, convert the string to an array of strings
-      updatedValue = value.split(',').map((item) => item.trim());
-    }
+    // if (name === 'nicotine') {
+    //   // If nicotine, convert the string to an array of strings
+    //   updatedValue = value.split(',').map((item) => item.trim());
+    // }
 
     setUpdatedFields((prevFields) => ({
       ...prevFields,
@@ -144,10 +144,10 @@ export default function EditProductPage() {
     if (newAttributeKey && newAttributeValue) {
       let updatedValue = newAttributeValue;
 
-      if (newAttributeKey === 'nicotine') {
-        // If nicotine, convert the string to an array of strings
-        updatedValue = newAttributeValue.split(',').map((item) => item.trim());
-      }
+      // if (newAttributeKey === 'nicotine') {
+      //   // If nicotine, convert the string to an array of strings
+      //   updatedValue = newAttributeValue.split(',').map((item) => item.trim());
+      // }
 
       setProduct((prevProduct) => ({
         ...prevProduct,

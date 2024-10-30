@@ -14,7 +14,8 @@ export const getProductUpdateSchema = () => Joi.object({
   attributes: Joi.object()
     .pattern(
       Joi.string(),
-      Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
+      Joi.string()
+      //Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
     )
     .optional()
     .label('attributes'),
