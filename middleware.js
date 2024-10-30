@@ -14,7 +14,7 @@ export default auth((req) => {
     }
 
     // Admin-only access control
-    if (pathname.startsWith("/admin")) {
+    if (pathname?.startsWith("/admin")) {
         // If a non-admin (e.g., vendor) tries to access admin routes
         if (user?.role !== "admin") {
             // Redirect to their respective dashboard
@@ -26,7 +26,7 @@ export default auth((req) => {
     }
 
     // Vendor-only access control
-    if (pathname.startsWith("/vendor")) {
+    if (pathname?.startsWith("/vendor")) {
         // If a non-vendor (e.g., admin) tries to access vendor routes
         if (user?.role !== "vendor") {
             // Redirect to their respective dashboard
