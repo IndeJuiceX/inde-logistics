@@ -3,12 +3,14 @@ import { getAllStockShipments, getStockShipmentDetails } from '@/services/data/s
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 export const GET = withAuthAndLogging(async (request, { params, user }) => {
     try {
+        const { searchParams } = new URL(request.url);
+        // let vendorId = user?.vendor || null;
+        let vendorId = user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
-        let vendorId = user?.vendor || null;
         if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
-        const { searchParams } = new URL(request.url);
+
         const stockShipmentId = searchParams.get('stock_shipment_id') || null
         const page = parseInt(searchParams.get('page')) || 1;
         const pageSize = parseInt(searchParams.get('page_size')) || 20;
@@ -30,4 +32,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         console.log(error)
         return NextResponse.json({ error: 'Failed to fetch Stock Shipments' }, { status: 500 });
     }
-}, ['vendor'])
+}, ['vendor', 'admin'])

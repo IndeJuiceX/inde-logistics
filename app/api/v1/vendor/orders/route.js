@@ -6,7 +6,8 @@ const handler = async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
         const vendorOrderId = searchParams.get('vendor_order_id');
-
+        console.log('vender');
+        
         const pageSize = parseInt(searchParams.get('page_size')) || 25;
         const lastEvaluatedKeyParam = searchParams.get('last_evaluated_key');
 
@@ -15,7 +16,7 @@ const handler = async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = user?.vendor;
+        let vendorId = user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
@@ -58,4 +59,4 @@ const handler = async (request, { params, user }) => {
     }
 }
 
-export const GET = withAuthAndLogging(handler, ['vendor']); // Allowed roles: 'vendor'
+export const GET = withAuthAndLogging(handler, ['vendor', 'admin']); // Allowed roles: 'vendor'
