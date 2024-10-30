@@ -76,7 +76,7 @@ export default function OrderView({ vendorId, vendorOrderId }) {
         order_id,
         created_at,
         status,
-        shipping_cost,
+        //shipping_cost,
         expected_delivery_date,
     } = order;
 
@@ -170,10 +170,10 @@ export default function OrderView({ vendorId, vendorOrderId }) {
                                     <span className="font-semibold">Total Items:</span>{' '}
                                     {orderItems.length}
                                 </p>
-                                <p className="text-gray-600">
+                               {/*} <p className="text-gray-600">
                                     <span className="font-semibold">Shipping Cost:</span>{' '}
                                     £{shipping_cost?.toFixed(2) || '0.00'}
-                                </p>
+                                </p>*/}
                                 {/* Additional order details can go here */}
                             </div>
                         </div>

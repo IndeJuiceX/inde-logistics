@@ -89,7 +89,7 @@ export const createOrder = async (vendorId, order) => {
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
                     expected_delivery_date: order.expected_delivery_date,
-                    shipping_cost: order.shipping_cost,
+                    //shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
                     entity_type: 'Order',

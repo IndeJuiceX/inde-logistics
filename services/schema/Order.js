@@ -30,7 +30,7 @@ export const getOrderSchema = () =>
                 'any.required': '"expected_delivery_date" is required',
             }),
 
-        shipping_cost: Joi.number().required().label('shipping_cost'),
+        //shipping_cost: Joi.number().required().label('shipping_cost'),
 
         buyer: getBuyerSchema()
             .required()
