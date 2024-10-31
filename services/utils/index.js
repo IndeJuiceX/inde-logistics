@@ -3,12 +3,12 @@ import crypto from 'crypto';
 
 const apiKeySources = [
   {
-      key: 'IwvS6pAGDIDKI7jWiWNN', // Example API key
-      source: 'indejuice_legacy_app',
-      status: 'Active',
-      role : 'admin'
+    key: 'IwvS6pAGDIDKI7jWiWNN', // Example API key
+    source: 'indejuice_legacy_app',
+    status: 'Active',
+    role: 'admin'
   },
-  
+
   // Add more API keys as needed
 ];
 
@@ -84,4 +84,13 @@ export const cleanResponseData = (data, additionalKeys = []) => {
   } else {
     throw new Error('Invalid data type. Expected an array or object.');
   }
+};
+
+const getVendorIdFromRequest = (user, searchParams) => {
+  if (user && user.vendor) {
+    return user.vendor;
+  } else if (user.role === 'admin' || user.role === 'warehouse') {
+    return searchParams.get('vendor_id');
+  }
+  return null;
 };

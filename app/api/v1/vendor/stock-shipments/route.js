@@ -32,4 +32,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         console.log(error)
         return NextResponse.json({ error: 'Failed to fetch Stock Shipments' }, { status: 500 });
     }
-}, ['vendor', 'admin'])
+}, ['vendor', 'admin','warehouse'])
