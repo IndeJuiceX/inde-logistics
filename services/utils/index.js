@@ -86,7 +86,7 @@ export const cleanResponseData = (data, additionalKeys = []) => {
   }
 };
 
-const getVendorIdFromRequest = (user, searchParams) => {
+export const getVendorIdFromRequest = (user, searchParams) => {
   if (user && user.vendor) {
     return user.vendor;
   } else if (user.role === 'admin' || user.role === 'warehouse') {

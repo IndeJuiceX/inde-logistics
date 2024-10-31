@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getAllStockShipments, getStockShipmentDetails } from '@/services/data/stock-shipment';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+import { getVendorIdFromRequest } from '@/services/utils';
 export const GET = withAuthAndLogging(async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
         // let vendorId = user?.vendor || null;
-        let vendorId = user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
