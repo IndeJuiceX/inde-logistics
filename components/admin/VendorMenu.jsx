@@ -1,29 +1,37 @@
-'use client';
-
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function VendorMenu({ vendorId, vendorName }) {
-    return (
-        <div className="flex justify-between items-center bg-gray-800 text-white px-6 py-3 rounded-t-lg shadow-md">
-            {/* Left Side - Menu Links */}
-            <div className="flex space-x-6">
-                <Link href={`/admin/vendors/${vendorId}/products`} className="text-white hover:text-blue-400">
-                    Products
-                </Link>
-                <Link href={`/admin/vendors/${vendorId}/orders`} className="text-white hover:text-blue-400">
-                    Orders
-                </Link>
-                <Link href={`/admin/vendors/${vendorId}/shipments`} className="text-white hover:text-blue-400">
-                    Stock Shipments
-                </Link>
-                <Link href={`/admin/vendors/${vendorId}/users`} className="text-white hover:text-blue-400">
-                    Users
-                </Link>
-            </div>
-            {/* Right Side - Vendor Name */}
-            <div>
-                <span className="text-white font-semibold">{vendorName}</span>
-            </div>
-        </div>
-    );
+  const pathname = usePathname();
+
+  const menuItems = [
+    { name: 'Products', href: `/admin/vendors/${vendorId}/products` },
+    { name: 'Orders', href: `/admin/vendors/${vendorId}/orders` },
+    { name: 'Stock Shipments', href: `/admin/vendors/${vendorId}/shipments` },
+    { name: 'Users', href: `/admin/vendors/${vendorId}/users` },
+  ];
+
+  return (
+    <div className="flex justify-between items-center bg-gray-800 text-white px-6 py-3 rounded-t-lg shadow-md">
+      <div className="flex space-x-6">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`px-3 py-2 rounded-md ${
+                isActive ? 'bg-blue-500 text-white' : 'hover:bg-gray-700'
+              }`}
+            >
+              {item.name}
+            </Link>
+          );
+        })}
+      </div>
+      <div>
+        <span className="text-white font-semibold">{vendorName}</span>
+      </div>
+    </div>
+  );
 }

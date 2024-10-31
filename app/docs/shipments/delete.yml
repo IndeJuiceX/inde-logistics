@@ -1,0 +1,89 @@
+paths:
+  /stock-shipments/delete:
+    delete:
+      summary: Delete a stock shipment or remove items from it
+      description: >
+        Deletes a stock shipment if items are not specified in the request body,
+        or removes specified items from a stock shipment. Requires vendor authentication.
+      tags:
+        - Shipments
+      security:
+        - vendorAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteStockShipment'
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                  shipment_id:
+                    type: string
+                    description: The ID of the shipment that was modified or deleted
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+                  details:
+                    type: array
+                    items:
+                      type: string
+                    description: Detailed error information
+        "403":
+          description: Forbidden - Vendor authentication required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+        "404":
+          description: Shipment not found or does not belong to the vendor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+        "413":
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+                  details:
+                    type: string
+                    description: Detailed error information

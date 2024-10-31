@@ -43,7 +43,8 @@ export default function EditProductPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`);
+        // http://localhost:3002/api/v1/vendor/products?vendor_sku=10000
+        const response = await fetch(`/api/v1/vendor/products?vendor_sku=${productId}`);
         const data = await response.json();
         setProduct(data); // Populate product data
         setLoading(false);

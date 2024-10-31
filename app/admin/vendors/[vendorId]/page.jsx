@@ -17,7 +17,7 @@ export default function VendorDetails() {
     // Fetch vendor details from the API when the component loads
     const fetchVendor = async () => {
       try {
-        const response = await fetch(`/api/v1/admin/vendor?vendor_id=${vendorId}`);
+        const response = await fetch(`/api/v1/admin/vendor/${vendorId}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -46,8 +46,24 @@ export default function VendorDetails() {
     return <div className="flex justify-center items-center h-screen text-red-600">{error}</div>;
   }
 
-  const handleStatusChange = (newStatus) => {
-    setVendorData({ ...vendorData, status: newStatus });
+  const handleStatusChange = async (newStatus) => {
+    const message = `Are you sure you want to ${newStatus === 'Active' ? 'activate' : 'deactivate'} ${vendor?.company_name}?`;
+    const confirmChange = window.confirm(message);
+    if (confirmChange) {
+      setVendorData({ ...vendorData, status: newStatus });
+
+      const payload = {
+        status: newStatus
+      }
+      // app/api/v1/admin/vendor/[vendor_id]/edit/route.js
+      const response = await fetch(`/api/v1/admin/vendor/${vendorId}/edit`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+      console.log('status updated', data);
+    }
+
     // You can call an API to update the status in the backend here
   };
 

@@ -24,7 +24,7 @@ export default function Vendors() {
 
         const productExistence = {};
         for (const vendor of data) {
-          const res = await fetch(`/api/v1/admin/vendor/products?vendorId=${vendor.pk.split('VENDOR#')[1]}`);
+          const res = await fetch(`/api/v1/admin/vendor/products?vendor_id=${vendor.pk.split('VENDOR#')[1]}`);
           const productData = await res.json();
           productExistence[vendor.pk] = productData.length > 0;
         }

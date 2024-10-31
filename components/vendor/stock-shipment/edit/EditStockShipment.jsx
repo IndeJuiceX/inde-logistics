@@ -188,7 +188,7 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
 
         try {
             const response = await fetch(
-                `/api/v1/vendor/stock-shipments/remove-item?stock_shipment_id=${stockShipmentId}`,
+                `/api/v1/vendor/stock-shipments/delete?stock_shipment_id=${stockShipmentId}`,
                 {
                     method: 'DELETE', // Assuming POST for remove
                     headers: {

@@ -44,7 +44,9 @@ export async function authenticateAndAuthorize(request) {
         }
 
     }
-
+    if (user && user.role === 'admin') {
+        return { authorized: true, user, source, status: 200 };
+    }
     // 4. If we reach this point, authentication failed
     return { authorized: false, status: 401 }; // Unauthorized
 }
