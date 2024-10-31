@@ -11,6 +11,7 @@ export async function authenticateAndAuthorize(request) {
     let source;
     // 1. Try to get the user from the session (for browser-based requests)
     try {
+        console.log('Trying app auth')
         user = await getLoggedInUser();
         source = 'app'
     } catch (error) {
@@ -20,24 +21,24 @@ export async function authenticateAndAuthorize(request) {
 
     // 2. If user is not in the session, check for Authorization header (for API requests)
     if (!user) {
+        console.log('TRYING BEARER TOKEN AUTH---')
         const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
-        if (!authHeader || !authHeader?.startsWith('Bearer ')) {
-            return { authorized: false, status: 401 }; // Unauthorized
-        }
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7); // Remove 'Bearer '
 
-        const token = authHeader.substring(7); // Remove 'Bearer '
-
-        try {
-            // Verify the token and extract user info
-            user = decodeToken(token);
-            source = 'token'
-        } catch (error) {
-            console.error('Error verifying token:', error);
-            return { authorized: false, status: 401 }; // Unauthorized
+            try {
+                // Verify the token and extract user info
+                user = decodeToken(token);
+                source = 'token';
+            } catch (error) {
+                console.error('Error verifying token:', error);
+                return { authorized: false, status: 401 }; // Unauthorized
+            }
         }
     }
 
-    if(!user) {
+    if (!user) {
+        console.log('TRYING API KEY AUTH ---')
         const apiKey = request.headers.get('x-api-key');
         if (apiKey) {
             try {
@@ -173,7 +174,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
                     error: JSON.stringify(errorOccurred),
                     log_type: logType,
                     environment: process.env.APP_ENV,
-                    log_id:uuidv4()
+                    log_id: uuidv4()
                 };
                 // Initiate logging without awaiting
                 sendLogToFirehose(dataToSave)
