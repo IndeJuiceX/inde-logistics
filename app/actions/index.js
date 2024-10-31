@@ -2,6 +2,7 @@
 
 import { signIn, signOut, auth } from "@/auth"
 import { AuthError } from "next-auth";
+import { getSession } from "next-auth/react";
 
 
 export async function doLogIn(formData) {
@@ -33,5 +34,11 @@ export async function doLogOut() {
 
 export async function getLoggedInUser() {
     const session = await auth();
+    console.log('session', session);
+    if (!session) {
+        const serverSession = await getSession();
+        return serverSession?.user;
+    }
+
     return session?.user;
 }

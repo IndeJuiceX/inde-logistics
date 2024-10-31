@@ -85,3 +85,16 @@ export const cleanResponseData = (data, additionalKeys = []) => {
     throw new Error('Invalid data type. Expected an array or object.');
   }
 };
+
+export async function customFetch(endPoint, options) {
+  const baseUrl = process.env.NEXTAUTH_URL;
+  console.log('baseUrl', baseUrl);
+  
+  const fetchUrl = `${baseUrl}/${endPoint}`;
+  console.log('fetchUrl', fetchUrl);
+
+  return fetch(fetchUrl)
+    .then(async (res) => {
+      return res;
+    });
+}

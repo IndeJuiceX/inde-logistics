@@ -18,4 +18,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
     console.error('Error fetching vendors:', error);
     return NextResponse.json({ error: 'Failed to fetch vendors' }, { status: 500 });
   }
-}, ['admin'])
+}, ['admin','warehouse']);

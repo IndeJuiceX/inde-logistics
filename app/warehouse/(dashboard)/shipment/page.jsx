@@ -1,12 +1,15 @@
 import StockDashboard from "@/components/warehouse/dashboard/StockDashboard";
 import TapMenu from "@/components/warehouse/dashboard/TapMenu";
 import Shipment from "@/components/warehouse/shipment/Shipment";
+import { customFetch } from "@/services/utils";
 
 // async function getShipments() {
-//     const response = await fetch('http://localhost:3002/api/v1/admin/vendors');
+//     const response = await customFetch('api/v1/admin/vendors');
+//     if (!response.ok) {
+//         console.log('Failed to fetch shipments');
+//         return [];
+//     }
 //     const shipments = await response.json();
-//     console.log('ship', shipments);
-
 //     return shipments;
 // }
 
@@ -14,6 +17,6 @@ import Shipment from "@/components/warehouse/shipment/Shipment";
 export default async function ShipmentPage() {
     // const shipments = await getShipments();
     return (
-       <Shipment  />
+        <Shipment />
     )
 }
