@@ -37,6 +37,16 @@ export default auth((req) => {
         }
     }
 
+    if (pathname?.startsWith("/warehouse")) {
+        // If a non-admin (e.g., vendor) tries to access admin routes
+        if (user?.role !== "warehouse") {
+            // Redirect to their respective dashboard
+            const redirectUrl = user?.role === "vendor"
+                ? `/vendor/${user.vendor}/dashboard`
+                : "/login";
+            return NextResponse.redirect(new URL(redirectUrl, origin));
+        }
+    }
     // Redirect authenticated users trying to access /login to their appropriate dashboard
     if (user && pathname === "/login") {
         if (user.role === "admin") {
@@ -45,6 +55,9 @@ export default auth((req) => {
         } else if (user.role === "vendor" && user.vendor) {
             const vendorUrl = new URL(`/vendor/${user.vendor}/dashboard`, origin);
             return NextResponse.redirect(vendorUrl);
+        } else if (user.role === "warehouse") {
+            const warehouseUrl = new URL("/warehouse", origin)
+            return NextResponse.redirect(warehouseUrl);
         }
     }
 
@@ -57,6 +70,7 @@ export const config = {
     matcher: [
         "/admin/:path*",  // Protect all admin routes
         "/vendor/:path*", // Protect all vendor routes
+        "/warehouse/:path",
         "/",              // Allow access to homepage
         "/login",         // Allow access to login page
     ],

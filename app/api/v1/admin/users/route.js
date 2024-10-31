@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllVendorUsers } from '@/services/data/user';  // Your DynamoDB helper
+import { getAllUsers } from '@/services/data/user';  // Your DynamoDB helper
 
 export async function GET(request) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request) {
 
   
 
-    const result = await getAllVendorUsers();
+    const result = await getAllUsers();
     
     // Paginate results
     const startIndex = (page - 1) * pageSize;

@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
 const CreateUserPage = () => {
   const [vendors, setVendors] = useState([]); // Vendors list for the dropdown
-  const [userType, setUserType] = useState(''); // State for user type
-  const [selectedVendor, setSelectedVendor] = useState(''); // State for selected vendor
-  const router = useRouter()
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -16,6 +15,7 @@ const CreateUserPage = () => {
     password: '',
     userType: '',
     vendorId: '',
+    birthdate: '', // Added birthdate field
   });
 
   // Fetch vendors (mocked for the purpose of this example)
@@ -32,8 +32,34 @@ const CreateUserPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Prevent editing email and password directly when userType is warehouse
+    if (formData.userType === 'warehouse' && (name === 'email' || name === 'password')) {
+      return;
+    }
+
     setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
+
+  // Update email, password, and phone for warehouse userType
+  useEffect(() => {
+    if (formData.userType === 'warehouse') {
+      const generatedEmail = `${formData.firstName.toLowerCase()}-warehouse@indejuice.com`;
+      let generatedPassword = '';
+      if (formData.birthdate) {
+        // Parse the birthdate in 'yyyy-mm-dd' format
+        const [year, month, day] = formData.birthdate.split('-');
+        // Generate password from MMYY
+        generatedPassword = month + year.slice(-2);
+      }
+      setFormData((prevState) => ({
+        ...prevState,
+        email: generatedEmail,
+        password: generatedPassword,
+        phone: '0121 285 1033', // Set default phone number for warehouse
+      }));
+    }
+  }, [formData.userType, formData.firstName, formData.birthdate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,6 +94,38 @@ const CreateUserPage = () => {
           Create New User
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* User Type Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              User Type
+            </label>
+            <select
+              name="userType"
+              value={formData.userType}
+              onChange={(e) => {
+                handleInputChange(e);
+                // Clear vendorId and other fields when userType changes
+                setFormData((prevState) => ({
+                  ...prevState,
+                  vendorId: '',
+                  phone: '',
+                  password: '',
+                  birthdate: '',
+                }));
+              }}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="" disabled>
+                Select user type
+              </option>
+              <option value="admin">Admin</option>
+              <option value="vendor">Vendor</option>
+              <option value="warehouse">Warehouse</option>
+            </select>
+          </div>
+
+          {/* First Name Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               First Name
@@ -83,6 +141,7 @@ const CreateUserPage = () => {
             />
           </div>
 
+          {/* Last Name Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Last Name
@@ -98,6 +157,7 @@ const CreateUserPage = () => {
             />
           </div>
 
+          {/* Email Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -108,64 +168,70 @@ const CreateUserPage = () => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              readOnly={formData.userType === 'warehouse'}
+              className={`w-full px-3 py-2 border ${
+                formData.userType === 'warehouse' ? 'bg-gray-100' : 'bg-white'
+              } border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
               placeholder="Enter email"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone
-            </label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter phone number"
-            />
-          </div>
+          {/* Birthdate Field (only for warehouse) */}
+          {formData.userType === 'warehouse' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Birthdate
+              </label>
+              <input
+                type="date"
+                name="birthdate"
+                value={formData.birthdate}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter password"
-            />
-          </div>
+          {/* Phone and Password Fields (not for warehouse) */}
+          {formData.userType !== 'warehouse' && (
+            <>
+              {/* Phone Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter phone number"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              User Type
-            </label>
-            <select
-              name="userType"
-              value={formData.userType}
-              onChange={(e) => {
-                handleInputChange(e);
-                setUserType(e.target.value); // Set user type and trigger vendor dropdown if necessary
-              }}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="" disabled>
-                Select user type
-              </option>
-              <option value="admin">Admin</option>
-              <option value="vendor">Vendor</option>
-            </select>
-          </div>
+              {/* Password Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter password"
+                />
+              </div>
+            </>
+          )}
 
-          {userType === 'vendor' && (
+          {/* Vendor Selection (only for vendor userType) */}
+          {formData.userType === 'vendor' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Select Vendor

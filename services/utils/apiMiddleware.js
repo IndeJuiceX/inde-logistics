@@ -20,33 +20,37 @@ export async function authenticateAndAuthorize(request) {
     // 2. If user is not in the session, check for Authorization header (for API requests)
     if (!user) {
         const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
-        if (!authHeader || !authHeader?.startsWith('Bearer ')) {
-            return { authorized: false, status: 401 }; // Unauthorized
-        }
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7); // Remove 'Bearer '
 
-        const token = authHeader.substring(7); // Remove 'Bearer '
-
-        try {
-            // Verify the token and extract user info
-            user = decodeToken(token);
-            source = 'token'
-        } catch (error) {
-            console.error('Error verifying token:', error);
-            return { authorized: false, status: 401 }; // Unauthorized
+            try {
+                // Verify the token and extract user info
+                user = decodeToken(token);
+                source = 'token';
+            } catch (error) {
+                console.error('Error verifying token:', error);
+                return { authorized: false, status: 401 }; // Unauthorized
+            }
+        } else {
+            return { authorized: false, status: 401 };
         }
     }
-    if (user && user.vendor) {
-        // 3. User is authenticated
-        // fetch the vendor from db and check it has status of active..
-        const vendor = await getVendorById(user.vendor)
-        if (vendor && vendor?.data?.status === 'Active') {
+
+
+    if (user) {
+        if (user.vendor) {
+            const vendor = await getVendorById(user.vendor)
+            if (vendor && vendor?.data?.status === 'Active') {
+                return { authorized: true, user, source, status: 200 };
+            }
+        }
+        if (user.role === 'admin' || user.role === 'warehouse') {
             return { authorized: true, user, source, status: 200 };
         }
 
+
     }
-    if (user && user.role === 'admin') {
-        return { authorized: true, user, source, status: 200 };
-    }
+   
     // 4. If we reach this point, authentication failed
     return { authorized: false, status: 401 }; // Unauthorized
 }
@@ -153,7 +157,7 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
                     error: JSON.stringify(errorOccurred),
                     log_type: logType,
                     environment: process.env.APP_ENV,
-                    log_id:uuidv4()
+                    log_id: uuidv4()
                 };
                 // Initiate logging without awaiting
                 sendLogToFirehose(dataToSave)
@@ -164,55 +168,3 @@ export function withAuthAndLogging(handler, allowedRoles = []) {
         }
     };
 }
-
-
-
-
-/**
- * export async function saveApiCall(apiCallData) {
-  const {
-    vendorId,
-    endpoint,
-    method,
-    requestData,
-    responseData,
-    status,
-    timestamp,
-    duration,
-    error,
-  } = apiCallData;
-
-  if (!vendorId) {
-    // If vendorId is not available, do not save the log
-    return;
-  }
-
-  const pk = `VENDOR#${vendorId}`;
-  const sk = `APICALL#${timestamp}#${uuidv4()}`;
-
-  const item = {
-    pk,
-    sk,
-    endpoint,
-    method,
-    status,
-    requestData,
-    responseData,
-    timestamp,
-    duration,
-    error, // true or false
-  };
-
-  try {
-    await dynamoDbClient.send(
-      new PutCommand({
-        TableName: 'ApiCallLogs',
-        Item: item,
-      })
-    );
-  } catch (dbError) {
-    console.error('Error saving API call log:', dbError);
-    // Handle logging failures as needed (e.g., send to an error tracking service)
-  }
-}
- */

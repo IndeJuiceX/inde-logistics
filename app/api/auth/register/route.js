@@ -8,7 +8,7 @@ export async function POST(request) {
     const body = await request.json();  // Parse JSON body
 
     // Extract fields from request body
-    const { firstName, lastName, email, phone, password, userType, vendorId } = body;
+    const { firstName, lastName, email, phone, password, userType, vendorId , birthdate} = body;
 
     // Validate the required fields
     if (!firstName || !lastName || !email || !phone || !password || !userType) {
@@ -28,11 +28,15 @@ export async function POST(request) {
       phone,
       password: hashedPassword,
       user_type: userType,  // 'admin' or 'vendor'
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
 
     if (vendorId) {
       newUser.vendor_id = vendorId
+    }
+
+    if(birthdate) {
+      newUser.birth_date = birthdate
     }
     // Add the user to the DynamoDB table
     const result = await saveUser(newUser);

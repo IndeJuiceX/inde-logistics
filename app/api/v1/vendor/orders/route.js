@@ -16,7 +16,7 @@ const handler = async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+        let vendorId = user?.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
