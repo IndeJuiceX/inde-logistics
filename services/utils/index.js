@@ -1,6 +1,24 @@
 import { getLoggedInUser } from '@/app/actions';
 import crypto from 'crypto';
 
+const apiKeySources = [
+  {
+      key: 'IwvS6pAGDIDKI7jWiWNN', // Example API key
+      source: 'indejuice_legacy_app',
+      status: 'Active',
+      role : 'admin'
+  },
+  
+  // Add more API keys as needed
+];
+
+// Function to get API key details
+export async function getApiKeyDetails(apiKey) {
+  // Find the API key details from the hardcoded list
+  const apiKeyDetails = apiKeySources.find(source => source.key === apiKey);
+  return apiKeyDetails || null;
+}
+
 export function generateShipmentId(vendorId) {
   const timestamp = Date.now().toString(36);  // Convert timestamp to a base36 string (more compact)
   const randomPart = Math.random().toString(36).substring(2, 4);  // Generate 2 random characters

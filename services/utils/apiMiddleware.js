@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { getLoggedInUser } from '@/app/actions';
 import { sendLogToFirehose } from '../firehose';
 import { v4 as uuidv4 } from 'uuid';
+import { getApiKeyDetails } from '.';
 
 export async function authenticateAndAuthorize(request) {
     let user = null;
@@ -33,6 +34,25 @@ export async function authenticateAndAuthorize(request) {
         } catch (error) {
             console.error('Error verifying token:', error);
             return { authorized: false, status: 401 }; // Unauthorized
+        }
+    }
+
+    if(!user) {
+        const apiKey = request.headers.get('x-api-key');
+        if (apiKey) {
+            try {
+                // Validate the API key
+                const apiKeyDetails = await getApiKeyDetails(apiKey);
+                if (apiKeyDetails && apiKeyDetails.status === 'Active') {
+                    user = { role: apiKeyDetails.role };
+                    source = apiKeyDetails.source;
+                } else {
+                    return { authorized: false, status: 401 }; // Unauthorized
+                }
+            } catch (error) {
+                console.error('Error validating API key:', error);
+                return { authorized: false, status: 401 }; // Unauthorized
+            }
         }
     }
     if (user && user.vendor) {
