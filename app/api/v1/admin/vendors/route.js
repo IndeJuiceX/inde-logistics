@@ -1,8 +1,9 @@
 // app/api/vendors/route.js
 import { getAllVendors } from '@/services/data/vendor';
 import { NextResponse } from 'next/server';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 
-export async function GET() {
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
   try {
     // Assuming all vendors have "Vendor" as their EntityType
     const result = await getAllVendors();
@@ -16,4 +17,4 @@ export async function GET() {
     console.error('Error fetching vendors:', error);
     return NextResponse.json({ error: 'Failed to fetch vendors' }, { status: 500 });
   }
-}
+}, ['admin'])
