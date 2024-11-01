@@ -58,4 +58,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
-}, ['vendor']); // Allowed roles
+}, ['vendor','admin']); // Allowed roles
