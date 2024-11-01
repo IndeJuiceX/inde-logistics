@@ -121,7 +121,7 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
         const existingItems = stockShipmentItemsData.data
         // Step 2: Prepare items for batch delete
         const itemsToDelete = [];
-        const invalidItems =[]
+        const invalidItems = []
 
         for (const sku of vendorSkusToRemove) {
             const skuExists = existingItems.some(item => item.vendor_sku === sku);
@@ -133,16 +133,16 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
                 };
                 itemsToDelete.push(deleteItem);
             } else {
-                invalidItems.push({item : sku , error:`Item with sku ${sku} does not exist in the stock shipment` })
+                invalidItems.push({ item: sku, error: `Item with sku ${sku} does not exist in the stock shipment` })
             }
 
         }
 
-        if(invalidItems.length > 0) {
+        if (invalidItems.length > 0) {
             return {
                 success: false,
-                error : 'Failed to remove items from the Stock Shipment',
-                details : invalidItems
+                error: 'Failed to remove items from the Stock Shipment',
+                details: invalidItems
             }
         }
 
@@ -278,6 +278,39 @@ export async function updateItemsStockInStockShipment(
         }
     } catch (error) {
         console.error('Unhandled error in updateItemsStockInStockShipment:', error);
+        return { success: false, error: 'Server error', details: error.message };
+    }
+}
+
+export async function updateStockShipmentItemReceived(vendorId, stockShipmentId, item = {}) {
+    console.log('INSIDE UPDATE FUNCTION')
+    const allowedFields = ['received', 'faulty', 'vendor_sku']
+    // Validate the fields in the input object
+    const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
+    if (invalidFields.length > 0) {
+        return { success: false, error: 'Invalid fields', details: `Invalid fields: ${invalidFields.join(', ')}` };
+    }
+    const vendorSku = item.vendor_sku
+    // Construct the update object
+    const updateFields = {};
+    allowedFields.forEach(field => {
+        if (item[field] !== undefined || item[field] !== 'vendor_sku') {
+            updateFields[field] = item[field];
+        }
+    });
+
+    updateFields.updated_at = new Date().toISOString();
+
+    // Update the item in the database
+    try {
+        const result = await updateItemIfExists(`VENDORSTOCKSHIPMENTITEM#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`, updateFields);
+        if (result.success) {
+            return { success: true, data: result.data };
+        } else {
+            return { success: false, error: 'Failed to update stock shipment item', details: result.error };
+        }
+    } catch (error) {
+        console.error('Unhandled error in updateStockShipmentItemReceived:', error);
         return { success: false, error: 'Server error', details: error.message };
     }
 }
