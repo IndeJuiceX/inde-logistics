@@ -289,7 +289,7 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
 
         return {
             vendor_sku: item.vendor_sku,
-            quantity: item.stock_in,
+            stock_in: item.stock_in,
             ...productInfo,
         };
     });
