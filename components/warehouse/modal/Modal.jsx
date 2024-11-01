@@ -40,8 +40,10 @@ export default function Modal({ isOpen, onClose, title, children }) {
             ></div>
 
             {/* Modal content */}
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md mx-auto p-4 z-10">
-                <div className="mt-4">{children}</div>
+            <div className="relative bg-white rounded-lg shadow-lg w-full h-[85%] max-w-md mx-auto p-4 z-10">
+                {/* <div className="mt-4"> */}
+                    {children}
+                    {/* </div> */}
             </div>
         </div>
     );
