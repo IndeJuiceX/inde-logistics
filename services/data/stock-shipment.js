@@ -322,10 +322,15 @@ export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveSta
         const result = await queryItems(params);
         if (result.success) {
             const hasMore = !!result.lastEvaluatedKey;
-
+            // Loop over each item in result.data and get the shipment items
+            const dataWithShipmentItems = await Promise.all(result.data.map(async (shipment) => {
+                const shipmentItemsResult = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${shipment.vendor_id}`,`STOCKSHIPMENT#${shipment.shipment_id}#STOCKSHIPMENTITEM#`)
+                shipment.items = cleanResponseData(shipmentItemsResult.data);
+                return shipment;
+            }));
             return {
                 success: true,
-                data: cleanResponseData(result.data),
+                data: cleanResponseData(dataWithShipmentItems),
                 hasMore: hasMore,
                 lastEvaluatedKey: result.lastEvaluatedKey,
             };
@@ -360,7 +365,7 @@ export async function deleteStockShipmentWithItems(vendorId, stockShipmentId) {
         const existingItems = stockShipmentItemsData.data
         for (const item of existingItems) {
 
-            const res = await deleteItemWithPkAndSk(item.pk,item.sk)
+            const res = await deleteItemWithPkAndSk(item.pk, item.sk)
             if (!res.success) {
                 const skParts = item.sk.split('#');
                 const vendorSku = skParts[skParts.length - 1]; // Extract the vendor_sku part
@@ -375,7 +380,7 @@ export async function deleteStockShipmentWithItems(vendorId, stockShipmentId) {
         if (delResponse.success) {
             return { success: true }
         }
-        return {success:false , error : delResponse.error }
+        return { success: false, error: delResponse.error }
     } else {
         return { success: false, error: 'Stock Shipment not found' }
     }
