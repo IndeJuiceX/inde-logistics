@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 export default function ShipmentItems({ vendor, shipmentDetails }) {
-    console.log('shipmentDetails', vendor);
+    console.log('shipmentDetails', shipmentDetails);
 
     return (
         <>
