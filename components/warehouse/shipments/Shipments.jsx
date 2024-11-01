@@ -71,7 +71,11 @@ export default function Shipments({ vendors, stockShipments }) {
                         <tbody className="text-gray-700 text-sm font-medium">
                             {allShipments.length > 0 ? (
                                 allShipments.map((shipment, index) => (
-                                    <tr className="border-b border-gray-200 hover:bg-gray-100" key={index}>
+
+                                    <tr 
+                                        className="border-b border-gray-200 hover:bg-gray-100" 
+                                        key={index} 
+                                        onClick={() => window.location.href = `shipments/${shipment.shipment_id}`}>
                                         <td className="py-3 px-6 text-left">
                                             <span className="text-orange-500 font-bold">#{shipment.shipment_id}</span>
                                         </td>
