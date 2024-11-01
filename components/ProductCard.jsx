@@ -13,7 +13,7 @@ export default function ProductCard({ product, children }) { // Removed `actions
         </div>
         {product.image && (
           <div className="ml-4 w-24 h-24 flex-shrink-0">
-            <Image
+            <img
               src={product.image}
               alt={product.name}
               width={96}
