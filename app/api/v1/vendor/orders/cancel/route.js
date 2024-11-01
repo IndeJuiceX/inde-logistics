@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getOrder, cancelOrder } from '@/services/data/order';
+import { getVendorIdFromRequest } from '@/services/utils';
 
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
-        let vendorId = user?.vendor || null;
+
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+
 
         if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

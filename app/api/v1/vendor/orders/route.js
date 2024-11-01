@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+import { getVendorIdFromRequest } from '@/services/utils';
 
 const handler = async (request, { params, user }) => {
     try {
@@ -16,7 +17,7 @@ const handler = async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = user?.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
