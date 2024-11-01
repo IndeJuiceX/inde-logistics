@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server';
 import { validateOrderUpdateSchema } from '@/services/schema'; // Updated import
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { updateOrderBuyer, getOrder } from '@/services/data/order'; // Data access functions
+import { getVendorIdFromRequest } from '@/services/utils';
 
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract authentication details
 
-        let vendorId = user?.vendor || null;
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

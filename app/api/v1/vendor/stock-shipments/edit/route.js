@@ -3,12 +3,16 @@ import { NextResponse } from 'next/server';
 import { validateStockShipmentItems } from '@/services/schema';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { updateStockShipment, getStockShipmentById } from '@/services/data/stock-shipment';
+import { getVendorIdFromRequest } from '@/services/utils';
+
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
   try {
-    let vendorId = user?.vendor || null;
+
+    let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+
     if (!vendorId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

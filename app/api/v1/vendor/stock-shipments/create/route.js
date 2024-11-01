@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { validateStockShipmentItems } from '@/services/schema';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { createStockShipment } from '@/services/data/stock-shipment';
+import { getVendorIdFromRequest } from '@/services/utils';
 
 
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
@@ -9,7 +10,8 @@ const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
 
-        let vendorId = user?.vendor || null
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+
         // Parse request body
         const bodyText = await request.text();
         if (!bodyText) {

@@ -280,6 +280,7 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
             name: product.data.name,
             image: product.data.image,
             brand_name: product.data.brand_name,
+            attributes : product.data.attributes
         };
     }
     const stockShipmentItems = shipmentItems.map((item) => {

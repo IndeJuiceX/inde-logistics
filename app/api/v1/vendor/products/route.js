@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAllOrders, getOrderDetails } from '@/services/data/order';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getAllVendorProducts, getProductById } from '@/services/data/product';
+import { getVendorIdFromRequest } from '@/services/utils';
 
 export const GET = withAuthAndLogging(async (request, { params, user }) => {
     try {
@@ -16,7 +17,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = user?.vendor;
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
@@ -57,4 +58,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
-}, ['vendor']); // Allowed roles
+}, ['vendor','admin']); // Allowed roles
