@@ -34,9 +34,10 @@ export async function doLogOut() {
 
 export async function getLoggedInUser() {
     const session = await auth();
-    console.log('session', session);
+    // console.log('session', session);
     if (!session) {
         const serverSession = await getSession();
+        // console.log('serverSession', serverSession);
         return serverSession?.user;
     }
 

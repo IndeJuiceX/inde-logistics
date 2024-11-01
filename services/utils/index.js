@@ -86,19 +86,6 @@ export const cleanResponseData = (data, additionalKeys = []) => {
   }
 };
 
-export async function customFetch(endPoint, options) {
-  const baseUrl = process.env.NEXTAUTH_URL;
-  console.log('baseUrl', baseUrl);
-  
-  const fetchUrl = `${baseUrl}/${endPoint}`;
-  console.log('fetchUrl', fetchUrl);
-
-  return fetch(fetchUrl)
-    .then(async (res) => {
-      return res;
-    });
-}
-
 export const getVendorIdFromRequest = (user, searchParams) => {
   if (user && user.vendor) {
     return user.vendor;
