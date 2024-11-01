@@ -4,6 +4,8 @@ import { validateProducts } from '@/services/schema';
 import { batchWriteItems, getItem } from '@/lib/dynamodb';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { generateProductId } from '@/services/utils'
+import { getVendorIdFromRequest } from '@/services/utils';
+
 // Constants for validation
 const MAX_SIZE_MB = 2 * 1024 * 1024;  // 5MB in bytes
 const MAX_PRODUCTS = 500;  // Max products allowed in a batch
@@ -12,7 +14,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract API token from headers
 
-        let vendorId = user?.vendor || null;
+        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
