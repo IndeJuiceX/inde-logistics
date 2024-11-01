@@ -6,7 +6,7 @@ export default function StarterPage() {
             <div className="text-center">
                 <h1 className="text-4xl font-semibold">Welcome to Warehouse</h1>
                 <p className="mt-2 text-white">Please select a menu to start</p>
-                <Link href="/warehouse/shipment" className={`px-6 py-2 rounded-md  bg-gray-800`}>SHIPMENTS</Link>
+                <Link href="/warehouse/all/shipments" className={`px-6 py-2 rounded-md  bg-gray-800`}>SHIPMENTS</Link>
             </div>
             
             {/* <Link>Picking</Link>

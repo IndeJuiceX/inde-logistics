@@ -94,3 +94,11 @@ export const getVendorIdFromRequest = (user, searchParams) => {
   }
   return null;
 };
+
+export const urlFormatter = (pathname, vendorId) => {
+  const pathSegments = pathname.split('/');
+  const warehouseIndex = pathSegments.indexOf('warehouse');
+  const currentSubPage = pathSegments[warehouseIndex + 2] || '';
+  const newPath = `/warehouse/${vendorId}/${currentSubPage}`;
+  return newPath;
+}

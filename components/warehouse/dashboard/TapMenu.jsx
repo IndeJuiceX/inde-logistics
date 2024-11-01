@@ -1,21 +1,22 @@
 'use client'
 
 import Link from "next/link"
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 
 
 export default function TapMenu() {
+    const { vendor_id } = useParams();
     const pathname = usePathname();
     const activePage = pathname.split("/").pop();
-    
+
     return (
         <div className="flex items-center space-x-4 mb-6">
-            <Link href="/warehouse/stock" className={`px-6 py-2 rounded-md ${activePage === 'stock' ? 'bg-gray-700' : 'bg-gray-800'}`}>STOCK</Link>
+            <Link href={`/warehouse/${vendor_id}/stocks`} className={`px-6 py-2 rounded-md ${activePage === 'stocks' ? 'bg-gray-700' : 'bg-gray-800'}`}>STOCK</Link>
 
-            <Link href="/warehouse/shipment" className={`px-6 py-2 rounded-md ${activePage === 'shipment' ? 'bg-gray-700' : 'bg-gray-800'
+            <Link href={`/warehouse/${vendor_id}/shipments`} className={`px-6 py-2 rounded-md ${activePage === 'shipments' ? 'bg-gray-700' : 'bg-gray-800'
                 }`}>SHIPMENTS</Link>
 
-            <Link href="/warehouse/unshelve" className={`px-6 py-2 rounded-md ${activePage === 'unshelve' ? 'bg-gray-700' : 'bg-gray-800'
+            <Link href={`/warehouse/${vendor_id}/unshelved`} className={`px-6 py-2 rounded-md ${activePage === 'unshelved' ? 'bg-gray-700' : 'bg-gray-800'
                 }`}>UNSHELVED</Link>
 
             <span className="flex-grow"></span>
