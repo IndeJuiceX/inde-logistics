@@ -1,6 +1,6 @@
 import { getProductById, getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
-import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk, getItem, deleteItemWithPkAndSk } from '@/services/dynamo/wrapper';
+import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk, getItem, deleteItemWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
@@ -280,7 +280,7 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
             name: product.data.name,
             image: product.data.image,
             brand_name: product.data.brand_name,
-            attributes : product.data.attributes
+            attributes: product.data.attributes
         };
     }
     const stockShipmentItems = shipmentItems.map((item) => {
@@ -325,7 +325,7 @@ export const getAllStockShipments = async (vendorId, pageSize = 25, exclusiveSta
             const hasMore = !!result.lastEvaluatedKey;
             // Loop over each item in result.data and get the shipment items
             const dataWithShipmentItems = await Promise.all(result.data.map(async (shipment) => {
-                const shipmentItemsResult = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${shipment.vendor_id}`,`STOCKSHIPMENT#${shipment.shipment_id}#STOCKSHIPMENTITEM#`)
+                const shipmentItemsResult = await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${shipment.vendor_id}`, `STOCKSHIPMENT#${shipment.shipment_id}#STOCKSHIPMENTITEM#`)
                 shipment.items = cleanResponseData(shipmentItemsResult.data);
                 return shipment;
             }));

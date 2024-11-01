@@ -1,4 +1,4 @@
-import { getItem, queryItems, putItem, deleteItem } from '../dynamo/wrapper';
+import { getItem, queryItems, putItem, deleteItem } from '../external/dynamo/wrapper';
 
 // Function to retrieve a single vendor by ID
 export const getUserByEmail = async (email) => {

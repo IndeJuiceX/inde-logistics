@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { validateProductUpdates } from '@/services/schema';
-import { updateItem, updateOrInsert } from '@/services/dynamo/wrapper';
+import { updateItem, updateOrInsert } from '@/services/external/dynamo/wrapper';
 import { getProductById } from '@/services/data/product';
-import { uploadToS3 } from '@/services/s3';
+import { uploadToS3 } from '@/services/external/s3';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getVendorIdFromRequest } from '@/services/utils';
 
@@ -13,7 +13,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
 
 
-        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+        let vendorId = getVendorIdFromRequest(user, searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -133,7 +133,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
                     historySnapshot.changes[`new_${key}`] = value;
                 }
             }
-    
+
             try {
 
                 const fileUrl = await uploadToS3(historyS3Key, JSON.stringify(historySnapshot));

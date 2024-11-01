@@ -1,5 +1,5 @@
 import { getProductById } from '@/services/data/product';
-import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';
+import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
     try {

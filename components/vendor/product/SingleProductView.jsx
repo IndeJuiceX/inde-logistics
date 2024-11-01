@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { getFileFromS3 } from '@/services/s3';
+import { getFileFromS3 } from '@/services/external/s3';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 
 export default function SingleProductView({ vendorId, productId }) {

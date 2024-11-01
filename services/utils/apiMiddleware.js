@@ -2,7 +2,7 @@ import { decodeToken } from './token';
 import { getVendorById } from '../data/vendor';
 import { NextResponse } from 'next/server';
 import { getLoggedInUser } from '@/app/actions';
-import { sendLogToFirehose } from '../firehose';
+import { sendLogToFirehose } from '../external/firehose';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function authenticateAndAuthorize(request) {

@@ -1,5 +1,5 @@
 // services/data/vendor.js
-import { getItem, queryItems, putItem, deleteItem, updateItemIfExists } from '../dynamo/wrapper';
+import { getItem, queryItems, putItem, deleteItem, updateItemIfExists } from '../external/dynamo/wrapper';
 
 // Function to retrieve a single vendor by ID
 export const getVendorById = async (vendorId) => {
@@ -35,6 +35,6 @@ export const deleteVendor = async (vendorId) => {
     return await deleteItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`);
 };
 
-export const toggleVendorStatus = async(vendorId, statusNow) => {
-    return await updateItemIfExists(`VENDOR#${vendorId}`,`VENDOR#${vendorId}`,{status:statusNow})
+export const toggleVendorStatus = async (vendorId, statusNow) => {
+    return await updateItemIfExists(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`, { status: statusNow })
 }
