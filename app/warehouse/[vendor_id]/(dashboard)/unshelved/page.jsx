@@ -1,10 +1,34 @@
-import StockDashboard from "@/components/warehouse/dashboard/StockDashboard";
+import Shipments from "@/components/warehouse/shipments/Shipments";
+import { getAllStockShipments } from "@/services/data/stock-shipment";
+import { getAllVendors } from "@/services/data/vendor";
 
 
-export default function UnShelvePage() {
+async function getVendors() {
+    const vendors = await getAllVendors();
+    if (!vendors.success) {
+        return [];
+    }
+    return vendors.data;
+}
+async function getStockShipments(vendorId) {
+    const stockShipments = await getAllStockShipments(vendorId);
+    if (!stockShipments.success) {
+        return [];
+    }
+    return stockShipments.data;
+}
+
+export default async function UnShelvePage({ params }) {
+    const { vendor_id } = params;
+    let stockShipments = [];
+
+    const vendors = await getVendors();
+    if (vendor_id !== 'all') {
+        stockShipments = await getStockShipments(vendor_id);
+    }
+
+
     return (
-        <div>
-            <h1>Un shelve</h1>
-        </div>
+        <Shipments selectedTap={'unshelved'} vendors={vendors} stockShipments={stockShipments} />
     )
 }

@@ -6,7 +6,7 @@ import { useRouter, usePathname, useParams } from 'next/navigation';
 import { urlFormatter } from '@/services/utils/index';
 import Link from 'next/link';
 
-export default function Shipments({ vendors, stockShipments }) {
+export default function Shipments({ selectedTap='shipments',vendors, stockShipments }) {
     const router = useRouter();
     const pathname = usePathname();
     const { vendor_id } = useParams();
@@ -75,7 +75,7 @@ export default function Shipments({ vendors, stockShipments }) {
                                     <tr 
                                         className="border-b border-gray-200 hover:bg-gray-100" 
                                         key={index} 
-                                        onClick={() => window.location.href = `shipments/${shipment.shipment_id}`}>
+                                        onClick={() => window.location.href = `${selectedTap}/${shipment.shipment_id}`}>
                                         <td className="py-3 px-6 text-left">
                                             <span className="text-orange-500 font-bold">#{shipment.shipment_id}</span>
                                         </td>
