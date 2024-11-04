@@ -10,7 +10,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [openModal, setOpenModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    console.log('shipmentDetails', shipmentDetails);
+
 
     const attributeKeys = [];
     if (shipmentDetails.items && shipmentDetails.items.length > 0) {
@@ -52,6 +52,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                 <table className="min-w-full text-left">
                     <thead className="bg-gray-100">
                         <tr>
+                            <th className="py-3 px-4 text-gray-600 font-semibold">IMAGE</th>
                             <th className="py-3 px-4 text-gray-600 font-semibold">PRODUCT</th>
                             <th className="py-3 px-4 text-gray-600 font-semibold">BRAND</th>
                             {/* 2. Render table headers dynamically */}
@@ -68,11 +69,10 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                         {/* // 3. Loop through shipmentDetails.items */}
                         {shipmentDetails.items && shipmentDetails.items.length > 0 && shipmentDetails.items.map((item, index) => (
                             <tr className="border-b hover:bg-gray-50" key={index} onClick={() => handleShowItem(item)}>
-                                <td className="py-4 px-4 flex items-center space-x-2">
-                                    <div className="bg-gray-700 text-white rounded-full p-2 flex items-center justify-center">
-                                        <span>-</span>
-                                    </div>
-                                    <span>{item.name}</span>
+                                <td className="py-4 px-4">
+                                    <img src={item.image} alt={item.name} className="w-12 h-12" />
+                                </td>
+                                <td className="py-4 px-4 flex items-center space-x-2">{item.name}
                                 </td>
                                 <td className="py-4 px-4">{item.brand_name}</td>
 
@@ -80,9 +80,13 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                                     <td className="py-4 px-4" key={index}>{item.attributes[attribute]}</td>
                                 ))}
                                 <td className="py-4 px-4">{item.stock_in}</td>
-                                <td className="py-4 px-4">{item.received ? item.received : '-'}</td>
-                                <td className="py-4 px-4">-</td>
-                                <td className="py-4 px-4">-</td>
+                                <td className="py-4 px-4">{item.received !== null && item.received !== undefined ? item.received : '-'}</td>
+                                <td className="py-4 px-4">{item.faulty !== null && item.faulty !== undefined ? item.faulty : '-'}</td>
+                                <td className="py-4 px-4">
+                                    {item.received !== null && item.received !== undefined && item.faulty !== null && item.faulty !== undefined
+                                        ? Math.max(item.received - item.faulty, 0)
+                                        : '-'}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
