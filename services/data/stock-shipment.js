@@ -276,12 +276,19 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
     const productDataMap = {};
     for (const sku of uniqueVendorSkus) {
         const product = await getProductById(vendorId, sku);
-        productDataMap[product.data.vendor_sku] = {
+        const productDetails = {
             name: product.data.name,
             image: product.data.image,
             brand_name: product.data.brand_name,
             attributes: product.data.attributes
         };
+
+        // Conditionally add the warehouse object if it exists
+        if (product.data.warehouse) {
+            productDetails.warehouse = product.data.warehouse;
+        }
+
+        productDataMap[product.data.vendor_sku] = productDetails;
     }
     const stockShipmentItems = shipmentItems.map((item) => {
 
@@ -290,6 +297,8 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
         return {
             vendor_sku: item.vendor_sku,
             stock_in: item.stock_in,
+            ...(item.received !== undefined && { received: item.received }),
+            ...(item.shelved !== undefined && { selved: item.received }),
             ...productInfo,
         };
     });

@@ -1,6 +1,6 @@
 import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-
+import { getStockShipmentDetails } from './stock-shipment';
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
     try {
         // Step 1: Validate the new items
@@ -313,4 +313,14 @@ export async function updateStockShipmentItemReceived(vendorId, stockShipmentId,
         console.error('Unhandled error in updateStockShipmentItemReceived:', error);
         return { success: false, error: 'Server error', details: error.message };
     }
+}
+
+export async function getUnshelvedItemsFromStockShipment(vendorId,stockShipmentId) {
+    //getStockShipmentDetails and filter the ones where recieved is set and greater than 0 but shelved is not set or 0..
+    const result = await getStockShipmentDetails(vendorId, stockShipmentId);
+    const shipmentData = result.data
+    // Filter items where received is set and greater than 0, and shelved is not set or 0
+    shipmentData.items = shipmentData.items.filter(item => item.received > 0 && (!item.shelved || item.shelved === 0));
+
+    return {success:true, data:shipmentData};
 }
