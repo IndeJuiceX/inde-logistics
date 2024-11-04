@@ -78,8 +78,8 @@ export default function ShipmentItems({ vendor, shipmentDetails }) {
                                 {attributeKeys.length > 0 && attributeKeys.map((attribute, index) => (
                                     <td className="py-4 px-4" key={index}>{item.attributes[attribute]}</td>
                                 ))}
-                                <td className="py-4 px-4">{item.quantity}</td>
-                                <td className="py-4 px-4">-</td>
+                                <td className="py-4 px-4">{item.stock_in}</td>
+                                <td className="py-4 px-4">{item.received ? item.received : '-'}</td>
                                 <td className="py-4 px-4">-</td>
                                 <td className="py-4 px-4">-</td>
                             </tr>
@@ -88,53 +88,8 @@ export default function ShipmentItems({ vendor, shipmentDetails }) {
                 </table>
             </div>
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <ItemModal item={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} />
+                <ItemModal item={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} />
             </Modal >
-
-            {/*       <h2 class="text-center text-lg font-semibold text-black mb-2">Kentucky Leaf</h2>
-                <p class="text-center text-sm text-gray-500 mb-4">50ml • 0mg • 70/30</p>
-
-
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between p-2 bg-white border rounded-md">
-                        <span class="text-red-500">Sent:</span>
-                        <span class="font-semibold text-black">5</span>
-                    </div>
-                    <div class="flex items-center justify-between p-2 bg-white border rounded-md">
-                        <span class="text-black">Received:</span>
-                        <span class="font-semibold text-black">5</span>
-                    </div>
-                    <div class="flex items-center justify-between p-2 bg-white border rounded-md">
-                        <span class="text-black">Faulty:</span>
-                        <span class="font-semibold text-black">1</span>
-                    </div>
-                    <div class="flex items-center justify-between p-2 bg-white border rounded-md">
-                        <span class="text-blue-500">Accepted:</span>
-                        <span class="font-semibold text-black">4</span>
-                    </div>
-                </div>
-
-               
-                <div class="flex justify-center mt-4">
-                    <img src="product-image-url.jpg" alt="Product Image" class="w-32 h-auto" />
-                </div>
-
-                <div class="flex justify-center mt-2">
-                    <div class="bg-black text-white text-sm font-mono px-3 py-1 rounded-md">
-                        5056168817092
-                    </div>
-                </div>
-
-               
-                <div class="flex justify-between mt-6">
-                    <button class="bg-gray-200 text-gray-500 px-4 py-2 rounded-md cursor-not-allowed" disabled>Previous</button>
-                    <button class="bg-red-500 text-white px-4 py-2 rounded-md">Close</button>
-                    <button class="bg-gray-200 text-gray-500 px-4 py-2 rounded-md cursor-not-allowed" disabled>Next</button>
-                </div>
-
-
-
-            </Modal> */}
         </>
     )
 }

@@ -2,13 +2,19 @@
 
 import { useState } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
+import { useParams } from 'next/navigation';
+
 
 export default function ItemModal({ setIsModalOpen, item = null }) {
+    const params = useParams();
+    console.log('params:', params);
+
     const [activeField, setActiveField] = useState(null);
+
 
     // Use a single state object for quantities
     const [quantities, setQuantities] = useState({
-        sent: item?.quantity || 0,
+        sent: item?.stock_in || 0,
         received: 0,
         faulty: 0,
         accepted: 0,
@@ -43,7 +49,7 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
             updateQuantity(activeField, parsedValue);
         } else if (input === 'ok') {
             // On 'ok', reset activeField and numberInput
-            updateShipment();
+            updateShipmentItem();
             setActiveField(null);
             setNumberInput('');
         } else {
@@ -55,9 +61,25 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
         }
     };
 
-    const updateShipment = () => {
+    const updateShipmentItem = async () => {
+
         console.log('Quantities:', quantities);
-        // Use the quantities object as needed
+        const updatePayload = {
+            vendor_id: params.vendor_id,
+            stock_shipment_id: params.shipment_id,
+            item:
+            {
+                received: quantities.received,
+                faulty: quantities.faulty,
+                vendor_sku: item.vendor_sku,
+            }
+        };
+        const response = await fetch('/api/v1/admin/stock-shipments/update-item-received', {
+            method: 'PATCH',
+            body: JSON.stringify(updatePayload),
+        });
+        const data = await response.json();
+        console.log('Responseed:', data);
     };
 
     const fieldNames = {
@@ -120,7 +142,7 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
                         <div className="bg-black text-white text-sm font-mono px-3 py-1 rounded-md">5056168817092</div>
                     </div>
 
-                    <div className="flex justify-between mt-6 mb-6">
+                    <div className="flex justify-between mb-8">
                         <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md cursor-not-allowed" disabled>
                             Previous
                         </button>
