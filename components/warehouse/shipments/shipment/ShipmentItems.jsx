@@ -5,7 +5,8 @@ import Link from "next/link";
 import Modal from '@/components/warehouse/modal/Modal';
 import ItemModal from './ItemModal';
 
-export default function ShipmentItems({ vendor, shipmentDetails }) {
+export default function ShipmentItems({ vendor, shipmentDetailsData }) {
+    const [shipmentDetails, setShipmentDetails] = useState(shipmentDetailsData)
     const [selectedItem, setSelectedItem] = useState(null);
     const [openModal, setOpenModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,7 +89,7 @@ export default function ShipmentItems({ vendor, shipmentDetails }) {
                 </table>
             </div>
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <ItemModal itemData={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} />
+                <ItemModal itemData={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} setShipmentDetails={setShipmentDetails} />
             </Modal >
         </>
     )

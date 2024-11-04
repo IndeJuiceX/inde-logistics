@@ -21,6 +21,6 @@ export default async function ShipmentPage({ params }) {
     }
 
     return (
-        <ShipmentItems shipmentDetails={shipmentDetails} vendor={vendor} />
+        <ShipmentItems shipmentDetailsData={shipmentDetails} vendor={vendor} />
     )
 }

@@ -1,24 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
+import { getStockShipmentDetails } from "@/services/data/stock-shipment";
 
-
-export default function ItemModal({ setIsModalOpen, itemData = null, items = null }) {
+export default function ItemModal({ setIsModalOpen, itemData = null, items = null, setShipmentDetails = null }) {
     const params = useParams();
 
+    // Find the initial index of the itemData in items
+    const initialIndex = items && itemData ? items.findIndex(i => i.vendor_sku === itemData.vendor_sku) : 0;
+    const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
     const [activeField, setActiveField] = useState(null);
     const [item, setItem] = useState(itemData);
 
-    // Use a single state object for quantities
     const [quantities, setQuantities] = useState({
         sent: item?.stock_in || 0,
         received: item?.received || 0,
         faulty: 0,
         accepted: 0,
     });
+
     const fieldNames = {
         sent: 'Sent',
         received: 'Received',
@@ -31,15 +34,34 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
         received: 'text-black',
         faulty: 'text-black',
     };
+
     const [numberInput, setNumberInput] = useState('');
+
+    // Update 'item' when 'currentIndex' changes
+    useEffect(() => {
+        if (items && items.length > 0) {
+            const newItem = items[currentIndex];
+            setItem(newItem);
+        }
+    }, [currentIndex, items]);
+
+    // Reset 'quantities' when 'item' changes
+    useEffect(() => {
+        if (item) {
+            setQuantities({
+                sent: item.stock_in || 0,
+                received: item.received || 0,
+                faulty: 0,
+                accepted: Math.max(0, (item.received || 0) - 0),
+            });
+        }
+    }, [item]);
 
     const handleActiveClick = (field) => {
         setActiveField(field);
-        // Initialize numberInput with the current value of the selected field
         setNumberInput(quantities[field].toString());
     };
 
-    // Helper function to update quantities and recalculate 'Accepted'
     const updateQuantity = (field, value) => {
         const sanitizedValue = Math.max(0, value);
         setQuantities(prev => {
@@ -64,7 +86,6 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
             setActiveField(null);
             setNumberInput('');
         } else {
-            // Append the digit to numberInput
             const newNumberInput = numberInput + input;
             const parsedValue = parseInt(newNumberInput, 10);
             setNumberInput(newNumberInput);
@@ -73,35 +94,57 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
     };
 
     const updateShipmentItem = async () => {
-
         console.log('Quantities:', quantities);
         const updatePayload = {
             vendor_id: params.vendor_id,
             stock_shipment_id: params.shipment_id,
-            item:
-            {
+            item: {
                 received: quantities.received,
                 faulty: quantities.faulty,
                 vendor_sku: item.vendor_sku,
-            }
+            },
         };
         const response = await fetch('/api/v1/admin/stock-shipments/update-item-received', {
             method: 'PATCH',
             body: JSON.stringify(updatePayload),
         });
+        if (!response.ok) {
+            console.log('Error in update stock shipment');
+            return;
+        }
         const data = await response.json();
-        console.log('Responseed:', data);
+        getUpdateShipmentDetails();
+        console.log('Response:', data);
+        handleNext();
     };
 
+    const handleNext = async () => {
 
-    const handleNext = () => {
+        if (items && currentIndex < items.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+            setActiveField(null);
+            setNumberInput('');
+        }
+    };
 
+    const handlePrevious = async () => {
+        // Save current item data before moving to the previous
+        // await updateShipmentItem();
+
+        if (items && currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
+            setActiveField(null);
+            setNumberInput('');
+        }
+    };
+
+    const getUpdateShipmentDetails = async () => {
+        const response = await fetch(`/api/v1/vendor/stock-shipments?vendor_id=${params.vendor_id}&stock_shipment_id=${params.shipment_id}`);
+        const updateShipments = await response.json();
+        if (updateShipments.success) {
+            setShipmentDetails(updateShipments.data);
+        }
     }
-
-    const handlePrevious = () => {
-        
-    }
-
     return (
         <div className="mt-4 flex flex-col h-full">
             <h2 className="text-center text-lg font-semibold text-black mb-2">{item?.name}</h2>
@@ -146,18 +189,25 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
                     </div>
 
                     <div className="flex justify-center mt-2">
-                        <div className="bg-black text-white text-sm font-mono px-3 py-1 rounded-md">5056168817092</div>
+                        <div className="bg-black text-white text-sm font-mono px-3 py-1 rounded-md">{item?.barcode}</div>
                     </div>
 
                     <div className="flex justify-between mb-8">
-                        {/* cursor-not-allowed */}
-                        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md " onClick={handlePrevious}>
+                        <button
+                            className={`bg-gray-200 text-gray-500 px-4 py-2 rounded-md ${currentIndex <= 0 ? 'cursor-not-allowed opacity-50' : ''}`}
+                            disabled={currentIndex <= 0}
+                            onClick={handlePrevious}
+                        >
                             Previous
                         </button>
                         <button className="bg-red-500 text-white px-4 py-2 rounded-md" onClick={() => setIsModalOpen(false)}>
                             Close
                         </button>
-                        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md" disabled={!items || items.length <= 1} onClick={handleNext}>
+                        <button
+                            className={`bg-gray-200 text-gray-500 px-4 py-2 rounded-md ${items && currentIndex >= items.length - 1 ? 'cursor-not-allowed opacity-50' : ''}`}
+                            disabled={items && currentIndex >= items.length - 1}
+                            onClick={handleNext}
+                        >
                             Next
                         </button>
                     </div>
