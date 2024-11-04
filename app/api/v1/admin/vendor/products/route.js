@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';  // Your DynamoDB helper
+import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';  // Your DynamoDB helper
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getAllVendorProducts } from '@/services/data/product';
 export const GET = withAuthAndLogging(async (request, { params, user }) => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import VendorMenu from '@/components/admin/VendorMenu'; // Adjust the import path as needed
-import { getFileFromS3 } from '@/services/s3';
+import { getFileFromS3 } from '@/services/external/s3';
 
 export default function ProductDetailsPage() {
   const { vendorId, productId } = useParams(); // Get vendorId and productId from the route

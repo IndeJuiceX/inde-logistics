@@ -1,6 +1,6 @@
 import { getProductById } from '@/services/data/product';
-import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/dynamo/wrapper';
-
+import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
+import { getStockShipmentDetails } from './stock-shipment';
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
     try {
         // Step 1: Validate the new items
@@ -121,7 +121,7 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
         const existingItems = stockShipmentItemsData.data
         // Step 2: Prepare items for batch delete
         const itemsToDelete = [];
-        const invalidItems =[]
+        const invalidItems = []
 
         for (const sku of vendorSkusToRemove) {
             const skuExists = existingItems.some(item => item.vendor_sku === sku);
@@ -133,16 +133,16 @@ export async function removeItemsFromStockShipment(vendorId, stockShipmentId, ve
                 };
                 itemsToDelete.push(deleteItem);
             } else {
-                invalidItems.push({item : sku , error:`Item with sku ${sku} does not exist in the stock shipment` })
+                invalidItems.push({ item: sku, error: `Item with sku ${sku} does not exist in the stock shipment` })
             }
 
         }
 
-        if(invalidItems.length > 0) {
+        if (invalidItems.length > 0) {
             return {
                 success: false,
-                error : 'Failed to remove items from the Stock Shipment',
-                details : invalidItems
+                error: 'Failed to remove items from the Stock Shipment',
+                details: invalidItems
             }
         }
 
@@ -280,4 +280,47 @@ export async function updateItemsStockInStockShipment(
         console.error('Unhandled error in updateItemsStockInStockShipment:', error);
         return { success: false, error: 'Server error', details: error.message };
     }
+}
+
+export async function updateStockShipmentItemReceived(vendorId, stockShipmentId, item = {}) {
+    console.log('INSIDE UPDATE FUNCTION')
+    const allowedFields = ['received', 'faulty', 'vendor_sku']
+    // Validate the fields in the input object
+    const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
+    if (invalidFields.length > 0) {
+        return { success: false, error: 'Invalid fields', details: `Invalid fields: ${invalidFields.join(', ')}` };
+    }
+    const vendorSku = item.vendor_sku
+    // Construct the update object
+    const updateFields = {};
+    allowedFields.forEach(field => {
+        if (item[field] !== undefined || item[field] !== 'vendor_sku') {
+            updateFields[field] = item[field];
+        }
+    });
+
+    updateFields.updated_at = new Date().toISOString();
+
+    // Update the item in the database
+    try {
+        const result = await updateItemIfExists(`VENDORSTOCKSHIPMENTITEM#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`, updateFields);
+        if (result.success) {
+            return { success: true, data: result.data };
+        } else {
+            return { success: false, error: 'Failed to update stock shipment item', details: result.error };
+        }
+    } catch (error) {
+        console.error('Unhandled error in updateStockShipmentItemReceived:', error);
+        return { success: false, error: 'Server error', details: error.message };
+    }
+}
+
+export async function getUnshelvedItemsFromStockShipment(vendorId,stockShipmentId) {
+    //getStockShipmentDetails and filter the ones where recieved is set and greater than 0 but shelved is not set or 0..
+    const result = await getStockShipmentDetails(vendorId, stockShipmentId);
+    const shipmentData = result.data
+    // Filter items where received is set and greater than 0, and shelved is not set or 0
+    shipmentData.items = shipmentData.items.filter(item => item.received > 0 && (!item.shelved || item.shelved === 0));
+
+    return {success:true, data:shipmentData};
 }

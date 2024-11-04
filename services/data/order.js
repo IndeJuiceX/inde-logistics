@@ -1,6 +1,6 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock } from '@/services/data/product'; // Adjust the import path
-import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/dynamo/wrapper';
+import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
 
 
@@ -349,8 +349,8 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
 export const getOrderDetails = async (vendorId, vendorOrderId) => {
     const orderData = await getOrder(vendorId, vendorOrderId);
     console.log(orderData)
-    if(!orderData.success) {
-        return { success: false, error: orderData?.error||'Order not found ' };
+    if (!orderData.success) {
+        return { success: false, error: orderData?.error || 'Order not found ' };
     }
     const order = orderData.data
 
@@ -368,7 +368,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     if (!orderItemsData.success) {
         return { success: false, error: 'Failed to retrieve order items' };
     }
-  
+
     const orderDetails = {
         ...cleanResponseData(order),
         items: cleanResponseData(orderItemsData.data),
