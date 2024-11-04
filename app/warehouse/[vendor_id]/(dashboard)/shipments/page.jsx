@@ -1,4 +1,4 @@
-import Shipment from "@/components/warehouse/shipments/Shipments";
+import Shipments from "@/components/warehouse/shipments/Shipments";
 import { getAllStockShipments } from "@/services/data/stock-shipment";
 import { getAllVendors } from "@/services/data/vendor";
 
@@ -29,6 +29,6 @@ export default async function ShipmentPage({ params }) {
 
 
     return (
-        <Shipment vendors={vendors} stockShipments={stockShipments} />
+        <Shipments vendors={vendors} stockShipments={stockShipments} />
     )
 }
