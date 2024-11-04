@@ -5,21 +5,32 @@ import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
 
 
-export default function ItemModal({ setIsModalOpen, item = null }) {
+export default function ItemModal({ setIsModalOpen, itemData = null, items = null }) {
     const params = useParams();
-    console.log('params:', params);
+
 
     const [activeField, setActiveField] = useState(null);
-
+    const [item, setItem] = useState(itemData);
 
     // Use a single state object for quantities
     const [quantities, setQuantities] = useState({
         sent: item?.stock_in || 0,
-        received: 0,
+        received: item?.received || 0,
         faulty: 0,
         accepted: 0,
     });
+    const fieldNames = {
+        sent: 'Sent',
+        received: 'Received',
+        faulty: 'Faulty',
+        accepted: 'Accepted',
+    };
 
+    const fieldColors = {
+        accepted: 'text-blue-500',
+        received: 'text-black',
+        faulty: 'text-black',
+    };
     const [numberInput, setNumberInput] = useState('');
 
     const handleActiveClick = (field) => {
@@ -82,18 +93,14 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
         console.log('Responseed:', data);
     };
 
-    const fieldNames = {
-        sent: 'Sent',
-        received: 'Received',
-        faulty: 'Faulty',
-        accepted: 'Accepted',
-    };
 
-    const fieldColors = {
-        accepted: 'text-blue-500',
-        received: 'text-black',
-        faulty: 'text-black',
-    };
+    const handleNext = () => {
+
+    }
+
+    const handlePrevious = () => {
+        
+    }
 
     return (
         <div className="mt-4 flex flex-col h-full">
@@ -143,13 +150,14 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
                     </div>
 
                     <div className="flex justify-between mb-8">
-                        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md cursor-not-allowed" disabled>
+                        {/* cursor-not-allowed */}
+                        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md " onClick={handlePrevious}>
                             Previous
                         </button>
                         <button className="bg-red-500 text-white px-4 py-2 rounded-md" onClick={() => setIsModalOpen(false)}>
                             Close
                         </button>
-                        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md cursor-not-allowed" disabled>
+                        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded-md" disabled={!items || items.length <= 1} onClick={handleNext}>
                             Next
                         </button>
                     </div>

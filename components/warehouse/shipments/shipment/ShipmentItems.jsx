@@ -88,7 +88,7 @@ export default function ShipmentItems({ vendor, shipmentDetails }) {
                 </table>
             </div>
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <ItemModal item={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} />
+                <ItemModal itemData={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} />
             </Modal >
         </>
     )
