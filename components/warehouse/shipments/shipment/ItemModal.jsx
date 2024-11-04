@@ -19,37 +19,39 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
     const handleActiveClick = (field) => {
         setActiveField(field);
         // Initialize numberInput with the current value of the selected field
-        setNumberInput(quantities[field] || 0);
+        setNumberInput(quantities[field].toString());
+    };
+
+    // Helper function to update quantities and recalculate 'Accepted'
+    const updateQuantity = (field, value) => {
+        const sanitizedValue = Math.max(0, value);
+        setQuantities(prev => {
+            const newQuantities = {
+                ...prev,
+                [field]: sanitizedValue,
+            };
+            newQuantities.accepted = Math.max(0, newQuantities.received - newQuantities.faulty);
+            return newQuantities;
+        });
     };
 
     const handleNumberEntered = (input) => {
         if (input === 'backspace') {
-            // setNumberInput((prev) => prev.slice(0, -1));
-            setQuantities((prev) => {
-                const newValue = prev[activeField].toString().slice(0, -1);
-                return {
-                    ...prev,
-                    [activeField]: newValue === '' ? 0 : parseInt(newValue, 10),
-                };
-            });
+            const newNumberInput = numberInput.slice(0, -1);
+            const parsedValue = parseInt(newNumberInput || '0', 10);
+            setNumberInput(newNumberInput);
+            updateQuantity(activeField, parsedValue);
         } else if (input === 'ok') {
-            const number = parseInt(numberInput, 10);
-            if (!isNaN(number)) {
-                setQuantities((prev) => ({
-                    ...prev,
-                    [activeField]: number,
-                }));
-            }
-            // Reset activeField and numberInput after confirming the input
+            // On 'ok', reset activeField and numberInput
+            updateShipment();
             setActiveField(null);
             setNumberInput('');
         } else {
-            // Append the digit to the numberInput
-            setNumberInput((prev) => prev + input);
-            setQuantities((prev) => ({
-                ...prev,
-                [activeField]: parseInt(prev[activeField] + input, 10),
-            }));
+            // Append the digit to numberInput
+            const newNumberInput = numberInput + input;
+            const parsedValue = parseInt(newNumberInput, 10);
+            setNumberInput(newNumberInput);
+            updateQuantity(activeField, parsedValue);
         }
     };
 
@@ -88,18 +90,23 @@ export default function ItemModal({ setIsModalOpen, item = null }) {
                     <span className="font-semibold text-black">{quantities.sent}</span>
                 </div>
 
-                {/* Other Quantities */}
-                {['received', 'faulty', 'accepted'].map((field) => (
+                {/* Editable Quantities */}
+                {['received', 'faulty'].map((field) => (
                     <div
                         key={field}
                         className={`flex items-center justify-between p-2 bg-white border border-4 rounded-md ${activeField === field ? 'border-green-500' : ''}`}
                         onClick={() => handleActiveClick(field)}
                     >
                         <span className={fieldColors[field]}>{fieldNames[field]}:</span>
-                        <span className="font-semibold text-black">{quantities[field]}
-                        </span>
+                        <span className="font-semibold text-black">{quantities[field]}</span>
                     </div>
                 ))}
+
+                {/* Accepted Quantity (Computed and Non-Editable) */}
+                <div className={`flex items-center justify-between p-2 bg-white border border-4 rounded-md`}>
+                    <span className={fieldColors['accepted']}>{fieldNames['accepted']}:</span>
+                    <span className="font-semibold text-black">{quantities.accepted}</span>
+                </div>
             </div>
 
             {/* Conditionally render DialPad or additional content */}
