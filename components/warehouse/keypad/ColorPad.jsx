@@ -1,22 +1,22 @@
 
 
-export default function ColorPad() {
+export default function ColorPad({ onValueSelected }) {
     return (
-        <div class="bg-gray-200 p-4 rounded-lg h-[404px] overflow-y-auto relative top-[21%]">
-            <div class="space-y-2">
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Green</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">White</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Black</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Red</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Blue</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Grey</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Orange</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">White 2</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Red 2</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Blue 2</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Yellow</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Pink</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Lilac</button>
+        <div className="bg-gray-200 p-4 rounded-lg h-[404px] overflow-y-auto relative top-[21%]">
+            <div className="space-y-2">
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('G')}>Green</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('W')}>White</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('BK')}>Black</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('R')}>Red</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('B')}>Blue</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('GY')}>Grey</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('O')}>Orange</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('W2')}>White 2</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('R2')}>Red 2</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('B2')}>Blue 2</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('Y')}>Yellow</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('P')}>Pink</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('LI')}>Lilac</button>
             </div>
         </div>
     )

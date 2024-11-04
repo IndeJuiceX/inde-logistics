@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
 // Import statements for your services and pads
@@ -52,8 +52,45 @@ export default function UnShelvedItemModal({
             ...prevLocations,
             [activeField]: value,
         }));
-        setActiveField(null); // Close the pad after input
+        if (activeField === 'aisle') {
+            setActiveField('aisleNumber');
+
+        } else
+            if (activeField === 'shelf') {
+                setActiveField('shelfNumber');
+            }
     };
+
+    const handleDialPadInput = (input) => {
+        setLocations((prevLocations) => {
+            const currentInput = prevLocations[activeField] || '';
+    
+            if (input === 'backspace') {
+                const newInput = currentInput.slice(0, -1);
+                return {
+                    ...prevLocations,
+                    [activeField]: newInput,
+                };
+            } else if (input === 'ok') {
+                // Move to the next field or close the pad
+                if (activeField === 'aisleNumber') {
+                    setActiveField('shelf');
+                } else if (activeField === 'shelfNumber') {
+                    setActiveField(null); // All inputs are complete
+                }
+                return prevLocations;
+            } else {
+                const newInput = currentInput + input;
+                return {
+                    ...prevLocations,
+                    [activeField]: newInput,
+                };
+            }
+        });
+    };
+
+
+
 
     // Navigation functions
     const handleNext = async () => {
@@ -69,6 +106,13 @@ export default function UnShelvedItemModal({
             setActiveField(null);
         }
     };
+
+    useEffect(() => {
+        console.log('locations', locations);
+
+    }, [locations]);
+
+
 
     return (
         <div className="mt-4 flex flex-col h-full">
@@ -169,7 +213,7 @@ export default function UnShelvedItemModal({
                     )}
                     {(activeField === 'aisleNumber' || activeField === 'shelfNumber') && (
                         <div className="bg-gray-200 p-4 rounded-lg  overflow-y-auto relative top-[37%]">
-                            <DialPad onNumberEntered={handleInput} />
+                            <DialPad onNumberEntered={handleDialPadInput} />
                         </div>
                     )}
 

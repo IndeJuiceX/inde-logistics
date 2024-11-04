@@ -1,22 +1,22 @@
 
 
-export default function AlphabetPad() {
+export default function AlphabetPad({ onValueSelected }) {
     return (
-        <div class="bg-gray-200 p-4 rounded-lg h-[404px] overflow-y-auto relative top-[21%]">
-            <div class="space-y-2">
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">A</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">B</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">C</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">D</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">E</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">F</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">G</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">H</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">L</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">M</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Z</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">★</button>
-                <button class="bg-white text-gray-700 font-semibold py-2 w-full rounded-md">Ψ</button>
+        <div className="bg-gray-200 p-4 rounded-lg h-[404px] overflow-y-auto relative top-[21%]">
+            <div className="space-y-2">
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('A')}>A</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('B')}>B</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('C')}>C</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('D')}>D</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('E')}>E</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('F')}>F</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('G')}>G</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('H')}>H</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('L')}>L</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('M')}>M</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('Z')}>Z</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('★')}>★</button>
+                <button className="bg-white text-gray-700 font-semibold py-2 w-full rounded-md" onClick={() => onValueSelected('Ψ')}>Ψ</button>
             </div>
         </div>
     )
