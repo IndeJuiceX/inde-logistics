@@ -9,7 +9,6 @@ import ShipmentHeader from '@/components/warehouse/ShipmentHeader';
 export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const [shipmentDetails, setShipmentDetails] = useState(shipmentDetailsData)
     const [selectedItem, setSelectedItem] = useState(null);
-    const [openModal, setOpenModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
 
@@ -79,8 +78,17 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                     </tbody>
                 </table>
             </div>
+            <div class="flex flex-col items-center gap-4 mt-16">
+                <button class="w-full px-4 py-2 border border-gray-300 text-gray-500 rounded bg-gray-50">
+                    ADD MISSING ITEM
+                </button>
+                <button class="w-full px-4 py-2 text-white bg-green-500 rounded">
+                    UPDATE STOCK
+                </button>
+            </div>
+
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <ItemModal itemData={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} setShipmentDetails={setShipmentDetails} />
+                <ItemModal itemData={selectedItem} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items} setShipmentDetails={setShipmentDetails} />
             </Modal >
         </>
     )
