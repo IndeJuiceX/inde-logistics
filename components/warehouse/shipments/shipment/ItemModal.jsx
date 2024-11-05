@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
 import { getStockShipmentDetails } from "@/services/data/stock-shipment";
+import { LoadingContext } from '@/contexts/LoadingContext';
 
 export default function ItemModal({ setIsModalOpen, itemData = null, items = null, setShipmentDetails = null }) {
+    const { setLoading, setLoaded } = useContext(LoadingContext);
     const params = useParams();
 
     // Find the initial index of the itemData in items
@@ -94,6 +96,7 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
     };
 
     const updateShipmentItem = async () => {
+        setLoading(true);
         console.log('Quantities:', quantities);
         const updatePayload = {
             vendor_id: params.vendor_id,
@@ -116,6 +119,8 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
         getUpdateShipmentDetails();
         console.log('Response:', data);
         handleNext();
+        setLoading(false);
+        setLoaded(true);
     };
 
     const handleNext = async () => {

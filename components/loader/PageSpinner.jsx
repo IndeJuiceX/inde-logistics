@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import { LoadingContext } from '@/contexts/LoadingContext';
 
 export default function PageSpinner() {
-  const { loading, loaded } = useContext(LoadingContext);
+  const { loading, loaded, setLoading, setLoaded } = useContext(LoadingContext);
   const [state, setState] = useState('');
   // const [isVisible, setIsVisible] = useState(loading);
 
@@ -35,6 +35,8 @@ export default function PageSpinner() {
     spinnerClass = `${spinnerBaseClass} bg-[url('https://cdn.indejuice.com/img/icons/page-spinner-loaded.png')] animate-reverseSpin opacity-100 transition-opacity duration-400`;
   } else if (state === 'complete') {
     setState('');
+    setLoaded(false);
+    setLoading(false);
     return null;
     // spinnerClass = `${spinnerBaseClass} opacity-0 transition-opacity duration-400`;
   } else {
