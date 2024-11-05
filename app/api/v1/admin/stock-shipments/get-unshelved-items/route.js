@@ -43,4 +43,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         console.error('Unhandled error:', error);
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
-}, ['admin', 'warehouse','vendor']);
+}, ['admin', 'warehouse']);

@@ -2,6 +2,8 @@ import { getProductById, getProductByVendorSku } from '@/services/data/product';
 import { generateShipmentId } from '@/services/utils';
 import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk, getItem, deleteItemWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
+import { v4 as uuidv4 } from 'uuid';
+
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
         // Second-tier validation: Check if vendor_sku exists in the database
@@ -398,4 +400,190 @@ export async function deleteStockShipmentWithItems(vendorId, stockShipmentId) {
     }
     //prepare the bulk delete 
 }
+
+/*export async function updateStockShipmentAsReceived(vendorId, stockShipmentId) {
+    const updatedAt = new Date().toISOString();
+
+    try {
+        // Begin building the transaction
+        const transactionItems = [];
+
+        // Update the stock shipment's 'received_at' field
+        transactionItems.push({
+            Update: {
+                Key: {
+                    pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
+                    sk: `STOCKSHIPMENT#${stockShipmentId}`,
+                },
+                UpdateExpression: 'SET received_at = :receivedAt, updated_at = :updatedAt',
+                ExpressionAttributeValues: {
+                    ':receivedAt': updatedAt,
+                    ':updatedAt': updatedAt,
+                },
+            },
+        });
+
+        // Fetch all shipment items for the stock shipment
+        const shipmentItemsResult =   await queryItemsWithPkAndSk(`VENDORSTOCKSHIPMENTITEM#${vendorId}`, `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#`)
+
+        if (!shipmentItemsResult.success) {
+            return { success: false, error: shipmentItemsResult.error };
+        }
+        const shipmentItems = shipmentItemsResult.data;
+
+        // Loop over each shipment item
+        for (const item of shipmentItems) {
+            const vendorSku = item.vendor_sku;
+            const received = item.received || 0;
+            const previousReceived = item.previous_received || 0;
+            const adjustedReceived = received - previousReceived;
+
+            if (adjustedReceived !== 0) {
+                // Adjust product stock
+                transactionItems.push({
+                    Update: {
+                        Key: {
+                            pk: `VENDORPRODUCT#${vendorId}`,
+                            sk: `PRODUCT#${vendorSku}`,
+                        },
+                        UpdateExpression: 'SET stock_available = if_not_exists(stock_available, :zero) + :adjustment',
+                        ExpressionAttributeValues: {
+                            ':adjustment': adjustedReceived,
+                            ':zero': 0,
+                        },
+                    },
+                });
+
+                // Update 'previous_received' to 'received' for the shipment item
+                transactionItems.push({
+                    Update: {
+                        Key: {
+                            pk: item.pk,
+                            sk: item.sk,
+                        },
+                        UpdateExpression: 'SET previous_received = :received, updated_at = :updatedAt',
+                        ExpressionAttributeValues: {
+                            ':received': received,
+                            ':updatedAt': updatedAt,
+                        },
+                    },
+                });
+            }
+        }
+
+        // Execute the transaction using your wrapper function
+        const transactionResult = await transactWriteItems(transactionItems);
+        if (!transactionResult.success) {
+            console.error('Transaction failed:', transactionResult.error);
+            return { success: false, error: 'Transaction failed', details: transactionResult.error };
+        }
+
+        return { success: true, message: 'Stock shipment updated successfully' };
+    } catch (error) {
+        console.error('Error in updateStockShipment:', error);
+        return { success: false, error: 'Server error', details: error.message };
+    }
+}*/
+export async function updateStockShipmentAsReceived(vendorId, stockShipmentId) {
+    const updatedAt = new Date().toISOString();
+
+    try {
+        // Begin building the transaction
+        let transactionItems = [];
+
+        // Update the stock shipment's 'received_at' field
+        transactionItems.push({
+            Update: {
+                Key: {
+                    pk: `VENDORSTOCKSHIPMENT#${vendorId}`,
+                    sk: `STOCKSHIPMENT#${stockShipmentId}`,
+                },
+                UpdateExpression: 'SET received_at = :receivedAt, updated_at = :updatedAt',
+                ExpressionAttributeValues: {
+                    ':receivedAt': updatedAt,
+                    ':updatedAt': updatedAt,
+                },
+            },
+        });
+
+        // Fetch all shipment items for the stock shipment
+        const shipmentItemsResult = await queryItemsWithPkAndSk(
+            `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+            `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#`
+        );
+
+        if (!shipmentItemsResult.success) {
+            return { success: false, error: shipmentItemsResult.error };
+        }
+        const shipmentItems = shipmentItemsResult.data;
+
+        // Loop over each shipment item
+        for (const item of shipmentItems) {
+            const vendorSku = item.vendor_sku;
+            const received = item.received || 0;
+            const previousReceived = item.previous_received || 0;
+            const adjustedReceived = received - previousReceived;
+
+            if (adjustedReceived !== 0) {
+                // Adjust product stock
+                transactionItems.push({
+                    Update: {
+                        Key: {
+                            pk: `VENDORPRODUCT#${vendorId}`,
+                            sk: `PRODUCT#${vendorSku}`,
+                        },
+                        UpdateExpression: 'SET stock_available = if_not_exists(stock_available, :zero) + :adjustment',
+                        ExpressionAttributeValues: {
+                            ':adjustment': adjustedReceived,
+                            ':zero': 0,
+                        },
+                    },
+                });
+
+                // Update 'previous_received' to 'received' for the shipment item
+                transactionItems.push({
+                    Update: {
+                        Key: {
+                            pk: item.pk,
+                            sk: item.sk,
+                        },
+                        UpdateExpression: 'SET previous_received = :received, updated_at = :updatedAt',
+                        ExpressionAttributeValues: {
+                            ':received': received,
+                            ':updatedAt': updatedAt,
+                        },
+                    },
+                });
+            }
+
+            // Check if transactionItems length is approaching limit
+            if (transactionItems.length === 25) {
+                // Execute the batch transaction
+                const transactionResult = await transactWriteItems(transactionItems);
+                if (!transactionResult.success) {
+                    console.error('Transaction batch failed:', transactionResult.error);
+                    return { success: false, error: 'Transaction batch failed', details: transactionResult.error };
+                }
+                // Reset transactionItems for the next batch
+                transactionItems = [];
+            }
+        }
+
+        // Execute any remaining transaction items
+        if (transactionItems.length > 0) {
+            const transactionResult = await transactWriteItems(transactionItems);
+            if (!transactionResult.success) {
+                console.error('Transaction batch failed:', transactionResult.error);
+                return { success: false, error: 'Transaction batch failed', details: transactionResult.error };
+            }
+        }
+
+        return { success: true, message: 'Stock shipment updated successfully' };
+    } catch (error) {
+        console.error('Error in updateStockShipmentAsReceived:', error);
+        return { success: false, error: 'Server error', details: error.message };
+    }
+}
+
+
 

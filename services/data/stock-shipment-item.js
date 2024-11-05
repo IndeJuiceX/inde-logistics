@@ -315,12 +315,90 @@ export async function updateStockShipmentItemReceived(vendorId, stockShipmentId,
     }
 }
 
-export async function getUnshelvedItemsFromStockShipment(vendorId,stockShipmentId) {
+export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId) {
     //getStockShipmentDetails and filter the ones where recieved is set and greater than 0 but shelved is not set or 0..
     const result = await getStockShipmentDetails(vendorId, stockShipmentId);
     const shipmentData = result.data
     // Filter items where received is set and greater than 0, and shelved is not set or 0
     shipmentData.items = shipmentData.items.filter(item => item.received > 0 && (!item.shelved || item.shelved === 0));
 
-    return {success:true, data:shipmentData};
+    return { success: true, data: shipmentData };
+}
+
+export async function updateStockShipmentItemShelved(vendorId, stockShipmentId, item = {}) {
+    const allowedFields = ['shelved', 'warehouse', 'vendor_sku']
+    // Validate the fields in the input object
+    const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
+    if (invalidFields.length > 0) {
+        return { success: false, error: 'Invalid fields', details: `Invalid fields: ${invalidFields.join(', ')}` };
+    }
+    // Ensure warehouse object has location_id
+    if (item.warehouse) {
+        item.warehouse.location_id = "2B64NH";
+    }
+
+    const vendorSku = item.vendor_sku
+    // Construct the update object
+    const updateFields = {};
+    allowedFields.forEach(field => {
+        if (item[field] !== undefined || item[field] !== 'vendor_sku' || item[field] !== 'warehouse') {
+            updateFields[field] = item[field];
+        }
+    });
+
+    updateFields.updated_at = new Date().toISOString();
+
+    // Construct the update object for the product item
+    const productUpdateFields = {
+        updated_at: new Date().toISOString(),
+        stock_available: item.shelved,
+        warehouse: item.warehouse
+    };
+
+    // DynamoDB transaction items
+    const transactionItems = [
+        {
+            Update: {
+                Key: {
+                    PK: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
+                    SK: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`
+                },
+                UpdateExpression: 'SET #shelved = :shelved, #updated_at = :updated_at',
+                ExpressionAttributeNames: {
+                    '#shelved': 'shelved',
+                    '#updated_at': 'updated_at'
+                },
+                ExpressionAttributeValues: {
+                    ':shelved': item.shelved,
+                    ':updated_at': updateFields.updated_at
+                }
+            }
+        },
+        {
+            Update: {
+                Key: {
+                    PK: `VENDORPRODUCT#${vendorId}`,
+                    SK: `PRODUCT#${vendorSku}`
+                },
+                UpdateExpression: 'SET #updated_at = :updated_at, #stock_available = #stock_available + :shelved, #warehouse = :warehouse',
+                ExpressionAttributeNames: {
+                    '#updated_at': 'updated_at',
+                    '#stock_available': 'stock_available',
+                    '#warehouse': 'warehouse'
+                },
+                ExpressionAttributeValues: {
+                    ':updated_at': productUpdateFields.updated_at,
+                    ':shelve_quantity': item.shelve_quantity
+                }
+            }
+        }
+    ];
+
+    try {
+        const result = await transactWriteItems(transactionItems);
+        return result;
+    } catch (error) {
+        console.error('Unhandled error in updateStockShipmentItemShelved:', error);
+        return { success: false, error: 'Server error', details: error.message };
+    }
 }
