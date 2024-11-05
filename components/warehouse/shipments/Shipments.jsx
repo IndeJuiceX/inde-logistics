@@ -52,7 +52,7 @@ export default function Shipments({ selectedTap='shipments',vendors, stockShipme
                     )) : <li className="text-gray-600">No vendors found</li>}
                 </ul>
             </Modal>
-            <div className="space-y-2 overflow-y-auto h-96">
+            <div className="space-y-2 overflow-y-auto ">
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full bg-gray-100">
