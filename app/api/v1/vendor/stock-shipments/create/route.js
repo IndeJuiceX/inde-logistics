@@ -9,7 +9,7 @@ const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
-
+        const { searchParams } = new URL(request.url);
         let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         // Parse request body
