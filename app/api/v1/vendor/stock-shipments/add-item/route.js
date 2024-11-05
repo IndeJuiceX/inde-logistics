@@ -91,5 +91,5 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
     console.error('Unhandled error:', error);
     return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
-}, ['vendor'])
+}, ['vendor','warehouse'])
 

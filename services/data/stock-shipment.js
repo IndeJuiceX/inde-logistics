@@ -3,12 +3,14 @@ import { generateShipmentId } from '@/services/utils';
 import { transactWriteItems, putItem, batchWriteItems, queryItems, queryItemsWithPkAndSk, getItem, deleteItemWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 import { v4 as uuidv4 } from 'uuid';
+import { getLoggedInUser } from '@/app/actions';
 
 export async function createStockShipment(vendorId, stockShipmentItems) {
     try {
         // Second-tier validation: Check if vendor_sku exists in the database
         const invalidItems = [];
         const validItems = [];
+        const user = getLoggedInUser()
 
         for (const item of stockShipmentItems) {
             const { vendor_sku } = item;
@@ -76,6 +78,7 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
                 stock_in: item.stock_in,
                 created_at: createdAt,
                 updated_at: createdAt,
+                modified_by: user?.email || 'API TOKEN'
             };
             itemsToPut.push(shipmentItemEntry);
         }
@@ -486,6 +489,8 @@ export async function deleteStockShipmentWithItems(vendorId, stockShipmentId) {
 }*/
 export async function updateStockShipmentAsReceived(vendorId, stockShipmentId) {
     const updatedAt = new Date().toISOString();
+    const user = getLoggedInUser()
+    const modifiedBy = user?.email || 'API TOKEN'
 
     try {
         // Begin building the transaction
@@ -547,10 +552,11 @@ export async function updateStockShipmentAsReceived(vendorId, stockShipmentId) {
                             pk: item.pk,
                             sk: item.sk,
                         },
-                        UpdateExpression: 'SET previous_received = :received, updated_at = :updatedAt',
+                        UpdateExpression: 'SET previous_received = :received, updated_at = :updatedAt, modified_by = :modifiedBy',
                         ExpressionAttributeValues: {
                             ':received': received,
                             ':updatedAt': updatedAt,
+                            ':modifiedBy' : modifiedBy
                         },
                     },
                 });

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { checkShipmentExists, updateStockShipmentAsReceived } from '@/services/data/stock-shipment';
-import { updateStockShipmentAsReceived } from '@/services/data/stock-shipment-item';
 
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
