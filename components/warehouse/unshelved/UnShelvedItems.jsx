@@ -25,23 +25,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
             });
         });
     }
-    // console.log('attributeKeys', unshelvedItems);
-    // useEffect(() => {
-    //     const getUnshelvedItems = async () => {
-    //         try {
-    //             const response = await fetch(`/api/v1/admin/stock-shipments/get-unshelved-items?vendor_id=${vendor.vendor_id}&stock_shipment_id=${shipmentDetails.shipment_id}`);
-    //             const data = await response.json();
-    //             console.log('response data', data);
-    //         } catch (error) {
-    //             console.error('Unhandled error:', error);
-    //         }
-    //     }
-    //     if (shipmentDetails && vendor) {
-    //         console.log('shipmentDetails', shipmentDetails);
-    //         console.log('vendor', vendor);
-    //         getUnshelvedItems();
-    //     }
-    // }, [shipmentDetails, vendor]);
+
 
     const handleShowItem = (item) => {
         setSelectedItem(item);
@@ -50,7 +34,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
 
     return (
         <>
-            <ShipmentHeader vendor={vendor} shipmentDetails={unshelvedItems} />
+            <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
             <div className="overflow-x-auto">
 
                 <div className="mb-4">
@@ -74,21 +58,29 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
                                     <td className="py-4 px-4">
                                         <img src={item.image} alt={item.name} className="w-12 h-12" />
                                     </td>
-                                    <td className="p-4 flex items-center space-x-2 text-gray-700 text-base">{item.name}
+                                    <td className="p-4 text-center text-base text-gray-700">{item.name}
                                     </td>
                                     {attributeKeys.length > 0 && attributeKeys.map((attribute, index) => (
                                         <td className="p-4 text-center text-base text-gray-700" key={index}>{item.attributes[attribute]}</td>
                                     ))}
                                     <td className="p-4 text-center text-base text-gray-700">
-                                        <div className="inline-flex items-center space-x-1">
-                                            <div className="w-6 h-6 flex items-center justify-center rounded bg-gray-800 text-white text-sm font-bold">M</div>
-                                            <div className="w-6 h-6 flex items-center justify-center rounded bg-gray-800 text-white text-sm font-bold">3</div>
+                                        <div className="flex items-center bg-gray-800 text-white font-semibold rounded-md overflow-hidden border-4 border-black h-12 w-24">
+                                            <div className="flex items-center justify-center w-1/2 h-full text-lg" >
+                                                M
+                                            </div>
+                                            <div className="flex items-center justify-center w-1/2 h-full bg-white text-gray-800 text-lg" >
+                                                1
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="p-4 text-center text-base text-gray-700">
-                                        <div className="inline-flex items-center space-x-1">
-                                            <div className="w-6 h-6 flex items-center justify-center rounded bg-gray-800 text-white text-sm font-bold">Y</div>
-                                            <div className="w-6 h-6 flex items-center justify-center rounded bg-gray-800 text-white text-sm font-bold">7</div>
+                                        <div className="flex items-center bg-gray-800 text-white font-semibold rounded-md overflow-hidden border-4 border-black h-12 w-24">
+                                            <div className="flex items-center justify-center w-1/2 h-full text-lg" >
+                                                BK
+                                            </div>
+                                            <div className="flex items-center justify-center w-1/2 h-full bg-white text-gray-800 text-lg" >
+                                                1
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="p-4 text-center text-base text-gray-700">x30</td>
@@ -105,7 +97,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
             </div>
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 {/* <ItemModal itemData={selectedItem} openModal={openModal} setIsModalOpen={setIsModalOpen} items={shipmentDetails.items}  /> */}
-                <UnShelvedItemModal itemData={selectedItem}  setIsModalOpen={setIsModalOpen} items={unshelvedItems} />
+                <UnShelvedItemModal itemData={selectedItem} setIsModalOpen={setIsModalOpen} items={unshelvedItems} />
             </Modal >
         </>
     )
