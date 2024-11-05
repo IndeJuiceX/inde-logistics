@@ -12,7 +12,7 @@ export default function UnShelvedItemModal({
     setIsModalOpen,
     itemData = null,
     items = null,
-    setShipmentDetails = null,
+    setUnshelvedItems = null,
 }) {
     const params = useParams();
 
@@ -27,10 +27,10 @@ export default function UnShelvedItemModal({
 
 
     const [locations, setLocations] = useState({
-        aisle: item?.stock_in || '',
-        aisleNumber: item?.received || '',
-        shelf: '',
-        shelfNumber: '',
+        aisle: item?.warehouse?.aisle || '',
+        aisleNumber: item?.warehouse?.aisle_number || '',
+        shelf: item?.warehouse?.shelf || '',
+        shelfNumber: item?.warehouse?.shelf_number || '',
     });
 
     // Functions to show pads
@@ -64,9 +64,10 @@ export default function UnShelvedItemModal({
     const handleDialPadInput = (input) => {
         setLocations((prevLocations) => {
             const currentInput = prevLocations[activeField] || '';
-    
+
             if (input === 'backspace') {
-                const newInput = currentInput.slice(0, -1);
+                // const newInput = currentInput.slice(0, -1);
+                const newInput = currentInput.length > 0 ? currentInput.slice(0, -1) : '';
                 return {
                     ...prevLocations,
                     [activeField]: newInput,
@@ -87,9 +88,30 @@ export default function UnShelvedItemModal({
                 };
             }
         });
+        if (input === 'ok') {
+            updateLocationsDetails()
+        }
     };
 
+    // Update 'item' when 'currentIndex' changes
+    useEffect(() => {
+        if (items && items.length > 0) {
+            const newItem = items[currentIndex];
+            setItem(newItem);
+        }
+    }, [currentIndex, items]);
 
+    // Reset 'quantities' when 'item' changes
+    useEffect(() => {
+        if (item) {
+            setLocations({
+                aisle: item?.warehouse?.aisle,
+                aisleNumber: item?.warehouse?.aisle_number,
+                shelf: item?.warehouse?.shelf,
+                shelfNumber: item?.warehouse?.shelf_number,
+            })
+        }
+    }, [item]);
 
 
     // Navigation functions
@@ -112,8 +134,35 @@ export default function UnShelvedItemModal({
 
     }, [locations]);
 
+    const updateLocationsDetails = async () => {
+        console.log('location', locations);
+        const payload = {
+            vendor_id: params.vendor_id,
+            shipment_id: params.shipment_id,
+            item: {
+                vendor_sku: item.vendor_sku,
+                shelve_quantity: item.received,
+                warehouse: {
+                    aisle: locations.aisle,
+                    aisle_number: locations.aisleNumber,
+                    shelf: locations.shelf,
+                    shelf_number: locations.shelfNumber,
+                }
+            }
+        }
+        console.log('payload', payload);
+        getUpdateUnShelvedShipmentDetails();
+        // const response = await fetch('');
+        // const data = await response.json();
+    }
 
-
+    const getUpdateUnShelvedShipmentDetails = async () => {
+        const response = await fetch(`/api/v1/admin/stock-shipments/get-unshelved-items?vendor_id=${params.vendor_id}&stock_shipment_id=${params.shipment_id}`);
+        const updateShipments = await response.json();
+        if (updateShipments.success) {
+            setUnshelvedItems(updateShipments.data.items);
+        }
+    }
     return (
         <div className="mt-4 flex flex-col h-full">
             <h2 className="text-center text-lg font-semibold text-black mb-2">

@@ -31,7 +31,8 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
 
         // Update the stock shipment item
         const unshelvedResult = await getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId);
-
+        console.log('unshelvedResult', unshelvedResult);
+        
         if (!unshelvedResult.success) {
             return NextResponse.json({ error: 'Failed to get unshelved stock shipment items', details: updateResult.error }, { status: 400 });
         }
