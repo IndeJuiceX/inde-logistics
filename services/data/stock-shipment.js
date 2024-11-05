@@ -274,12 +274,9 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
     const vendorSkus = shipmentItems.map((hit) => hit.vendor_sku);
     const uniqueVendorSkus = [...new Set(vendorSkus)];
     const productDataMap = {};
-    console.log('GETPRODUCTDETAILS CALLED---')
     for (const sku of uniqueVendorSkus) {
-        console.log('SKU IS --- '+sku)
         const product = await getProductById(vendorId, sku);
 
-        console.log(product)
         const productDetails = {
             name: product.data.name,
             image: product.data.image,
