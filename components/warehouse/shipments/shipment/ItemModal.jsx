@@ -99,7 +99,7 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
             vendor_id: params.vendor_id,
             stock_shipment_id: params.shipment_id,
             item: {
-                received: quantities.received,
+                received: quantities.accepted,
                 faulty: quantities.faulty,
                 vendor_sku: item.vendor_sku,
             },
