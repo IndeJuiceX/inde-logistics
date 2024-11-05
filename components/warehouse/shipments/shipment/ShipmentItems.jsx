@@ -14,8 +14,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const [shipmentDetails, setShipmentDetails] = useState(shipmentDetailsData)
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // const [loading, setLoading] = useState(false);
-    // const [loaded, setLoaded] = useState(false);
+
 
     const attributeKeys = [];
     if (shipmentDetails.items && shipmentDetails.items.length > 0) {
@@ -54,7 +53,6 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     }
     return (
         <>
-            {/* <PageSpinner loading={loading} loaded={loaded} /> */}
             <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
 
             <div className="overflow-x-auto bg-white">
