@@ -2,10 +2,10 @@
 import { getItem, queryItems, putItem, deleteItem } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
-export const getProductById = async (vendorId, productUUID) => {
+export const getProductById = async (vendorId, productUUID, excludeFields=[]) => {
     const data = await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
     if (data.success && data.data) {
-        data.data = cleanResponseData(data.data, ['warehouse'])
+        data.data = cleanResponseData(data.data, excludeFields)
     }
     return data;
 };

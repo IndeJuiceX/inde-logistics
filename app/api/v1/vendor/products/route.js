@@ -27,7 +27,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         let result = null;
         if (vendorSku) {
             // Fetch specific order details
-            result = await getProductById(vendorId, vendorSku);
+            result = await getProductById(vendorId, vendorSku,['warehouose']);
         } else {
             // Fetch all products with pagination
             result = await getAllVendorProducts(vendorId, pageSize, exclusiveStartKey);

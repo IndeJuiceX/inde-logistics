@@ -61,7 +61,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         for (const product of validatedProducts) {
             const { vendor_sku, ...updatedFields } = product;
             // Fetch the existing product by vendor_sku
-            const result = await getProductById(vendorId, vendor_sku)//await getProductByVendorSku(vendorId, vendor_sku);
+            const result = await getProductById(vendorId, vendor_sku,['warehouse'])//await getProductByVendorSku(vendorId, vendor_sku);
             if (!result.success || !result.data) {
                 failedUpdates.push({
                     vendor_sku,
