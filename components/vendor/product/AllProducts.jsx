@@ -8,11 +8,11 @@ import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 import ProductSearch from './ProductSearch';
 import ProductBox from './ProductBox';
 
-export default function AllProducts({ vendorId }) {
+export default function AllProducts({ vendorId, totalProductsData }) {
   const router = useRouter();  // Use Next.js router for navigation
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(totalProductsData);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);  // Current page
   const [pageSize] = useState(25);  // Number of products per page
   const [totalProducts, setTotalProducts] = useState(0);  // Total product count
@@ -39,7 +39,7 @@ export default function AllProducts({ vendorId }) {
 
   // Fetch paginated products when page or vendorId changes
   useEffect(() => {
-    if (vendorId) {
+    if (vendorId && page > 1) {
       const fetchProducts = async () => {
         try {
           const response = await fetch(`/api/v1/admin/vendor/products?vendor_id=${vendorId}&page=${page}&page_size=${pageSize}`);
@@ -53,7 +53,7 @@ export default function AllProducts({ vendorId }) {
       };
       fetchProducts();
     }
-  }, [vendorId, page]);
+  }, [page]);
 
   const handleNextPage = () => {
     setPage((prevPage) => prevPage + 1);
@@ -64,24 +64,6 @@ export default function AllProducts({ vendorId }) {
       setPage((prevPage) => prevPage - 1);
     }
   };
-
-  // const handleSearch = async (page = 1, pageSize = 10) => {
-  //   setLoading(true);
-  //   try {
-  //     // Include the `page` and `pageSize` in the API call
-  //     const response = await fetch(`/api/v1/admin/vendor/products/search?vendorId=${vendorId}&q=${searchTerm}&page=${page}&pageSize=${pageSize}`);
-  //     const data = await response.json();
-  //     console.log('Search results:', data);
-
-  //     // Set the products and any pagination data if needed
-  //     setProducts(data.products);  // Assuming data.products is where the product list is stored
-  //     //setTotalPages(Math.ceil(data.total / pageSize));  // Calculate total pages from the response
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.error('Error searching products:', error);
-  //     setLoading(false);
-  //   }
-  // };
 
 
   const handleDeleteCatalogue = async () => {
