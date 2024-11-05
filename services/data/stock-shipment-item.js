@@ -1,12 +1,14 @@
 import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { getStockShipmentDetails } from './stock-shipment';
+import { getLoggedInUser } from '@/app/actions';
+
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
     try {
         // Step 1: Validate the new items
         const invalidItems = [];
         const validItems = [];
-
+        const user = await getLoggedInUser()
         for (const item of stockShipmentItems) {
             const { vendor_sku } = item;
 
@@ -45,6 +47,7 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
                 stock_in: item.stock_in,
                 created_at: createdAt,
                 updated_at: createdAt,
+                modified_by : user?.email || 'API TOKEN'
             };
             itemsToPut.push(itemToPut);
         }
@@ -219,7 +222,7 @@ export async function updateItemsStockInStockShipment(
     try {
         const failedItems = [];
         const updatedAt = new Date().toISOString();
-
+        const user = getLoggedInUser()
         // Loop over each shipment item to update
         for (const item of shipmentItemsToUpdate) {
             const { vendor_sku, stock_in } = item;
@@ -233,6 +236,7 @@ export async function updateItemsStockInStockShipment(
             const updatedFields = {
                 stock_in: stock_in,
                 updated_at: updatedAt,
+                modified_by : user?.email || 'API TOKEN'
             };
 
             // Attempt to update the item
@@ -283,7 +287,7 @@ export async function updateItemsStockInStockShipment(
 }
 
 export async function updateStockShipmentItemReceived(vendorId, stockShipmentId, item = {}) {
-    console.log('INSIDE UPDATE FUNCTION')
+    const user = getLoggedInUser()
     const allowedFields = ['received', 'faulty', 'vendor_sku']
     // Validate the fields in the input object
     const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
@@ -300,6 +304,7 @@ export async function updateStockShipmentItemReceived(vendorId, stockShipmentId,
     });
 
     updateFields.updated_at = new Date().toISOString();
+    updateFields.modified_by = user?.email || 'API TOKEN'
 
     // Update the item in the database
     try {
