@@ -5,30 +5,31 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 
-export default function ProductDashboard({ vendorId }) {
+export default function ProductDashboard({ vendorId, totalProductsCount }) {
 
     const router = useRouter();
 
-    const [totalProducts, setTotalProducts] = useState(0);
+    const [totalProducts, setTotalProducts] = useState(totalProductsCount);
     const [loadingCount, setLoadingCount] = useState(true);
 
-    useEffect(() => {
-        if (vendorId) {
-            const fetchTotalProducts = async () => {
-                try {
-                    const response = await fetch(`/api/v1/admin/vendor/products/count?vendor_id=${vendorId}`);
-                    const data = await response.json();
-                    setTotalProducts(data.count);
-                    setLoadingCount(false);
-                } catch (error) {
-                    console.error('Error fetching total products count:', error);
-                    setLoadingCount(false);
-                }
-            };
+    // useEffect(() => {
+    //     if (vendorId) {
+    //         const fetchTotalProducts = async () => {
+    //             try {
+    //                 const response = await fetch(`/api/v1/admin/vendor/products/count?vendor_id=${vendorId}`);
+    //                 const data = await response.json();
+    //                 setTotalProducts(data.count);
+    //                 setLoadingCount(false);
+    //             } catch (error) {
+    //                 console.error('Error fetching total products count:', error);
+    //                 setLoadingCount(false);
+    //             }
+    //         };
 
-            fetchTotalProducts();
-        }
-    }, [vendorId]);
+    //         fetchTotalProducts();
+    //     }
+    // }, [vendorId]);
+
     const breadCrumbLinks = [
         { text: 'Home', url: `/vendor/${vendorId}/dashboard` },
         { text: 'Catalogue', url: `/vendor/${vendorId}/dashboard` }
@@ -53,11 +54,7 @@ export default function ProductDashboard({ vendorId }) {
                             onClick={() => router.push(`/vendor/${vendorId}/products/all`)}
                         >
                             <h2 className="text-xl font-semibold text-gray-800">Products Count</h2>
-                            {loadingCount ? (
-                                <p className="text-gray-600 mt-2">Loading...</p>
-                            ) : (
-                                <p className="text-4xl font-bold text-gray-900 mt-2">{totalProducts}</p>
-                            )}
+                            <p className="text-4xl font-bold text-gray-900 mt-2">{totalProducts}</p>
                             <p className="text-gray-600 mt-1">Click to view all products</p>
                         </div>
 
