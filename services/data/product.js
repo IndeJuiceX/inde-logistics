@@ -5,7 +5,7 @@ import { cleanResponseData } from '@/services/utils';
 export const getProductById = async (vendorId, productUUID, excludeFields=[]) => {
     const data = await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
     if (data.success && data.data) {
-        data.data = cleanResponseData(data.data, ['warehouse'])
+        data.data = cleanResponseData(data.data, excludeFields)
     }
     return data;
 };

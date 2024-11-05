@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { checkShipmentExists } from '@/services/data/stock-shipment';
 import { getUnshelvedItemsFromStockShipment } from '@/services/data/stock-shipment-item';
+import { getVendorIdFromRequest } from '@/services/utils';
 
 export const GET = withAuthAndLogging(async (request, { params, user }) => {
     try {
@@ -29,7 +30,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         // Update the stock shipment item
-        const unshelvedResult = await getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId, { vendor_sku, received, faulty });
+        const unshelvedResult = await getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId);
 
         if (!unshelvedResult.success) {
             return NextResponse.json({ error: 'Failed to get unshelved stock shipment items', details: updateResult.error }, { status: 400 });
@@ -41,4 +42,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         console.error('Unhandled error:', error);
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
-}, ['admin', 'warehouse']);
+}, ['admin', 'warehouse','vendor']);
