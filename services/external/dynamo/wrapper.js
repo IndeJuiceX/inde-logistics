@@ -67,7 +67,7 @@ const queryItems = async (params) => {
 
 
 const queryItemsWithPkAndSk = async (pkValue, skPrefix = null) => {
-    const client = getClient()
+    const client = getClient();
     let params = {
         TableName: TABLE_NAME,
         KeyConditionExpression: 'pk = :pkValue',
@@ -81,14 +81,28 @@ const queryItemsWithPkAndSk = async (pkValue, skPrefix = null) => {
         params.ExpressionAttributeValues[':skPrefix'] = skPrefix;
     }
 
+    let items = [];
+    let lastEvaluatedKey = null;
+
     try {
-        const data = await client.send(new QueryCommand(params));
-        return { success: true, data: data.Items };
+        do {
+            if (lastEvaluatedKey) {
+                params.ExclusiveStartKey = lastEvaluatedKey;
+            }
+
+            const data = await client.send(new QueryCommand(params));
+            items = items.concat(data.Items);
+
+            lastEvaluatedKey = data.LastEvaluatedKey;
+        } while (lastEvaluatedKey);
+
+        return { success: true, data: items };
     } catch (error) {
         console.error('DynamoDB QueryItems Error:', error);
         return { success: false, error };
     }
 };
+
 
 
 
@@ -273,7 +287,7 @@ const batchWriteItems = async (items, operationType = 'Put') => {
 // Custom validation function for checking invalid attributes
 const validateItem = (item, operationType) => {
     return true;
-   
+
 };
 
 
@@ -557,46 +571,46 @@ const updateItemIfExists = async (pkVal, skVal, updatedFields, expressionAttribu
  */
 const deleteItemWithPkAndSk = async (pkVal, skVal) => {
     const client = getClient(); // Initialize your DynamoDB DocumentClient
-  
+
     const params = {
-      TableName: TABLE_NAME,
-      Key: { pk: pkVal, sk: skVal },
-      ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)', // Ensure the item exists
+        TableName: TABLE_NAME,
+        Key: { pk: pkVal, sk: skVal },
+        ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)', // Ensure the item exists
     };
-  
+
     try {
-      await client.send(new DeleteCommand(params));
-      return { success: true };
+        await client.send(new DeleteCommand(params));
+        return { success: true };
     } catch (error) {
-      console.error('DynamoDB DeleteItem Error:', error);
-  
-      if (error.name === 'ConditionalCheckFailedException') {
-        // The item does not exist
-        return { success: false, error: 'Item does not exist' };
-      }
-  
-      // Handle other potential errors
-      return { success: false, error };
+        console.error('DynamoDB DeleteItem Error:', error);
+
+        if (error.name === 'ConditionalCheckFailedException') {
+            // The item does not exist
+            return { success: false, error: 'Item does not exist' };
+        }
+
+        // Handle other potential errors
+        return { success: false, error };
     }
-  };
-  
+};
 
 
 
 
 
-export { 
-    putItem, 
-    getItem, 
-    updateItem, 
-    queryItems, 
-    deleteItem, 
-    scanItems, 
-    batchWriteItems, 
-    deleteItemBatch, 
-    queryItemCount, 
-    updateOrInsert, 
-    transactWriteItems ,
+
+export {
+    putItem,
+    getItem,
+    updateItem,
+    queryItems,
+    deleteItem,
+    scanItems,
+    batchWriteItems,
+    deleteItemBatch,
+    queryItemCount,
+    updateOrInsert,
+    transactWriteItems,
     queryItemsWithPkAndSk,
     updateItemIfExists,
     deleteItemWithPkAndSk
