@@ -1,20 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
-// Import statements for your services and pads
-import { getStockShipmentDetails } from "@/services/data/stock-shipment";
 import AlphabetPad from '@/components/warehouse/keypad/AlphabetPad';
 import ColorPad from '@/components/warehouse/keypad/ColorPad';
+import { LoadingContext } from '@/contexts/LoadingContext';
 
-export default function UnShelvedItemModal({
-    setIsModalOpen,
-    itemData = null,
-    items = null,
-    setUnshelvedItems = null,
-}) {
+
+export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, items = null, setUnshelvedItems = null, }) {
     const params = useParams();
+    const { setLoading, setLoaded } = useContext(LoadingContext);
 
     // State variables
     const initialIndex =
@@ -135,6 +131,7 @@ export default function UnShelvedItemModal({
     }, [locations]);
 
     const updateLocationsDetails = async () => {
+        setLoading(true);
         console.log('location', locations);
         const payload = {
             vendor_id: params.vendor_id,
@@ -152,6 +149,8 @@ export default function UnShelvedItemModal({
         }
         console.log('payload', payload);
         getUpdateUnShelvedShipmentDetails();
+        setLoaded(true);
+        setLoading(false);
         // const response = await fetch('');
         // const data = await response.json();
     }
