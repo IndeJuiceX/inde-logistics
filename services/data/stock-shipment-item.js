@@ -222,7 +222,7 @@ export async function updateItemsStockInStockShipment(
     try {
         const failedItems = [];
         const updatedAt = new Date().toISOString();
-        const user = getLoggedInUser()
+        const user = await getLoggedInUser()
         // Loop over each shipment item to update
         for (const item of shipmentItemsToUpdate) {
             const { vendor_sku, stock_in } = item;
@@ -287,7 +287,7 @@ export async function updateItemsStockInStockShipment(
 }
 
 export async function updateStockShipmentItemReceived(vendorId, stockShipmentId, item = {}) {
-    const user = getLoggedInUser()
+    const user = await getLoggedInUser()
     const allowedFields = ['received', 'faulty', 'vendor_sku']
     // Validate the fields in the input object
     const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
@@ -343,7 +343,7 @@ export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipment
 
 export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId, item = {}) {
     // Check if the shipment exists and belongs to the vendor
-    const user = getLoggedInUser();
+    const user = await getLoggedInUser();
     const modifiedBy = user?.email || 'API TOKEN'
     const shipmentExists = await checkShipmentExists(vendorId, stockShipmentId);
     if (!shipmentExists) {
@@ -422,8 +422,6 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
     ];
     try {
         const result = await transactWriteItems(transactionItems);
-        console.log('TRANSACTION RESPONSE---')
-        console.log(result)
         return result;
     } catch (error) {
         console.error('Unhandled error in updateStockShipmentItemShelved:', error);
