@@ -1,14 +1,11 @@
 'use client'
 import React, { useEffect } from 'react';
-import styles from '@/styles/vape-store/components/checkout/errorModal/error-modal.module.scss';
-import { useRouter } from 'next/navigation';
 
 export default function ErrorModal({ message, redirectTo }) {
-    const router = useRouter();
+
 
     const handleRedirect = () => {
         window.location = redirectTo;
-        // router.push(redirectTo);
     };
     useEffect(() => {
         const body = document.body;
@@ -26,7 +23,7 @@ export default function ErrorModal({ message, redirectTo }) {
                         Error
                     </div>
                     <div className="text-sm text-black text-opacity-80 p-16 text-center">
-                        
+
                         {message}
                     </div>
                     <button
