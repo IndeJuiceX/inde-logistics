@@ -373,11 +373,11 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
 
     // Format the warehouse object for DynamoDB
     const formattedWarehouse = {
-        aisle: { S: item.warehouse.aisle },
-        aisle_number: { N: item.warehouse.aisle_number.toString() },
-        shelf: { S: item.warehouse.shelf },
-        shelf_number: { N: item.warehouse.shelf_number.toString() },
-        location_id: { S: item.warehouse.location_id }
+        aisle: item.warehouse.aisle.toString(),
+        aisle_number: parseInt(item.warehouse.aisle_number),
+        shelf: item.warehouse.shelf.toString() ,
+        shelf_number: parseInt(item.warehouse.shelf_number),
+        location_id: item.warehouse.location_id.toString() 
     };
     // Construct the update object for the product item
     const productUpdateFields = {
@@ -393,14 +393,11 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
                     sk: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`
                 },
-                UpdateExpression: 'SET shelved = if_not_exists(shelved, :shelved), updated_at = :updated_at',
-                // ExpressionAttributeNames: {
-                //     '#shelved': 'shelved',
-                //     '#updated_at': 'updated_at'
-                // },
+                UpdateExpression: 'SET shelved = if_not_exists(shelved, :shelved), updated_at = :updatedAt',
+                
                 ExpressionAttributeValues: {
                     ':shelved': updateFields.shelved,
-                    ':updated_at': updateFields.updated_at
+                    ':updatedAt': updateFields.updated_at
                 }
             }
         },
@@ -410,21 +407,19 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     pk: `VENDORPRODUCT#${vendorId}`,
                     sk: `PRODUCT#${vendorSku}`
                 },
-                UpdateExpression: 'SET updated_at = :updated_at, warehouse = if_not_exists(warehouse, :warehouse)',
-                // ExpressionAttributeNames: {
-                //     '#updated_at': 'updated_at',
-                //     '#warehouse': 'warehouse'
-                // },
+                UpdateExpression: 'SET updated_at = :updatedAt, warehouse = if_not_exists(warehouse, :warehouse)',
+              
                 ExpressionAttributeValues: {
-                    ':updated_at': productUpdateFields.updated_at,
+                    ':updatedAt': productUpdateFields.updated_at,
                     ':warehouse': productUpdateFields.warehouse
                 }
             }
         }
     ];
-    console.log(transactionItems)
     try {
         const result = await transactWriteItems(transactionItems);
+        console.log('TRANSACTION RESPONSE---')
+        console.log(result)
         return result;
     } catch (error) {
         console.error('Unhandled error in updateStockShipmentItemShelved:', error);
