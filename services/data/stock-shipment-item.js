@@ -1,6 +1,6 @@
 import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-import { getStockShipmentDetails } from './stock-shipment';
+import { getStockShipmentDetails,getStockShipmentById } from './stock-shipment';
 import { getLoggedInUser } from '@/app/actions';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
@@ -321,6 +321,17 @@ export async function updateStockShipmentItemReceived(vendorId, stockShipmentId,
 }
 
 export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId) {
+    
+    // Check if the shipment exists and belongs to the vendor
+    const stockShipmentRes = await getStockShipmentById(vendorId, stockShipmentId);
+    if (!stockShipmentRes || !stockShipmentRes.success || !stockShipmentRes.data) {
+        return {success: false , error : 'Stock Shipment not found or does not belong to the vendor'};
+    }
+
+    if(!stockShipmentRes?.data?.received_at) {
+        return {success: false , error: 'Stock Shipment has not been received' }
+
+    }
     //getStockShipmentDetails and filter the ones where recieved is set and greater than 0 but shelved is not set or 0..
     const result = await getStockShipmentDetails(vendorId, stockShipmentId);
     const shipmentData = result.data
