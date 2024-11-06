@@ -325,7 +325,7 @@ export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipment
     const result = await getStockShipmentDetails(vendorId, stockShipmentId);
     const shipmentData = result.data
     // Filter items where received is set and greater than 0, and shelved is not set or 0
-    shipmentData.items = shipmentData.items.filter(item => item.received > 0 && (!item.shelved || item.shelved === 0));
+    shipmentData.items = shipmentData.items.filter(item => item.received >= 0 && (!item.shelved || item.shelved === 0));
 
     return { success: true, data: shipmentData };
 }
