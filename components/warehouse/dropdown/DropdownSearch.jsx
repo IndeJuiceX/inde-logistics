@@ -1,21 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export default function DropdownSearch({ data, onSelectionChange, displayFields, searchFields, valueField }) {
+export default function DropdownSearch({
+    data,
+    onSelectionChange,
+    displayFields,
+    searchFields,
+    valueField
+}) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedItem, setSelectedItem] = useState(null); // Single selected item
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
     };
 
-    const handleCheckboxChange = (product, isChecked) => {
-        const updatedSelectedItems = isChecked
-            ? [...selectedItems, product]
-            : selectedItems.filter((item) => item[valueField] !== product[valueField]);
-
-        setSelectedItems(updatedSelectedItems);
-        onSelectionChange(updatedSelectedItems); // Pass updated selection to parent
+    const handleItemClick = (product) => {
+        setSelectedItem(product);
+        onSelectionChange(product); // Pass selected item to parent
+        setIsDropdownVisible(false); // Close dropdown after selection
     };
 
     // Filter data based on search term and search fields
@@ -24,59 +27,70 @@ export default function DropdownSearch({ data, onSelectionChange, displayFields,
             product[field]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
     );
-    // Toggle dropdown visibility
+
     const toggleDropdown = () => {
-        
         setIsDropdownVisible((prev) => !prev);
     };
 
-    useEffect(() => {
-        console.log('isDropdownVisible', isDropdownVisible);
-    }, [isDropdownVisible]);
-
     return (
-        <div className="relative">
+        <div className="relative w-60">
+            <h1 className="text-black-700">Select the Brand</h1>
             <button
-                onClick={toggleDropdown} // Toggle visibility on click
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center"
-                type="button"
+                onClick={toggleDropdown}
+                className="w-full text-left bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-                Dropdown search
-                <svg className="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
+                {selectedItem ? (
+                    displayFields.map((field) => selectedItem[field]).join(', ')
+                ) : (
+                    'Select products'
+                )}
+                <svg
+                    className="w-5 h-5 ml-2 inline-block"
+                    fill="none"
+                    viewBox="0 0 10 6"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m1 1 4 4 4-4"
+                    />
                 </svg>
             </button>
+
             {isDropdownVisible && (
-                <div id="dropdownSearch" className={`z-10  bg-white rounded-lg shadow w-60 ${isDropdownVisible?? 'hidden'}`}>
+                <div className="absolute z-10 w-full bg-white rounded-lg shadow-lg mt-1 border border-gray-300 max-h-60 overflow-auto">
                     <div className="p-3">
+                        <label className='text-black-800'></label>
                         <input
                             type="text"
-                            id="input-group-search"
-                            className="block w-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Search products"
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
                     </div>
-                    <ul className="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700">
-                        {filteredData.map((product, index) => (
-                            <li key={index}>
-                                <div className="flex items-center ps-2 rounded hover:bg-gray-100">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedItems.some((item) => item[valueField] === product[valueField])}
-                                        onChange={(e) => handleCheckboxChange(product, e.target.checked)}
-                                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
-                                    />
-                                    <label className="w-full py-2 ms-2 text-sm font-medium text-gray-900">
-                                        {/* Show the fields based on the displayFields parameter */}
-                                        {displayFields.map((field) => (
-                                            <span key={field}>{product[field]} </span>
-                                        ))}
-                                    </label>
-                                </div>
-                            </li>
-                        ))}
+                    <ul className="text-sm text-gray-700">
+                        {filteredData.length > 0 ? (
+                            filteredData.map((product) => (
+                                <li key={product[valueField]}>
+                                    <div
+                                        onClick={() => handleItemClick(product)}
+                                        className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                    >
+                                        <span className="ml-2 text-gray-800">
+                                            {displayFields.map((field, idx) => (
+                                                <span key={idx}>{product[field]} </span>
+                                            ))}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))
+                        ) : (
+                            <li className="px-4 py-2 text-gray-500">No results found</li>
+                        )}
                     </ul>
                 </div>
             )}
