@@ -414,7 +414,7 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
             }
         }
     ];
-
+    console.log(transactionItems)
     try {
         const result = await transactWriteItems(transactionItems);
         return result;
