@@ -343,6 +343,8 @@ export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipment
 
 export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId, item = {}) {
     // Check if the shipment exists and belongs to the vendor
+    const user = getLoggedInUser();
+    const modifiedBy = user?.email || 'API TOKEN'
     const shipmentExists = await checkShipmentExists(vendorId, stockShipmentId);
     if (!shipmentExists) {
         return { success: false, error: 'Shipment not found or does not belong to the vendor' };
@@ -393,11 +395,12 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     pk: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
                     sk: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`
                 },
-                UpdateExpression: 'SET shelved = if_not_exists(shelved, :shelved), updated_at = :updatedAt',
+                UpdateExpression: 'SET shelved = :shelved, updated_at = :updatedAt, modified_by = :modifiedBy',
                 
                 ExpressionAttributeValues: {
                     ':shelved': updateFields.shelved,
-                    ':updatedAt': updateFields.updated_at
+                    ':updatedAt': updateFields.updated_at,
+                    ':modifiedBy' : modifiedBy
                 }
             }
         },
@@ -407,11 +410,12 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     pk: `VENDORPRODUCT#${vendorId}`,
                     sk: `PRODUCT#${vendorSku}`
                 },
-                UpdateExpression: 'SET updated_at = :updatedAt, warehouse = if_not_exists(warehouse, :warehouse)',
+                UpdateExpression: 'SET updated_at = :updatedAt, warehouse = :warehouse, modified_by = :modifiedBy',
               
                 ExpressionAttributeValues: {
                     ':updatedAt': productUpdateFields.updated_at,
-                    ':warehouse': productUpdateFields.warehouse
+                    ':warehouse': productUpdateFields.warehouse,
+                    ':modifiedBy' : modifiedBy
                 }
             }
         }
