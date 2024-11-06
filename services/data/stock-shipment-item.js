@@ -385,7 +385,7 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     PK: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
                     SK: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`
                 },
-                UpdateExpression: 'SET #shelved = :shelved, #updated_at = :updated_at',
+                UpdateExpression: 'SET if_not_exists(#shelved, :shelved), #updated_at = :updated_at',
                 ExpressionAttributeNames: {
                     '#shelved': 'shelved',
                     '#updated_at': 'updated_at'
