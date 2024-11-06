@@ -11,6 +11,8 @@ const MAX_SIZE_MB = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
   try {
+    const { searchParams } = new URL(request.url);
+
     // Extract authentication details
     let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
