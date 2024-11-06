@@ -1,6 +1,6 @@
 import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-import { getStockShipmentDetails,getStockShipmentById } from './stock-shipment';
+import { getStockShipmentDetails,getStockShipmentById,checkShipmentExists } from './stock-shipment';
 import { getLoggedInUser } from '@/app/actions';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
@@ -341,12 +341,18 @@ export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipment
     return { success: true, data: shipmentData };
 }
 
-export async function updateStockShipmentItemShelved(vendorId, stockShipmentId, item = {}) {
-    const allowedFields = ['shelved', 'warehouse', 'vendor_sku']
+export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId, item = {}) {
+     // Check if the shipment exists and belongs to the vendor
+     const shipmentExists = await checkShipmentExists(vendorId, stockShipmentId);
+     if (!shipmentExists) {
+         return { success: false, error: 'Shipment not found or does not belong to the vendor' };
+     }
+
+    const allowedFields = ['warehouse', 'vendor_sku']
     // Validate the fields in the input object
     const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
     if (invalidFields.length > 0) {
-        return { success: false, error: 'Invalid fields', details: `Invalid fields: ${invalidFields.join(', ')}` };
+        return { success: false, error: `Invalid fields : ${invalidFields.join(', ')}` };
     }
     // Ensure warehouse object has location_id
     if (item.warehouse) {
@@ -363,11 +369,11 @@ export async function updateStockShipmentItemShelved(vendorId, stockShipmentId, 
     });
 
     updateFields.updated_at = new Date().toISOString();
+    updateFields.shelved = 1
 
     // Construct the update object for the product item
     const productUpdateFields = {
         updated_at: new Date().toISOString(),
-        stock_available: item.shelved,
         warehouse: item.warehouse
     };
 
@@ -385,7 +391,7 @@ export async function updateStockShipmentItemShelved(vendorId, stockShipmentId, 
                     '#updated_at': 'updated_at'
                 },
                 ExpressionAttributeValues: {
-                    ':shelved': item.shelved,
+                    ':shelved': updateFields.shelved,
                     ':updated_at': updateFields.updated_at
                 }
             }
@@ -396,15 +402,14 @@ export async function updateStockShipmentItemShelved(vendorId, stockShipmentId, 
                     PK: `VENDORPRODUCT#${vendorId}`,
                     SK: `PRODUCT#${vendorSku}`
                 },
-                UpdateExpression: 'SET #updated_at = :updated_at, #stock_available = #stock_available + :shelved, #warehouse = :warehouse',
+                UpdateExpression: 'SET #updated_at = :updated_at, #warehouse = :warehouse',
                 ExpressionAttributeNames: {
                     '#updated_at': 'updated_at',
-                    '#stock_available': 'stock_available',
                     '#warehouse': 'warehouse'
                 },
                 ExpressionAttributeValues: {
                     ':updated_at': productUpdateFields.updated_at,
-                    ':shelve_quantity': item.shelve_quantity
+                    ':warehouse': productUpdateFields.warehouse
                 }
             }
         }
