@@ -3,16 +3,17 @@ import ShipmentHeader from "@/components/warehouse/ShipmentHeader";
 import Modal from "@/components/warehouse/modal/Modal";
 import UnShelvedItemModal from "@/components/warehouse/unshelved/UnShelvedItemModal";
 import { useEffect, useState } from "react";
+import ActionButtons from "@/components/warehouse/unshelved/ActionButtons";
 
 
 
 
-export default function UnShelvedItems({ vendor, shipmentDetails }) {
+export default function UnShelvedItems({ vendor, shipmentDetails, error = null }) {
     const [unshelvedItems, setUnshelvedItems] = useState(shipmentDetails.items ?? []);
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // console.log('shipmentDetails', unshelvedItems);
+    // console.log('shipmentDetails 22', shipmentDetails);
     // console.log('vendor', vendor);
     const attributeKeys = [];
     if (unshelvedItems && unshelvedItems.length > 0) {
@@ -26,20 +27,21 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
         });
     }
 
+    useEffect(() => {
+        if (error !== null) {
+            console.log('error', error);
+            alert(error);
+        }
+    }, [error]);
 
     const handleShowItem = (item) => {
         setSelectedItem(item);
         setIsModalOpen(true);
     }
 
-    useEffect(() => {
-        console.log('shipmentDetails', unshelvedItems);
-    }, [unshelvedItems]);
-
-
     return (
         <>
-            <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
+            <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} url={'unshelved'} />
             <div className="overflow-x-auto">
 
                 <div className="mb-4">
@@ -90,18 +92,8 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
                                     </td>
                                     <td className="p-4 text-center text-base text-gray-700">x{item.received ? item.received : '-'}</td>
                                     <td className="p-4 text-center">
-                                        {/* this butts are need for the actions */}
-                                        {/* <div className="flex items-center justify-center w-20 h-10 border-4 border-green-500 rounded">
-                                            <svg className="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke="currentColor" stroke-width="1.5" fill-rule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586l-3.293-3.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clip-rule="evenodd"></path>
-                                            </svg>
-                                        </div> */}
+                                        <ActionButtons item={item} />
 
-                                        <div className="flex items-center justify-center w-20 h-10 bg-gray-200 rounded">
-                                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke="currentColor" strokeWidth="1.5" fillRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586l-3.293-3.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clipRule="evenodd"></path>
-                                            </svg>
-                                        </div>
                                     </td>
                                 </tr>
                             ))}

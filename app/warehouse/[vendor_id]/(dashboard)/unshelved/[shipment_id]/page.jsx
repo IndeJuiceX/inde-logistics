@@ -7,11 +7,17 @@ import { getUnshelvedItemsFromStockShipment } from "@/services/data/stock-shipme
 export default async function unShelvedShipmentPage({ params }) {
     const { vendor_id, shipment_id } = params;
 
-    
+
     let shipmentDetails = []
+    let error = null;
     const unshelvedResult = await getUnshelvedItemsFromStockShipment(vendor_id, shipment_id);
+    console.log('unshelvedResult server', unshelvedResult);
+    
     if (unshelvedResult.success) {
         shipmentDetails = unshelvedResult.data
+    }
+    if (!unshelvedResult.success) {
+        error = unshelvedResult.error;
     }
     let vendor = await getVendorById(vendor_id);
     if (!vendor.success) {
@@ -20,7 +26,9 @@ export default async function unShelvedShipmentPage({ params }) {
     else {
         vendor = vendor.data
     }
+    // console.log('vendor', shipmentDetails);
+    
     return (
-        <UnShelvedItems vendor={vendor} shipmentDetails={shipmentDetails} />
+        <UnShelvedItems vendor={vendor} shipmentDetails={shipmentDetails} error={error} />
     )
 }
