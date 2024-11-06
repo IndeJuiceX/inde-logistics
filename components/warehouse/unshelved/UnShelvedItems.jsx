@@ -13,7 +13,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails, error = null }
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // console.log('shipmentDetails 22', shipmentDetails);
+    console.log('shipmentDetails 22', shipmentDetails);
     // console.log('vendor', vendor);
     const attributeKeys = [];
     if (unshelvedItems && unshelvedItems.length > 0) {
