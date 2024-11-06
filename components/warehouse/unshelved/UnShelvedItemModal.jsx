@@ -135,10 +135,9 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
         console.log('location', locations);
         const payload = {
             vendor_id: params.vendor_id,
-            shipment_id: params.shipment_id,
+            stock_shipment_id: params.shipment_id,
             item: {
                 vendor_sku: item.vendor_sku,
-                shelve_quantity: item.received,
                 warehouse: {
                     aisle: locations.aisle,
                     aisle_number: locations.aisleNumber,
@@ -148,7 +147,13 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
             }
         }
         console.log('payload', payload);
-        getUpdateUnShelvedShipmentDetails();
+        const response = await fetch('/api/v1/admin/stock-shipments/shelve-item', {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        });
+        console.log('update shelved response', response);
+        
+        // getUpdateUnShelvedShipmentDetails();
         setLoaded(true);
         setLoading(false);
         // const response = await fetch('');
