@@ -29,8 +29,8 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         // Validate the warehouse object
-        const { shelf, shelf_number, isle, isle_number } = warehouse;
-        if (!shelf || !shelf_number || !isle || !isle_number) {
+        const { shelf, shelf_number, aisle, aisle_number } = warehouse;
+        if (!shelf || !shelf_number || !aisle || !aisle_number) {
             return NextResponse.json({ error: 'warehouse object must contain shelf, shelf_number, isle, and isle_number fields' }, { status: 400 });
         }
 
