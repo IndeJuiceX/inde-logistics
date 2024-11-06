@@ -23,24 +23,12 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         }
 
 
-        // Check if the shipment exists and belongs to the vendor
-        const stockShipmentRes = await getStockShipmentById(vendorId, stockShipmentId);
-        console.log(stockShipmentRes)
-        if (!stockShipmentRes || !stockShipmentRes.success || !stockShipmentRes.data) {
-            return NextResponse.json({ error: 'Stock Shipment not found or does not belong to the vendor' }, { status: 404 });
-        }
-
-        if(!stockShipmentRes?.data?.data?.received_at) {
-            return NextResponse.json({ error: 'Stock Shipment has not been received' }, { status: 404 });
-
-        }
-
         // Update the stock shipment item
         const unshelvedResult = await getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId);
         console.log('unshelvedResult', unshelvedResult);
         
         if (!unshelvedResult.success) {
-            return NextResponse.json({ error: 'Failed to get unshelved stock shipment items', details: updateResult.error }, { status: 400 });
+            return NextResponse.json({ error: 'Failed to get unshelved stock shipment items', details: unshelvedResult.error }, { status: 400 });
         }
 
         return NextResponse.json(unshelvedResult, { status: 200 });
