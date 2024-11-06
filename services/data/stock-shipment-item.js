@@ -1,6 +1,6 @@
 import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-import { getStockShipmentDetails,getStockShipmentById,checkShipmentExists } from './stock-shipment';
+import { getStockShipmentDetails, getStockShipmentById, checkShipmentExists } from './stock-shipment';
 import { getLoggedInUser } from '@/app/actions';
 
 export async function addItemsToStockShipment(vendorId, stockShipmentId, stockShipmentItems) {
@@ -47,7 +47,7 @@ export async function addItemsToStockShipment(vendorId, stockShipmentId, stockSh
                 stock_in: item.stock_in,
                 created_at: createdAt,
                 updated_at: createdAt,
-                modified_by : user?.email || 'API TOKEN'
+                modified_by: user?.email || 'API TOKEN'
             };
             itemsToPut.push(itemToPut);
         }
@@ -236,7 +236,7 @@ export async function updateItemsStockInStockShipment(
             const updatedFields = {
                 stock_in: stock_in,
                 updated_at: updatedAt,
-                modified_by : user?.email || 'API TOKEN'
+                modified_by: user?.email || 'API TOKEN'
             };
 
             // Attempt to update the item
@@ -321,15 +321,15 @@ export async function updateStockShipmentItemReceived(vendorId, stockShipmentId,
 }
 
 export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipmentId) {
-    
+
     // Check if the shipment exists and belongs to the vendor
     const stockShipmentRes = await getStockShipmentById(vendorId, stockShipmentId);
     if (!stockShipmentRes || !stockShipmentRes.success || !stockShipmentRes.data) {
-        return {success: false , error : 'Stock Shipment not found or does not belong to the vendor'};
+        return { success: false, error: 'Stock Shipment not found or does not belong to the vendor' };
     }
 
-    if(!stockShipmentRes?.data?.received_at) {
-        return {success: false , error: 'Stock Shipment has not been received' }
+    if (!stockShipmentRes?.data?.received_at) {
+        return { success: false, error: 'Stock Shipment has not been received' }
 
     }
     //getStockShipmentDetails and filter the ones where recieved is set and greater than 0 but shelved is not set or 0..
@@ -342,11 +342,11 @@ export async function getUnshelvedItemsFromStockShipment(vendorId, stockShipment
 }
 
 export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId, item = {}) {
-     // Check if the shipment exists and belongs to the vendor
-     const shipmentExists = await checkShipmentExists(vendorId, stockShipmentId);
-     if (!shipmentExists) {
-         return { success: false, error: 'Shipment not found or does not belong to the vendor' };
-     }
+    // Check if the shipment exists and belongs to the vendor
+    const shipmentExists = await checkShipmentExists(vendorId, stockShipmentId);
+    if (!shipmentExists) {
+        return { success: false, error: 'Shipment not found or does not belong to the vendor' };
+    }
 
     const allowedFields = ['warehouse', 'vendor_sku']
     // Validate the fields in the input object
@@ -371,12 +371,20 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
     updateFields.updated_at = new Date().toISOString();
     updateFields.shelved = 1
 
+    // Format the warehouse object for DynamoDB
+    const formattedWarehouse = {
+        aisle: { S: item.warehouse.aisle },
+        aisle_number: { N: item.warehouse.aisle_number.toString() },
+        shelf: { S: item.warehouse.shelf },
+        shelf_number: { N: item.warehouse.shelf_number.toString() },
+        location_id: { S: item.warehouse.location_id }
+    };
     // Construct the update object for the product item
     const productUpdateFields = {
         updated_at: new Date().toISOString(),
-        warehouse: item.warehouse
+        warehouse: formattedWarehouse
     };
- console.log(productUpdateFields)
+    console.log(productUpdateFields)
     // DynamoDB transaction items
     const transactionItems = [
         {
