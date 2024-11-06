@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { checkShipmentExists } from '@/services/data/stock-shipment';
-import { updateStockShipmentItemReceived } from '@/services/data/stock-shipment-item';
+import { updateStockShipmentItemAsShelved} from '@/services/data/stock-shipment-item';
 
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
@@ -21,11 +21,11 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
             return NextResponse.json({ error: 'vendor_id, stock_shipment_id, and item are required' }, { status: 400 });
         }
 
-        const { vendor_sku, shelve_quantity, warehouse } = item;
+        const { vendor_sku,  warehouse } = item;
 
         // Validate that vendor_sku, received, and faulty fields are present in the item
-        if (!vendor_sku || shelve_quantity === undefined || warehouse === undefined) {
-            return NextResponse.json({ error: 'vendor_sku, shelve_quantity, and warehouse fields are required in the item' }, { status: 400 });
+        if (!vendor_sku  || warehouse === undefined) {
+            return NextResponse.json({ error: 'vendor_sku, and warehouse fields are required in the item' }, { status: 400 });
         }
 
         // Validate the warehouse object
@@ -34,14 +34,9 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
             return NextResponse.json({ error: 'warehouse object must contain shelf, shelf_number, isle, and isle_number fields' }, { status: 400 });
         }
 
-        // Check if the shipment exists and belongs to the vendor
-        const shipmentExists = await checkShipmentExists(vendor_id, stock_shipment_id);
-        if (!shipmentExists) {
-            return NextResponse.json({ error: 'Shipment not found or does not belong to the vendor' }, { status: 404 });
-        }
-
+       
         // Update the stock shipment item
-        const updateResult = await updateStockShipmentItemShelved(vendor_id, stock_shipment_id, { vendor_sku, shelve_quantity, warehouse });
+        const updateResult = await updateStockShipmentItemAsShelved(vendor_id, stock_shipment_id, { vendor_sku, warehouse });
 
 
         if (!updateResult.success) {
