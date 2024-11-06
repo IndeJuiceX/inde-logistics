@@ -304,7 +304,7 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
             vendor_sku: item.vendor_sku,
             stock_in: item.stock_in,
             ...(item.received !== undefined && { received: item.received }),
-            ...(item.shelved !== undefined && { selved: item.received }),
+            ...(item.shelved !== undefined && { shelved: item.shelved }),
             ...productInfo,
         };
     });
