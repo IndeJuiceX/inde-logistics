@@ -173,7 +173,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                 </button>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} classNames={selectedModalItem === 'missingItem' ? 'w-[80%]' : null}>
                 {selectedModalItem === 'missingItem' && (
                     <MissingItem
                         vendor_id={params.vendor_id}

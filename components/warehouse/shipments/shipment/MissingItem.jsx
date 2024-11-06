@@ -1,8 +1,10 @@
 
 
-import React from 'react';
+
+import React, { useLayoutEffect } from 'react';
 import { useEffect, useState, useContext } from "react";
 import { LoadingContext } from '@/contexts/LoadingContext';
+import DropdownSearch from '@/components/warehouse/dropdown/DropdownSearch';
 
 export default function MissingItem({ products }) {
     // loading state
@@ -16,13 +18,49 @@ export default function MissingItem({ products }) {
 
     useEffect(() => {
         console.log('products', products);
-
-        setLoading(false);
-        setLoaded(true);
     }, [products]);
 
+    useLayoutEffect(() => {
+        setLoading(false);
+        setLoaded(true);
+    }, [setLoading, setLoaded]);
+
+    const displayFields = ['name']; // Fields to show in the dropdown
+    const searchFields = ['name']; // Fields to search
+    const valueField = 'id'; // Field to be returned when item is selected
+    const sampleData = [
+        { id: 1, name: 'news', status: 'Active', brand_name: 'Ultimate' },
+        { id: 2, name: 'apple', status: 'Active', brand_name: 'Ultimate Juice vape' },
+        { id: 3, name: 'mango', status: 'Active', brand_name: 'ivg ' },
+        { id: 4, name: 'banana', status: 'Active', brand_name: 'ivg' },
+        { id: 5, name: 'samsung', status: 'Active', brand_name: 'elf bar' },
+        { id: 6, name: 'apple pie', status: 'Active', brand_name: 'elf bar' },
+        { id: 7, name: 'banana ice', status: 'Active', brand_name: 'doozy' },
+        { id: 8, name: 'watermelon', status: 'Active', brand_name: 'doozy' },
+        { id: 9, name: 'watermelon ice', status: 'Active', brand_name: 'doozy' },
+        { id: 10, name: 'lemon', status: 'Active', brand_name: 'doozy' },
+        { id: 11, name: 'lemonade', status: 'Active', brand_name: 'doozy' },
+        { id: 12, name: 'blueberry', status: 'Active', brand_name: 'Ultimate Juice' },
+    ];
+    const handleSelectionChange = (selectedItems) => {
+        console.log('selectedItems', selectedItems);
+    }
     return (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-scroll h-[80%]">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Missing Items</h2>
+            {/* product search box */}
+
+            <DropdownSearch
+                data={sampleData}
+                onSelectionChange={handleSelectionChange}
+                displayFields={displayFields}
+                searchFields={searchFields}
+                valueField={valueField}
+            />
+
+            <div className="mb-4"></div>
+
+
             <table className="min-w-full bg-white border rounded-lg shadow-md">
                 <thead>
                     <tr>
@@ -34,9 +72,10 @@ export default function MissingItem({ products }) {
                 </thead>
                 <tbody>
                     {products.map((product, index) => (
-                        <React.Fragment key={product.id}>
+                        <React.Fragment key={index}>
                             <tr className="hover:bg-gray-100">
                                 <td className="px-6 py-4 border-b">
+                                    {/* eslint-disable-next-line */}
                                     <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded" />
                                 </td>
                                 <td className="px-6 py-4 border-b text-gray-700">{product.name}</td>
