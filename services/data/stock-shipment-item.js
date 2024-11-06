@@ -393,11 +393,11 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     PK: `VENDORSTOCKSHIPMENTITEM#${vendorId}`,
                     SK: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`
                 },
-                UpdateExpression: 'SET #shelved = if_not_exists(#shelved, :shelved), #updated_at = :updated_at',
-                ExpressionAttributeNames: {
-                    '#shelved': 'shelved',
-                    '#updated_at': 'updated_at'
-                },
+                UpdateExpression: 'SET shelved = if_not_exists(shelved, :shelved), updated_at = :updated_at',
+                // ExpressionAttributeNames: {
+                //     '#shelved': 'shelved',
+                //     '#updated_at': 'updated_at'
+                // },
                 ExpressionAttributeValues: {
                     ':shelved': updateFields.shelved,
                     ':updated_at': updateFields.updated_at
@@ -410,11 +410,11 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     PK: `VENDORPRODUCT#${vendorId}`,
                     SK: `PRODUCT#${vendorSku}`
                 },
-                UpdateExpression: 'SET #updated_at = :updated_at, #warehouse = if_not_exists(#warehouse, :warehouse)',
-                ExpressionAttributeNames: {
-                    '#updated_at': 'updated_at',
-                    '#warehouse': 'warehouse'
-                },
+                UpdateExpression: 'SET updated_at = :updated_at, warehouse = if_not_exists(warehouse, :warehouse)',
+                // ExpressionAttributeNames: {
+                //     '#updated_at': 'updated_at',
+                //     '#warehouse': 'warehouse'
+                // },
                 ExpressionAttributeValues: {
                     ':updated_at': productUpdateFields.updated_at,
                     ':warehouse': productUpdateFields.warehouse
