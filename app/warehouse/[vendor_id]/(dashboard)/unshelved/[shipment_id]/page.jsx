@@ -11,7 +11,7 @@ export default async function unShelvedShipmentPage({ params }) {
     let shipmentDetails = []
     let error = null;
     const unshelvedResult = await getUnshelvedItemsFromStockShipment(vendor_id, shipment_id);
-    // console.log('unshelvedResult server', unshelvedResult);
+
     
     if (unshelvedResult.success) {
         shipmentDetails = unshelvedResult.data
