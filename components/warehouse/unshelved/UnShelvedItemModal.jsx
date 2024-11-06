@@ -152,7 +152,7 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
             body: JSON.stringify(payload),
         });
         console.log('update shelved response', response);
-        
+
         // getUpdateUnShelvedShipmentDetails();
         setLoaded(true);
         setLoading(false);
@@ -214,6 +214,7 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
                 <>
                     {/* Display image and other details when no pad is active */}
                     <div className="flex justify-center mb-8 mt-8">
+                        {/* eslint-disable-next-line */}
                         <img
                             src="https://cdn.indejuice.com/images/ZAE_small.jpg"
                             alt="Product"

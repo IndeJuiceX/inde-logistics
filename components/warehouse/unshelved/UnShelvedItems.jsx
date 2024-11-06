@@ -63,6 +63,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails, error = null }
                             {unshelvedItems && unshelvedItems.length > 0 && unshelvedItems.map((item, index) => (
                                 <tr className="hover:bg-gray-50 cursor-pointer border-b border-gray-200" key={index} onClick={() => handleShowItem(item)}>
                                     <td className="py-4 px-4">
+                                        {/* eslint-disable-next-line */}
                                         <img src={item.image} alt={item.name} className="w-12 h-12" />
                                     </td>
                                     <td className="p-4 text-center text-base text-gray-700">{item.name}
