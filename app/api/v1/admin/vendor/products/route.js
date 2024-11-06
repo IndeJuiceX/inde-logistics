@@ -22,13 +22,15 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
     if (!result.success) {
       return NextResponse.json({ error: 'Failed to fetch products', details: result.error }, { status: 500 });
     }
+    // if (searchParams.get('page') && searchParams.get('page_size')) {
 
-    // Paginate results
-    const startIndex = (page - 1) * pageSize;
-    const paginatedData = result.data.slice(startIndex, startIndex + pageSize);
+    //   const startIndex = (page - 1) * pageSize;
+    //   const paginatedData = result.data.slice(startIndex, startIndex + pageSize);
 
-    return NextResponse.json(paginatedData, { status: 200 });
+    //   return NextResponse.json(paginatedData, { status: 200 });
+    // }
+    return NextResponse.json(result.data, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Unexpected server error', details: error.message }, { status: 500 });
   }
-}, ['vendor', 'admin'])
+}, ['vendor', 'admin', 'warehouse']);

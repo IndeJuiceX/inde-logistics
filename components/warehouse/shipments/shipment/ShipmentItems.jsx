@@ -1,20 +1,24 @@
 'use client';
 
-import { useState,useContext } from 'react';
+import { useState, useContext } from 'react';
+import { useParams } from 'next/navigation';
 
 import Modal from '@/components/warehouse/modal/Modal';
 import ItemModal from '@/components/warehouse/shipments/shipment/ItemModal';
 import ShipmentHeader from '@/components/warehouse/ShipmentHeader';
 import PageSpinner from '@/components/loader/PageSpinner';
 import { LoadingContext } from '@/contexts/LoadingContext';
+import MissingItem from '@/components/warehouse/shipments/shipment/MissingItem';
 
 
 export default function ShipmentItems({ vendor, shipmentDetailsData }) {
+    const params = useParams();
     const { setLoading, setLoaded } = useContext(LoadingContext);
     const [shipmentDetails, setShipmentDetails] = useState(shipmentDetailsData)
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [selectedModalItem, setSelectedModalItem] = useState(null);
+    const [AllProducts, setAllProducts] = useState([]);
 
     const attributeKeys = [];
     if (shipmentDetails.items && shipmentDetails.items.length > 0) {
@@ -30,8 +34,10 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     console.log('attributeKeys', attributeKeys);
 
     const handleShowItem = (item) => {
+        setSelectedModalItem('item')
         setSelectedItem(item);
         setIsModalOpen(true);
+
     };
 
     // Check if all items have the 'received' key
@@ -41,16 +47,43 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
             (item) => item.received !== null && item.received !== undefined
         );
 
-    const testClick = () => {
+
+
+    const updateConfirmStock = async () => {
         setLoading(true);
-        setTimeout(() => {
+        console.log('shipmentDetails', shipmentDetails);
+        const payload = {
+            vendor_id: params.vendor_id,
+            stock_shipment_id: params.shipment_id,
+        }
+        console.log('payload', payload);
+        const response = await fetch('/api/v1/admin/stock-shipments/update-stock-shipment', {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        console.log('return response', data);
+        setLoaded(true);
+        setLoading(false);
+
+    }
+
+    const handleMissingItem = async () => {
+        setLoading(true);
+        // app/api/v1/admin/vendor/products/route.js
+        const getAllProducts = await fetch('/api/v1/admin/vendor/products?vendor_id=' + params.vendor_id);
+        if (!getAllProducts.ok) {
+            console.error('Failed to fetch products');
             setLoaded(true);
             setLoading(false);
-        }, 10000);
+            return;
+        }
+        const products = await getAllProducts.json();
+        setAllProducts(products);
+        setSelectedModalItem('missingItem');
+        setIsModalOpen(true);
     }
-    const testClick2 = () => {
-        setLoading('loaded');
-    }
+
     return (
         <>
             <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
@@ -123,8 +156,9 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                     </tbody>
                 </table>
             </div>
+
             <div className="flex flex-col items-center gap-4 mt-16">
-                <button className="w-full px-4 py-2 border border-gray-300 text-gray-500 rounded bg-gray-50" onClick={testClick2} >
+                <button className="w-full px-4 py-2 border border-gray-300 text-gray-500 rounded bg-gray-50" onClick={handleMissingItem} >
                     ADD MISSING ITEM
                 </button>
                 <button
@@ -133,19 +167,29 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                         : 'bg-gray-400 cursor-not-allowed'
                         }`}
                     disabled={!allItemsHaveReceivedKey}
-                    onClick={testClick}
+                    onClick={updateConfirmStock}
                 >
                     UPDATE STOCK
                 </button>
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <ItemModal
-                    itemData={selectedItem}
-                    setIsModalOpen={setIsModalOpen}
-                    items={shipmentDetails.items}
-                    setShipmentDetails={setShipmentDetails}
-                />
+                {selectedModalItem === 'missingItem' && (
+                    <MissingItem
+                        vendor_id={params.vendor_id}
+                        shipment_id={params.shipment_id}
+                        products={AllProducts}
+                    />
+                )}
+                {selectedModalItem === 'item' && (
+                    <ItemModal
+                        itemData={selectedItem}
+                        setIsModalOpen={setIsModalOpen}
+                        items={shipmentDetails.items}
+                        setShipmentDetails={setShipmentDetails}
+                    />
+                )}
+
             </Modal>
         </>
     );
