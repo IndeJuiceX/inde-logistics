@@ -4,10 +4,10 @@ import { useState, useEffect, useContext } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
 import { getStockShipmentDetails } from "@/services/data/stock-shipment";
-import { LoadingContext } from '@/contexts/LoadingContext';
+import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 
 export default function ItemModal({ setIsModalOpen, itemData = null, items = null, setShipmentDetails = null }) {
-    const { setLoading, setLoaded } = useContext(LoadingContext);
+    const { setLoading, setLoaded } = useContext(GlobalStateContext);
     const params = useParams();
 
     // Find the initial index of the itemData in items

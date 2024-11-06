@@ -3,12 +3,12 @@
 
 import React, { useLayoutEffect } from 'react';
 import { useEffect, useState, useContext } from "react";
-import { LoadingContext } from '@/contexts/LoadingContext';
+import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 import DropdownSearch from '@/components/warehouse/dropdown/DropdownSearch';
 
 export default function MissingItem({ products }) {
     // loading state
-    const { setLoading, setLoaded } = useContext(LoadingContext);
+    const { setLoading, setLoaded } = useContext(GlobalStateContext);
 
     const [expandedRow, setExpandedRow] = useState(null);
 

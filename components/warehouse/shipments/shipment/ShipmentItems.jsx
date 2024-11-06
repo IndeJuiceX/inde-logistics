@@ -7,13 +7,13 @@ import Modal from '@/components/warehouse/modal/Modal';
 import ItemModal from '@/components/warehouse/shipments/shipment/ItemModal';
 import ShipmentHeader from '@/components/warehouse/ShipmentHeader';
 import PageSpinner from '@/components/loader/PageSpinner';
-import { LoadingContext } from '@/contexts/LoadingContext';
+import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 import MissingItem from '@/components/warehouse/shipments/shipment/MissingItem';
 
 
 export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const params = useParams();
-    const { setLoading, setLoaded } = useContext(LoadingContext);
+    const { setLoading, setLoaded } = useContext(GlobalStateContext);
     const [shipmentDetails, setShipmentDetails] = useState(shipmentDetailsData)
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);

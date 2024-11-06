@@ -5,12 +5,12 @@ import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
 import AlphabetPad from '@/components/warehouse/keypad/AlphabetPad';
 import ColorPad from '@/components/warehouse/keypad/ColorPad';
-import { LoadingContext } from '@/contexts/LoadingContext';
+import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 
 
 export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, items = null, setUnshelvedItems = null, }) {
     const params = useParams();
-    const { setLoading, setLoaded } = useContext(LoadingContext);
+    const { setLoading, setLoaded } = useContext(GlobalStateContext);
 
     // State variables
     const initialIndex =

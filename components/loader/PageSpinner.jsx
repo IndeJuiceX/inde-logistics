@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useContext } from 'react';
-import { LoadingContext } from '@/contexts/LoadingContext';
+import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 
 export default function PageSpinner() {
-  const { loading, loaded, setLoading, setLoaded } = useContext(LoadingContext);
+  const { loading, loaded, setLoading, setLoaded } = useContext(GlobalStateContext);
   const [state, setState] = useState('');
   // const [isVisible, setIsVisible] = useState(loading);
 

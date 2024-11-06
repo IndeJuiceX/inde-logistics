@@ -4,17 +4,19 @@ import Modal from "@/components/warehouse/modal/Modal";
 import UnShelvedItemModal from "@/components/warehouse/unshelved/UnShelvedItemModal";
 import { useEffect, useState } from "react";
 import ActionButtons from "@/components/warehouse/unshelved/ActionButtons";
+import { useGlobalContext } from "@/contexts/GlobalStateContext";
 
 
 
 
-export default function UnShelvedItems({ vendor, shipmentDetails, error = null }) {
+export default function UnShelvedItems({ vendor, shipmentDetails }) {
+    const { setError, setErrorMessage, setErrorRedirect } = useGlobalContext();
+
     const [unshelvedItems, setUnshelvedItems] = useState(shipmentDetails.items ?? []);
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    console.log('shipmentDetails 22', shipmentDetails);
-    // console.log('vendor', vendor);
+   
     const attributeKeys = [];
     if (unshelvedItems && unshelvedItems.length > 0) {
         unshelvedItems.forEach(item => {
@@ -28,11 +30,13 @@ export default function UnShelvedItems({ vendor, shipmentDetails, error = null }
     }
 
     useEffect(() => {
-        if (error !== null) {
-            console.log('error', error);
-            alert(error);
+        if (shipmentDetails.error) {
+            setError(true);
+            setErrorMessage(shipmentDetails.error);
+            setErrorRedirect(`/warehouse/${vendor.vendor_id}/unshelved`);
         }
-    }, [error]);
+
+    }, [shipmentDetails, setError, setErrorMessage, setErrorRedirect, vendor.vendor_id]);
 
     const handleShowItem = (item) => {
         setSelectedItem(item);

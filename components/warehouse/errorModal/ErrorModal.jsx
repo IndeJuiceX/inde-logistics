@@ -1,20 +1,33 @@
 'use client'
 import React, { useEffect } from 'react';
+import { useGlobalContext } from "@/contexts/GlobalStateContext";
 
-export default function ErrorModal({ message, redirectTo }) {
-
+export default function ErrorModal() {
+    const { error, errorRedirect, errorMessage } = useGlobalContext();
 
     const handleRedirect = () => {
-        window.location = redirectTo;
+        if (errorRedirect) {
+            window.location = errorRedirect;
+        } else {
+            window.location.reload();
+        }
     };
-    useEffect(() => {
-        const body = document.body;
-        body.style.overflow = 'hidden';
 
-        return () => {
-            body.style.overflow = '';
-        };
-    }, []);
+    useEffect(() => {
+        if (error) {
+            const body = document.body;
+            body.style.overflow = 'hidden';
+
+            return () => {
+                body.style.overflow = '';
+            };
+        }
+    }, [error]);
+
+    if (!error) {
+        return null;
+    }
+
     return (
         <>
             <div className="fixed inset-0 h-screen bg-black bg-opacity-40 z-[3001] backdrop-blur-sm">
@@ -23,8 +36,7 @@ export default function ErrorModal({ message, redirectTo }) {
                         Error
                     </div>
                     <div className="text-sm text-black text-opacity-80 p-16 text-center">
-
-                        {message}
+                        {errorMessage}
                     </div>
                     <button
                         className="absolute bottom-5 left-5 right-5 w-auto text-center text-sm font-light text-white bg-gradient-to-b from-black via-black/60 to-black rounded-md py-2 border-b-2 border-black/20 hover:bg-opacity-80 transition duration-700"
@@ -34,11 +46,6 @@ export default function ErrorModal({ message, redirectTo }) {
                     </button>
                 </div>
             </div>
-
-
         </>
-
     );
-
-
-};
+}
