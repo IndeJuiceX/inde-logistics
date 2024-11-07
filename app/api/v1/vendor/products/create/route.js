@@ -13,6 +13,7 @@ const MAX_PRODUCTS = 500;  // Max products allowed in a batch
 export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract API token from headers
+        const { searchParams } = new URL(request.url);
 
         let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
         if (!vendorId) {

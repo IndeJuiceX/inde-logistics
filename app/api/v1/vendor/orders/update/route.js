@@ -7,6 +7,7 @@ import { getVendorIdFromRequest } from '@/services/utils';
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract authentication details
+        const { searchParams } = new URL(request.url);
 
         let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
