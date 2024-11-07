@@ -14,7 +14,12 @@ import MissingItem from '@/components/warehouse/shipments/shipment/MissingItem';
 export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const params = useParams();
     const { setLoading, setLoaded } = useContext(GlobalStateContext);
-    const [shipmentDetails, setShipmentDetails] = useState(shipmentDetailsData)
+    const [shipmentDetails, setShipmentDetails] = useState({
+        ...shipmentDetailsData,
+        items: shipmentDetailsData.items.sort((a, b) =>
+            a.vendor_sku.localeCompare(b.vendor_sku)
+        ),
+    });
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedModalItem, setSelectedModalItem] = useState(null);
@@ -180,7 +185,6 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                         setShipmentDetails={setShipmentDetails}
                     />
                 )}
-
             </Modal>
         </>
     );

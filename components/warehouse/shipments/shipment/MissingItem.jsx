@@ -26,6 +26,10 @@ export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, se
 
     const handleProductSearch = (e) => {
         const searchQuery = e.target.value.toLowerCase();
+        if (!searchQuery) {
+            setProducts([]);
+            return;
+        }
         const filteredProducts = globalProducts.filter((product) => {
             const name = product.name?.toLowerCase() || "";
             const sku = product.sku?.toLowerCase() || "";
@@ -68,8 +72,16 @@ export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, se
             return;
         }
         console.log('updateShipmentItems', updateShipmentItems);
-
-        setShipmentDetails(updateShipmentItems.data);
+        updateShipmentItems.data.items.sort((a, b) => {
+            return a.vendor_sku.localeCompare(b.vendor_sku);
+        });
+        const shipmentsDetails = updateShipmentItems.data;
+        setShipmentDetails({
+            ...shipmentsDetails,
+            items: shipmentsDetails.items.sort((a, b) =>
+                a.vendor_sku.localeCompare(b.vendor_sku)
+            ),
+        });
         console.log('return response', data);
         setLoading(false);
         setLoaded(true);
