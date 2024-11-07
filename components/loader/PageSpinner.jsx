@@ -1,29 +1,36 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 
 export default function PageSpinner() {
   const { loading, loaded, setLoading, setLoaded } = useContext(GlobalStateContext);
   const [state, setState] = useState('');
-  // const [isVisible, setIsVisible] = useState(loading);
 
+  // Handle state transitions
   useEffect(() => {
-    if (loading === true && loaded === false) {
-      // Transition to 'loaded' after 3 seconds
+    if (loading && !loaded) {
       setState('loading');
-      // setTimeout(() => setState('loading'), 3000);
-    } else if (loading === false && loaded === true) {
+    } else if (!loading && loaded) {
       setState('loaded');
-      setTimeout(() => setState('complete'), 2000);
+      const timer = setTimeout(() => {
+        setState('complete');
+      }, 2000); // Delay before transitioning to 'complete'
+
+      return () => clearTimeout(timer); // Clean up timer
     }
   }, [loading, loaded]);
 
-  // if (!isVisible) {
-  //   return null; // Unmount the component
-  // }
+  // Handle cleanup when the spinner is complete
+  useEffect(() => {
+    if (state === 'complete') {
+      setLoaded(false);
+      setLoading(false);
+      setState(''); // Reset spinner state
+    }
+  }, [state, setLoaded, setLoading]);
 
+  // Spinner class management
   const spinnerBaseClass =
     'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-cover';
 
@@ -33,14 +40,10 @@ export default function PageSpinner() {
     spinnerClass = `${spinnerBaseClass} bg-[url('https://cdn.indejuice.com/img/icons/page-spinner-loader.png')] animate-spin opacity-100`;
   } else if (state === 'loaded') {
     spinnerClass = `${spinnerBaseClass} bg-[url('https://cdn.indejuice.com/img/icons/page-spinner-loaded.png')] animate-reverseSpin opacity-100 transition-opacity duration-400`;
-  } else if (state === 'complete') {
-    setState('');
-    setLoaded(false);
-    setLoading(false);
-    return null;
-    // spinnerClass = `${spinnerBaseClass} opacity-0 transition-opacity duration-400`;
-  } else {
-    return null;
+  }
+
+  if (!state) {
+    return null; // Do not render the spinner when there's no state
   }
 
   return (
