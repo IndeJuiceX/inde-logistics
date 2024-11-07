@@ -1,15 +1,22 @@
 'use client'
 import React, { useEffect } from 'react';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
+import { useRouter } from 'next/navigation';
 
 export default function ErrorModal() {
-    const { error, errorRedirect, errorMessage } = useGlobalContext();
+    const router = useRouter();
+    const { setError, error, errorRedirect, errorMessage } = useGlobalContext();
 
     const handleRedirect = () => {
+        setError(false);
         if (errorRedirect) {
-            window.location = errorRedirect;
+
+            // window.location = errorRedirect;
+            router.push(errorRedirect);
         } else {
-            window.location.reload();
+            // window.location.reload();
+            router.reload();
+            setError(false);
         }
     };
 
