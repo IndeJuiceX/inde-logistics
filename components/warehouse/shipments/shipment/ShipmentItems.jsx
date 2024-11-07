@@ -168,6 +168,8 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                     <MissingItem
                         vendor_id={params.vendor_id}
                         shipment_id={params.shipment_id}
+                        setIsModalOpen={setIsModalOpen}
+                        setShipmentDetails={setShipmentDetails}
                     />
                 )}
                 {selectedModalItem === 'item' && (

@@ -11,7 +11,7 @@ export default function GlobalProductLoad() {
     const { globalProducts, setGlobalProducts } = useGlobalContext();
 
     useEffect(() => {
-        
+
         const fetchGlobalProducts = async () => {
             const result = await queryItemsWithPkAndSk(`VENDORPRODUCT#${params.vendor_id}`, 'PRODUCT#');
             if (result.success) {
@@ -23,6 +23,7 @@ export default function GlobalProductLoad() {
             console.log('Global Product Loading');
             fetchGlobalProducts();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 

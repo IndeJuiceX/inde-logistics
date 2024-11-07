@@ -65,7 +65,7 @@ export default function SearchableDropdown({ products, onSelectedBrand }) {
                     onChange={(e) => handleSearchTerm(e.target.value)}
                     placeholder="Type to search..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-300 text-black"
-                    autoComplete=''
+                    autoComplete="off"
                 />
 
                 {/* Dropdown - only show if query is not empty */}

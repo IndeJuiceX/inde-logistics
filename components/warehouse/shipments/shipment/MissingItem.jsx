@@ -2,9 +2,11 @@ import React, { useState, useContext } from "react";
 import { GlobalStateContext } from "@/contexts/GlobalStateContext";
 import SearchableDropdown from "@/components/warehouse/dropdown/SearchableDropdown";
 
-export default function MissingItem({ vendor_id, shipment_id }) {
+
+
+export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, setShipmentDetails }) {
     // Loading state
-    const { globalProducts } = useContext(GlobalStateContext);
+    const { globalProducts, setError, setErrorMessage, setLoading, setLoaded } = useContext(GlobalStateContext);
 
     const [expandedRow, setExpandedRow] = useState(null);
     const [products, setProducts] = useState(globalProducts);
@@ -32,6 +34,50 @@ export default function MissingItem({ vendor_id, shipment_id }) {
         setProducts(filteredProducts);
     };
 
+    const handleAddMissingItem = async (product) => {
+        setLoading(true);
+        console.log('selected product', shipment_id);
+        const payload = {
+            stock_shipment_id: shipment_id,
+            items: [
+                {
+                    vendor_sku: product.vendor_sku,
+                    stock_in: 0,
+                }
+            ]
+        }
+        // http://localhost:3002/api/v1/vendor/stock-shipments/add-item?stock_shipment_id=b71m379s
+        const response = await fetch(`/api/v1/vendor/stock-shipments/add-item?vendor_id=${vendor_id}&stock_shipment_id=${shipment_id}`, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (data.error) {
+            console.error('Error adding item to shipment');
+            setError(true);
+            setErrorMessage(data.error);
+            return;
+        }
+        // app/api/v1/vendor/stock-shipments/route.js
+        const getUpdateShipmentItems = await fetch(`/api/v1/vendor/stock-shipments?vendor_id=${vendor_id}&stock_shipment_id=${shipment_id}`);
+        const updateShipmentItems = await getUpdateShipmentItems.json();
+        if (updateShipmentItems.error) {
+            console.error('Error fetching updated shipment items');
+            setError(true);
+            setErrorMessage(updateShipmentItems.error);
+            return;
+        }
+        console.log('updateShipmentItems', updateShipmentItems);
+
+        setShipmentDetails(updateShipmentItems.data);
+        console.log('return response', data);
+        setLoading(false);
+        setLoaded(true);
+
+        setIsModalOpen(false);
+        //
+    }
+
     return (
         <div className="h-[80%]">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">
@@ -50,7 +96,7 @@ export default function MissingItem({ vendor_id, shipment_id }) {
                         id="tableSearch"
                         className="border rounded px-2 py-1 w-full text-black"
                         onChange={handleProductSearch}
-                        autoComplete=""
+                        autoComplete="off"
                     />
                 </div>
             )}
@@ -108,7 +154,7 @@ export default function MissingItem({ vendor_id, shipment_id }) {
                                             </button>
                                             <button
                                                 className="bg-blue-500 text-white px-4 py-2 rounded"
-                                                onClick={() => toggleExpand(index)}
+                                                onClick={() => handleAddMissingItem(product)}
                                             >
                                                 Add to Shipment
                                             </button>

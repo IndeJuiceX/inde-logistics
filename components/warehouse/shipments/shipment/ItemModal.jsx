@@ -190,6 +190,7 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
             {activeField === null ? (
                 <>
                     <div className="flex justify-center mt-4">
+                        {/* eslint-disable-next-line */}
                         <img src="https://cdn.indejuice.com/images/ZAE_small.jpg" alt="Product" className="w-[18rem] h-auto" />
                     </div>
 
