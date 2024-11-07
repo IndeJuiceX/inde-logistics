@@ -14,6 +14,10 @@ export const GlobalStateProvider = ({ children }) => {
     const [errorRedirect, setErrorRedirect] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
 
+
+    // Globally assign the selected vender products
+    const [globalProducts, setGlobalProducts] = useState([]);
+
     // // Functions to control loading state
     // const showLoading = () => setLoading(true);
     // const hideLoading = () => setLoading(false);
@@ -28,7 +32,7 @@ export const GlobalStateProvider = ({ children }) => {
     return (
         <GlobalStateContext.Provider
             value={
-                { loading, loaded, setLoading, setLoaded, error, setError, errorMessage, setErrorMessage, errorRedirect, setErrorRedirect }
+                { loading, loaded, setLoading, setLoaded, error, setError, errorMessage, setErrorMessage, errorRedirect, setErrorRedirect, globalProducts, setGlobalProducts }
             }>
             {children}
         </GlobalStateContext.Provider>

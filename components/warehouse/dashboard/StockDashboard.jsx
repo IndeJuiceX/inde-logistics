@@ -3,8 +3,10 @@ import TapMenu from "@/components/warehouse/dashboard/TapMenu";
 import { GlobalStateProvider } from "@/contexts/GlobalStateContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
 import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
+import GlobalProductLoad from "@/components/warehouse/GlobalProductLoad";
 
 export default function StockDashboard({ children }) {
+
     return (
         // <LoadingProvider>
         <GlobalStateProvider>
@@ -12,6 +14,7 @@ export default function StockDashboard({ children }) {
                 <TapMenu />
                 <PageSpinner />
                 <ErrorModal />
+                <GlobalProductLoad />
                 {children}
             </div>
         </GlobalStateProvider>

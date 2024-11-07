@@ -18,7 +18,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedModalItem, setSelectedModalItem] = useState(null);
-    const [AllProducts, setAllProducts] = useState([]);
+
 
     const attributeKeys = [];
     if (shipmentDetails.items && shipmentDetails.items.length > 0) {
@@ -31,7 +31,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
             });
         });
     }
-    console.log('attributeKeys', attributeKeys);
+    // console.log('attributeKeys', attributeKeys);
 
     const handleShowItem = (item) => {
         setSelectedModalItem('item')
@@ -69,17 +69,6 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     }
 
     const handleMissingItem = async () => {
-        setLoading(true);
-        // app/api/v1/admin/vendor/products/route.js
-        const getAllProducts = await fetch('/api/v1/admin/vendor/products?vendor_id=' + params.vendor_id);
-        if (!getAllProducts.ok) {
-            console.error('Failed to fetch products');
-            setLoaded(true);
-            setLoading(false);
-            return;
-        }
-        const products = await getAllProducts.json();
-        setAllProducts(products);
         setSelectedModalItem('missingItem');
         setIsModalOpen(true);
     }
@@ -119,6 +108,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                                     onClick={() => handleShowItem(item)}
                                 >
                                     <td className="py-4 px-4">
+                                        {/* eslint-disable-next-line */}
                                         <img src={item.image} alt={item.name} className="w-12 h-12" />
                                     </td>
                                     <td className="py-4 px-4 flex items-center space-x-2">
@@ -178,7 +168,6 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                     <MissingItem
                         vendor_id={params.vendor_id}
                         shipment_id={params.shipment_id}
-                        products={AllProducts}
                     />
                 )}
                 {selectedModalItem === 'item' && (

@@ -1,113 +1,138 @@
+import React, { useState, useContext } from "react";
+import { GlobalStateContext } from "@/contexts/GlobalStateContext";
+import SearchableDropdown from "@/components/warehouse/dropdown/SearchableDropdown";
 
-
-
-import React, { useLayoutEffect } from 'react';
-import { useEffect, useState, useContext } from "react";
-import { GlobalStateContext } from '@/contexts/GlobalStateContext';
-import DropdownSearch from '@/components/warehouse/dropdown/DropdownSearch';
-
-export default function MissingItem({ products }) {
-    // loading state
-    const { setLoading, setLoaded } = useContext(GlobalStateContext);
+export default function MissingItem({ vendor_id, shipment_id }) {
+    // Loading state
+    const { globalProducts } = useContext(GlobalStateContext);
 
     const [expandedRow, setExpandedRow] = useState(null);
+    const [products, setProducts] = useState(globalProducts);
+    const [selectedBrand, setSelectedBrand] = useState(null);
 
     const toggleExpand = (index) => {
         setExpandedRow(expandedRow === index ? null : index);
     };
 
-    useEffect(() => {
-        console.log('products', products);
-    }, [products]);
+    const handleSelectedBrand = (brand) => {
+        const filteredProducts = globalProducts.filter(
+            (product) => product.brand_name === brand
+        );
+        setProducts(filteredProducts);
+        setSelectedBrand(brand);
+    };
 
-    useLayoutEffect(() => {
-        setLoading(false);
-        setLoaded(true);
-    }, [setLoading, setLoaded]);
+    const handleProductSearch = (e) => {
+        const searchQuery = e.target.value.toLowerCase();
+        const filteredProducts = globalProducts.filter((product) => {
+            const name = product.name?.toLowerCase() || "";
+            const sku = product.sku?.toLowerCase() || "";
+            return name.includes(searchQuery) || sku.includes(searchQuery);
+        });
+        setProducts(filteredProducts);
+    };
 
-    const displayFields = ['name']; // Fields to show in the dropdown
-    const searchFields = ['name']; // Fields to search
-    const valueField = 'id'; // Field to be returned when item is selected
-    const sampleData = [
-        { id: 1, name: 'news', status: 'Active', brand_name: 'Ultimate' },
-        { id: 2, name: 'apple', status: 'Active', brand_name: 'Ultimate Juice vape' },
-        { id: 3, name: 'mango', status: 'Active', brand_name: 'ivg ' },
-        { id: 4, name: 'banana', status: 'Active', brand_name: 'ivg' },
-        { id: 5, name: 'samsung', status: 'Active', brand_name: 'elf bar' },
-        { id: 6, name: 'apple pie', status: 'Active', brand_name: 'elf bar' },
-        { id: 7, name: 'banana ice', status: 'Active', brand_name: 'doozy' },
-        { id: 8, name: 'watermelon', status: 'Active', brand_name: 'doozy' },
-        { id: 9, name: 'watermelon ice', status: 'Active', brand_name: 'doozy' },
-        { id: 10, name: 'lemon', status: 'Active', brand_name: 'doozy' },
-        { id: 11, name: 'lemonade', status: 'Active', brand_name: 'doozy' },
-        { id: 12, name: 'blueberry', status: 'Active', brand_name: 'Ultimate Juice' },
-    ];
-    const handleSelectionChange = (selectedItems) => {
-        console.log('selectedItems', selectedItems);
-    }
     return (
-        <div className="overflow-x-auto overflow-y-scroll h-[80%]">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Missing Items</h2>
-            {/* product search box */}
+        <div className="h-[80%]">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                Missing Items
+            </h2>
 
-            <DropdownSearch
-                data={sampleData}
-                onSelectionChange={handleSelectionChange}
-                displayFields={displayFields}
-                searchFields={searchFields}
-                valueField={valueField}
-            />
+            <SearchableDropdown products={products} onSelectedBrand={handleSelectedBrand} />
 
-            <div className="mb-4"></div>
+            {selectedBrand && (
+                <div className="mb-4">
+                    <label htmlFor="tableSearch" className="block text-gray-700 font-semibold mb-2">
+                        Search by Name or SKU
+                    </label>
+                    <input
+                        type="search"
+                        id="tableSearch"
+                        className="border rounded px-2 py-1 w-full text-black"
+                        onChange={handleProductSearch}
+                        autoComplete=""
+                    />
+                </div>
+            )}
 
-
-            <table className="min-w-full bg-white border rounded-lg shadow-md">
-                <thead>
-                    <tr>
-                        <th className="px-6 py-4 text-left text-gray-600 font-semibold border-b">Product Image</th>
-                        <th className="px-6 py-4 text-left text-gray-600 font-semibold border-b">Product Name</th>
-                        <th className="px-6 py-4 text-left text-gray-600 font-semibold border-b">Quantity</th>
-                        <th className="px-6 py-4 text-left text-gray-600 font-semibold border-b">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {products.map((product, index) => (
-                        <React.Fragment key={index}>
-                            <tr className="hover:bg-gray-100">
-                                <td className="px-6 py-4 border-b">
-                                    {/* eslint-disable-next-line */}
-                                    <img src={product.image} alt={product.name} className="w-16 h-16 object-cover rounded" />
-                                </td>
-                                <td className="px-6 py-4 border-b text-gray-700">{product.name}</td>
-                                <td className="px-6 py-4 border-b text-gray-700">{product.quantity}</td>
-                                <td className="px-6 py-4 border-b">
-                                    <button
-                                        className="text-blue-500 font-medium hover:underline"
-                                        onClick={() => toggleExpand(index)}
-                                    >
-                                        {expandedRow === index ? "Show Less" : "Show More"}
-                                    </button>
-                                </td>
-                            </tr>
-                            {expandedRow === index && (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-4 border-b bg-gray-50">
-                                        <div className="p-4">
-                                            <h4 className="text-lg font-semibold text-gray-700 mb-2">Additional Details</h4>
-                                            <p className="text-gray-600">
-                                                <span className="font-semibold">Attributes:</span> {product.attributes}
-                                            </p>
-                                            <p className="text-gray-600 mt-2">
-                                                <span className="font-semibold">Current Stock:</span> {product.currentStock}
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </React.Fragment>
-                    ))}
-                </tbody>
-            </table>
+            <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border rounded-lg shadow-md">
+                    <thead>
+                        <tr>
+                            <th className="px-6 py-4 text-center text-gray-600 font-semibold border-b">
+                                Product Image
+                            </th>
+                            <th className="px-6 py-4 text-center text-gray-600 font-semibold border-b">
+                                SKU
+                            </th>
+                            <th className="px-6 py-4 text-center text-gray-600 font-semibold border-b">
+                                Product Name
+                            </th>
+                            <th className="px-6 py-4 text-center text-gray-600 font-semibold border-b">
+                                Quantity
+                            </th>
+                            <th className="px-6 py-4 text-center text-gray-600 font-semibold border-b">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {selectedBrand &&
+                            products &&
+                            products.map((product, index) => (
+                                <React.Fragment key={index}>
+                                    <tr className="hover:bg-gray-100">
+                                        <td className="px-6 py-4 border-b">
+                                            {/* eslint-disable-next-line */}
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-16 h-16 object-cover rounded"
+                                            />
+                                        </td>
+                                        <td className="px-6 py-4 border-b text-gray-700">
+                                            {product.vendor_sku}
+                                        </td>
+                                        <td className="px-6 py-4 border-b text-gray-700">
+                                            {product.name}
+                                        </td>
+                                        <td className="px-6 py-4 border-b text-gray-700">
+                                            {product.stock_available}
+                                        </td>
+                                        <td className="px-6 py-4 border-b">
+                                            <button
+                                                className="text-blue-500 underline mr-4"
+                                                onClick={() => toggleExpand(index)}
+                                            >
+                                                {expandedRow === index ? "Show Less" : "Show More"}
+                                            </button>
+                                            <button
+                                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                                onClick={() => toggleExpand(index)}
+                                            >
+                                                Add to Shipment
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {expandedRow === index && (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-4 border-b bg-gray-50">
+                                                <div className="mt-2">
+                                                    {Object.entries(product.attributes).map(([key, value]) => (
+                                                        <p key={key} className="text-gray-600">
+                                                            <span className="font-semibold">{key}:</span>{" "}
+                                                            {Array.isArray(value) ? value.join(", ") : value}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
