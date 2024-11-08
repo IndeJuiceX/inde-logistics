@@ -54,7 +54,7 @@ const queryItems = async (params) => {
 
     try {
         const data = await client.send(new QueryCommand(queryParams));
-        const hasMore = !!data.lastEvaluatedKey;
+        const hasMore = !!data?.lastEvaluatedKey;
 
         return {
             success: true,
