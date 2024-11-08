@@ -54,10 +54,13 @@ const queryItems = async (params) => {
 
     try {
         const data = await client.send(new QueryCommand(queryParams));
+        const hasMore = !!data?.lastEvaluatedKey;
+
         return {
             success: true,
             data: data.Items,
             lastEvaluatedKey: data.LastEvaluatedKey || null,
+            hasMore :hasMore
         };
     } catch (error) {
         console.error('DynamoDB QueryItems Error:', error);
