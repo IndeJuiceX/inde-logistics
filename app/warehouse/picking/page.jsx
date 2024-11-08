@@ -28,6 +28,7 @@ export default function PickingPage() {
                 {/* Image and Quantity Section */}
                 <div className="flex justify-between mb-4">
                     <div>
+                        {/* eslint-disable-next-line */}
                         <img src="https://cdn.indejuice.com/images/06r.jpg" alt="Mad Eyes Product" className="w-24 h-24 mb-2" />
                         <p className="text-gray-600">This product contains nicotine which is a highly addictive substance.</p>
                     </div>
@@ -50,6 +51,8 @@ export default function PickingPage() {
                         <p className="text-gray-600">1 Container</p>
                     </div>
                     <div className="flex flex-col items-center">
+
+                        {/* eslint-disable-next-line */}
                         <img src="barcode.png" alt="Barcode" className="w-32 h-auto mb-2" />
                         <p className="text-gray-600">X-6836</p>
                     </div>
