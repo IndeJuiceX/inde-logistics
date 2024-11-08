@@ -2,7 +2,7 @@
 import { getItem, queryItems, putItem, deleteItem, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
-export const getProductById = async (vendorId, productUUID, excludeFields=[]) => {
+export const getProductById = async (vendorId, productUUID, excludeFields = []) => {
     const data = await getItem(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${productUUID}`);
     if (data.success && data.data) {
         data.data = cleanResponseData(data.data, excludeFields)
@@ -29,7 +29,10 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
 export async function getVendorProductsByName(vendorId, name) {
     const params = {
         IndexName: 'product_name_index',  // Your GSI's name in DynamoDB
-        KeyConditionExpression: 'pk = :pk AND name = :productName',
+        KeyConditionExpression: 'pk = :pk AND #productName = :productName',
+        ExpressionAttributeNames: {
+            '#productName': 'name'
+        },
         ExpressionAttributeValues: {
             ':pk': `VENDORPRODUCT#${vendorId}`,  // Partition key (pk)
             ':productName': name,  // Sort key (vendor_sku)
@@ -38,24 +41,24 @@ export async function getVendorProductsByName(vendorId, name) {
     return await queryItems(params);
 }
 
-export const searchProducts = async (vendorId, query, queryBy='name') => {
+export const searchProducts = async (vendorId, query, queryBy = 'name') => {
     // Calculate the `from` value to skip the appropriate number of documents
-    if(query) {
-        if(queryBy=='vendor_sku') {
+    if (query) {
+        if (queryBy == 'vendor_sku') {
             const queryRes = await queryItemsWithPkAndSk(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${query}`)
-            if(queryRes.success) {
-                return {success : true, data : queryRes.data}
+            if (queryRes.success) {
+                return { success: true, data: queryRes.data }
             }
         }
-        const resp = await getVendorProductsByName(vendorId,query)
-        if(resp.success) {
-            return {success:true, data: resp.data}
+        const resp = await getVendorProductsByName(vendorId, query)
+        if (resp.success) {
+            return { success: true, data: resp.data }
         }
-        return{success:false , error : 'Product Search failed.'}
+        return { success: false, error: 'Product Search failed.' }
 
     }
-    return{success:false , error : 'Query cannot be empty'}
-   
+    return { success: false, error: 'Query cannot be empty' }
+
 };
 
 export const checkProductExists = async (vendorId, vendor_sku) => {
