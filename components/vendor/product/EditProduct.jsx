@@ -56,7 +56,8 @@ export default function EditProduct({ vendorId, productId }) {
         const payload = {
             products: [updatedProduct],
         };
-
+        console.log('payload', payload);
+        
         try {
             // const response = await fetch(`/api/v1/vendor/update-products?vendorId=${vendorId}`, {
             //     method: 'PUT',
@@ -99,27 +100,42 @@ export default function EditProduct({ vendorId, productId }) {
     const handleAttributesChange = (e) => {
         const { name, value } = e.target;
 
-        let updatedValue = value;
+        let updatedFields = {};
 
-        // if (name === 'nicotine') {
-        //     // If nicotine, convert the string to an array of strings
-        //     updatedValue = value.split(',').map((item) => item.trim());
-        // }
+        if (name === 'nicotine') {
+            // Split the value into an array
+            const nicotineValues = value.split(',').map((item) => item.trim());
+
+            // Remove the existing nicotine attribute
+            const { nicotine, ...restAttributes } = product.attributes;
+
+            // Create new attributes for each nicotine value
+            nicotineValues.forEach((nicotineValue, index) => {
+                restAttributes[`nicotine${index === 0 ? '' : `-${index}`}`] = nicotineValue;
+            });
+
+            updatedFields = {
+                ...product,
+                attributes: restAttributes,
+            };
+        } else {
+            updatedFields = {
+                ...product,
+                attributes: {
+                    ...(product.attributes || {}),
+                    [name]: value,
+                },
+            };
+        }
 
         setUpdatedFields((prevFields) => ({
             ...prevFields,
-            attributes: {
-                ...(prevFields.attributes || {}),
-                [name]: updatedValue,
-            },
+            attributes: updatedFields.attributes,
         }));
 
         setProduct((prevProduct) => ({
             ...prevProduct,
-            attributes: {
-                ...prevProduct.attributes,
-                [name]: updatedValue,
-            },
+            attributes: updatedFields.attributes,
         }));
     };
 
