@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -10,6 +12,10 @@ export default function VendorMenu({ vendorId, vendorName }) {
     { name: 'Stock Shipments', href: `/admin/vendors/${vendorId}/shipments` },
     { name: 'Users', href: `/admin/vendors/${vendorId}/users` },
   ];
+
+  
+
+
 
   return (
     <div className="flex justify-between items-center bg-gray-800 text-white px-6 py-3 rounded-t-lg shadow-md">
