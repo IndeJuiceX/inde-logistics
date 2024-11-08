@@ -20,9 +20,10 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     if (lastEvaluatedKey) {
-      options.lastEvaluatedKey = lastEvaluatedKey
+      options.lastEvaluatedKey = JSON.parse(Buffer.from(lastEvaluatedKey, 'base64').toString('utf-8'));
+
     }
-    options.limit=limit
+    options.limit = limit
 
     if (!query || !queryBy) {
       return NextResponse.json({ error: 'q and query_by parameters are required' }, { status: 400 });
@@ -37,8 +38,8 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
       return NextResponse.json({
         success: true,
         data: result.data,
-        last_evaluated_key: result.lastEvaluatedKey,
-        has_more : result.hasMore
+        last_evaluated_key: Buffer.from(JSON.stringify(result.lastEvaluatedKey)).toString('base64'),
+        has_more: result.hasMore
 
       }, { status: 200 });
     }
@@ -51,4 +52,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
   } catch (error) {
     return NextResponse.json({ error: 'Unexpected server error', details: error.message }, { status: 500 });
   }
-}, ['admin', 'warehouse'])
+}, ['vendor', 'admin', 'warehouse'])
