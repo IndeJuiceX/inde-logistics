@@ -26,13 +26,13 @@ export default function StockShipments({ vendorId }) {
                         `/api/v1/vendor/stock-shipments?page=${page}&page_size=${pageSize}`
                     );
                     const data = await response.json();
-                    console.log('API Response:', data);
+                    // console.log('API Response:', data);
 
                     if (data.success) {
                         setShipments(data.data);
 
                         // Calculate total pages based on total items and page size
-                        // const totalItems = data.pagination.total;
+                        const totalItems = data.data.length;
                         setTotalResults(totalItems);
                         setTotalPages(Math.ceil(totalItems / pageSize));
                     } else {
