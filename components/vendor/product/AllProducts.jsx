@@ -12,7 +12,7 @@ import ProductSearchByFields from '@/components/vendor/product/ProductSearchByFi
 
 export default function AllProducts({ vendorId, totalProductsData }) {
   const router = useRouter(); // Use Next.js router for navigation
-  console.log('totalProductsData:', totalProductsData);
+  // console.log('totalProductsData:', totalProductsData);
   
   const [products, setProducts] = useState(totalProductsData); // Products to display on the current page
   const [loading, setLoading] = useState(false);
