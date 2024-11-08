@@ -26,7 +26,7 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
     return await queryItems(params);
 };
 
-export async function getVendorProductsByName(vendorId, name) {
+export async function getVendorProductsByName(vendorId, name,options={}) {
     const capitalizedName = capitalizeWords(name)
     const params = {
         IndexName: 'product_name_index',  // Your GSI's name in DynamoDB
@@ -39,26 +39,37 @@ export async function getVendorProductsByName(vendorId, name) {
             ':pk': `VENDORPRODUCT#${vendorId}`,  // Sort key (pk)
         },
     };
+    if(options?.lastEvaluatedKey) {
+        params.ExclusiveStartKey=lastEvaluatedKey
+    }
     const data = await queryItems(params);
     if(data && data.success) {
-        return {success: true , data: cleanResponseData(data.data)}
+       return {success: true , data: cleanResponseData(data.data), lastEvaluatedKey: data.lastEvaluatedKey}
     }
     return {success : false, error:data.error}
    
 }
 
-export const searchProducts = async (vendorId, query, queryBy = 'name') => {
+export const searchProducts = async (vendorId, query, queryBy = 'name', options) => {
     // Calculate the `from` value to skip the appropriate number of documents
     if (query) {
         if (queryBy == 'vendor_sku') {
-            const queryRes = await queryItemsWithPkAndSk(`VENDORPRODUCT#${vendorId}`, `PRODUCT#${query}`)
+            const params = {
+                KeyConditionExpression: 'pk = :pk AND begins_with(sk, :skPrefix)',
+                ExpressionAttributeValues: {
+                    ':skPrefix': query,  // Partition key (name)
+                    ':pk': `VENDORPRODUCT#${vendorId}`,  // Sort key (pk)
+                },
+            };
+            if(options?.lastEvaluatedKey) {
+                params.ExclusiveStartKey=lastEvaluatedKey
+            }
+            const queryRes = await queryItems(params)
             if (queryRes.success) {
                 return { success: true, data: queryRes.data }
             }
         }
-        const resp = await getVendorProductsByName(vendorId, query)
-        console.log('search response ', resp);
-
+        const resp = await getVendorProductsByName(vendorId, query, options)
         if (resp.success) {
             return { success: true, data: resp.data }
         }
