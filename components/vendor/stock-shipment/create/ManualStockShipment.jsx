@@ -9,6 +9,7 @@ import ItemsInShipment from '@/components/ItemsInShipment';
 import ProductList from '@/components/ProductList';
 import PaginationControls from '@/components/PaginationControls';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
+import ProductSearchByFields from '@/components/vendor/product/ProductSearchByFields';
 
 
 export default function ManualStockShipment({ vendorId }) {
@@ -231,12 +232,21 @@ export default function ManualStockShipment({ vendorId }) {
                     {/* Header and Search */}
                     <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
                         <h1 className="text-3xl font-bold">Create Manual Stock Shipment</h1>
-                        <SearchBar
+                        {/* <SearchBar
                             searchTerm={searchTerm}
                             setSearchTerm={setSearchTerm}
                             onSearch={handleProductSearch}
                             onClear={handleClearSearch}
+                        /> */}
+
+                        <ProductSearchByFields
+                            vendorId={vendorId}
+                            setProducts={setProducts}
+                            setTotalProducts={setTotalResults}
+                            clearSearch={true}
+                            onClearSearch={fetchProducts}
                         />
+
                     </div>
 
                     {/* Applied Filters */}
@@ -260,6 +270,11 @@ export default function ManualStockShipment({ vendorId }) {
                         </div>
                     )}
                     <div className="flex justify-end mt-8">
+                        {totalResults > 0 && (
+                            <span className="mr-4 text-gray-700">
+                                Total Search Products: {totalResults}
+                            </span>
+                        )}
                         <button
                             className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
                             onClick={handleSaveShipment}

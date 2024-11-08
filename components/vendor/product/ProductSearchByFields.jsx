@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function ProductSearchByFields({ vendorId, setProducts, setTotalProducts }) {
+export default function ProductSearchByFields({ vendorId, setProducts, setTotalProducts, clearSearch = false, onClearSearch }) {
     const [searchField, setSearchField] = useState('name'); // State for search field
     const [searchTerm, setSearchTerm] = useState(''); // State for search term
 
@@ -16,6 +16,11 @@ export default function ProductSearchByFields({ vendorId, setProducts, setTotalP
         }
     };
 
+    const handleClearSearch = async () => {
+        setSearchTerm('');
+        setSearchField('name');
+        onClearSearch();
+    }
     return (
         <div className="flex justify-between items-center mb-6">
             {/* Selection Dropdown */}
@@ -44,6 +49,14 @@ export default function ProductSearchByFields({ vendorId, setProducts, setTotalP
                 >
                     Search
                 </button>
+                {clearSearch && searchTerm != '' &&
+                    <button
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
+                        onClick={handleClearSearch}
+                    >
+                        Clear
+                    </button>
+                }
                 <button
                     className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md">
                     Delete Catalogue
