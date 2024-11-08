@@ -17,26 +17,7 @@ export default function AllOrders() {
   const [page, setPage] = useState(1);  // Current page
   const [searchTerm, setSearchTerm] = useState("");  // State for search term
 
-  // Fetch vendor name
-  useEffect(() => {
-    if (vendorId) {
-      const fetchVendor = async () => {
-        try {
-          const response = await fetch(`/api/v1/admin/vendor/${vendorId}`);
-          const data = await response.json();
-
-          if (response.ok) {
-            setVendorName(data.company_name || 'Vendor');
-          } else {
-            console.error('Failed to fetch vendor name');
-          }
-        } catch (err) {
-          console.error('Error fetching vendor name:', err);
-        }
-      };
-      fetchVendor();
-    }
-  }, [vendorId]);
+ 
 
 
   // Fetch paginated products when page or vendorId changes
@@ -86,7 +67,7 @@ export default function AllOrders() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="container mx-auto">
         {/* Vendor Menu */}
-        <VendorMenu vendorId={vendorId} vendorName={vendorName} activePage="Products" />
+        <VendorMenu vendorId={vendorId}  />
 
         {/* Main Content */}
         <div className="bg-white shadow-md rounded-lg p-8 mt-4">

@@ -7,34 +7,13 @@ import VendorMenu from '@/components/admin/VendorMenu'; // Adjust the import pat
 export default function VendorUploadPage() {
   const router = useRouter();
   const { vendorId } = useParams();
-
-  const [vendorName, setVendorName] = useState('Vendor'); // State for vendor name
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Fetch vendor name
-  useEffect(() => {
-    if (vendorId) {
-      const fetchVendor = async () => {
-        try {
-          const response = await fetch(`/api/v1/admin/vendor/${vendorId}`);
-          const data = await response.json();
-
-          if (response.ok) {
-            setVendorName(data.company_name || 'Vendor');
-          } else {
-            console.error('Failed to fetch vendor name');
-          }
-        } catch (err) {
-          console.error('Error fetching vendor name:', err);
-        }
-      };
-      fetchVendor();
-    }
-  }, [vendorId]);
+ 
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -113,7 +92,7 @@ export default function VendorUploadPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="container mx-auto">
         {/* Vendor Menu */}
-        <VendorMenu vendorId={vendorId} vendorName={vendorName} activePage="Products" />
+        <VendorMenu vendorId={vendorId} />
 
         {/* Main Content */}
         <div className="bg-white shadow-md rounded-lg p-8 mt-4">

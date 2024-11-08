@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export default function VendorMenu({ vendorId, vendorName }) {
+export default function VendorMenu({ vendorId }) {
   const pathname = usePathname();
+  const [vendorName, setVendorName] = useState('Vendor');
 
   const menuItems = [
     { name: 'Products', href: `/admin/vendors/${vendorId}/products` },
@@ -13,7 +15,25 @@ export default function VendorMenu({ vendorId, vendorName }) {
     { name: 'Users', href: `/admin/vendors/${vendorId}/users` },
   ];
 
-  
+  useEffect(() => {
+    if (vendorId) {
+      const fetchVendor = async () => {
+        try {
+          const response = await fetch(`/api/v1/admin/vendor/${vendorId}`);
+          const data = await response.json();
+
+          if (response.ok) {
+            setVendorName(data.company_name || 'Vendor');
+          } else {
+            console.error('Failed to fetch vendor name');
+          }
+        } catch (err) {
+          console.error('Error fetching vendor name:', err);
+        }
+      };
+      fetchVendor();
+    }
+  }, [vendorId]);
 
 
 
@@ -26,9 +46,8 @@ export default function VendorMenu({ vendorId, vendorName }) {
             <Link
               key={item.name}
               href={item.href}
-              className={`px-3 py-2 rounded-md ${
-                isActive ? 'bg-blue-500 text-white' : 'hover:bg-gray-700'
-              }`}
+              className={`px-3 py-2 rounded-md ${isActive ? 'bg-blue-500 text-white' : 'hover:bg-gray-700'
+                }`}
             >
               {item.name}
             </Link>

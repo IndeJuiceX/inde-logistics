@@ -20,27 +20,6 @@ export default function CreateVendorUserPage() {
   });
   const [error, setError] = useState('');
 
-  // Fetch vendor name
-  useEffect(() => {
-    if (vendorId) {
-      const fetchVendor = async () => {
-        try {
-          const response = await fetch(`/api/v1/admin/vendor/${vendorId}`);
-          const data = await response.json();
-
-          if (response.ok) {
-            setVendorName(data.company_name || 'Vendor');
-          } else {
-            console.error('Failed to fetch vendor name');
-            setVendorName('Vendor');
-          }
-        } catch (err) {
-          console.error('Error fetching vendor name:', err);
-        }
-      };
-      fetchVendor();
-    }
-  }, [vendorId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -80,7 +59,7 @@ export default function CreateVendorUserPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="container mx-auto">
         {/* VendorMenu Component */}
-        <VendorMenu vendorId={vendorId} vendorName={vendorName} activePage="Users" />
+        <VendorMenu vendorId={vendorId}  />
 
         {/* Main Content */}
         <div className="bg-white shadow-md rounded-lg p-8 mt-4 max-w-lg mx-auto">
