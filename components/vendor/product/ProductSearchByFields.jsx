@@ -2,26 +2,32 @@
 
 import { useState } from 'react';
 
-export default function ProductSearchByFields({ vendorId }) {
+export default function ProductSearchByFields({ vendorId, setProducts, setTotalProducts }) {
     const [searchField, setSearchField] = useState('name'); // State for search field
     const [searchTerm, setSearchTerm] = useState(''); // State for search term
-    
+
 
     const handleSearch = async () => {
-        // Implement search functionality here
-        // app/api/v1/admin/vendor/products/search/route.js
         const searchResponse = await fetch(`/api/v1/admin/vendor/products/search?vendor_id=${vendorId}&q=${searchTerm}&query_by=${searchField}`);
         const searchResult = await searchResponse.json();
-        console.log('Search result:', searchResult);
-
+        if (searchResult.success) {
+            setProducts(searchResult.data);
+            setTotalProducts(searchResult.data.length);
+        }
     };
+
     return (
         <div className="flex justify-between items-center mb-6">
             {/* Selection Dropdown */}
-            <select className="px-4 py-2 border border-gray-300 rounded-md mr-4">
+            <select
+                className="px-4 py-2 border border-gray-300 rounded-md mr-4"
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+            >
                 <option value="name">Product Name</option>
                 <option value="vendor_sku">Product SKU</option>
             </select>
+
             {/* Full-width Search Bar */}
             <input
                 type="text"

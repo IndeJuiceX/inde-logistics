@@ -94,6 +94,8 @@ export default function AllProducts({ vendorId, totalProductsData }) {
 
           <ProductSearchByFields 
             vendorId={vendorId}
+            setProducts={setProducts}
+            setTotalProducts={setTotalProducts}
           />
 
           {/* Total Products Count */}
