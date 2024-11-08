@@ -5,8 +5,11 @@ import { formatDate } from "@/services/utils/convertTime";
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import { urlFormatter } from '@/services/utils/index';
 import Link from 'next/link';
+import styles from '@/styles/warehouse/stock-app/shipments.module.scss'
+import { FaCaretDown, FaCartArrowDown } from 'react-icons/fa';
+import { ArrowDownIcon } from '@heroicons/react/24/outline';
 
-export default function Shipments({ selectedTap='shipments',vendors, stockShipments }) {
+export default function Shipments({ selectedTap = 'shipments', vendors, stockShipments }) {
     const router = useRouter();
     const pathname = usePathname();
     const { vendor_id } = useParams();
@@ -35,9 +38,11 @@ export default function Shipments({ selectedTap='shipments',vendors, stockShipme
     }
     return (
         <div>
-            <div className="flex items-center bg-gray-800 p-4 rounded-md mb-4">
-                <span onClick={handleGetAllVendors} className="w-100 bg-gray-700 text-white px-4 py-2 rounded-md outline-none">
-                    {findVendor(vendor_id)}</span>
+            <div className={styles.vendorSelector}>
+                <span onClick={handleGetAllVendors} className={styles.vendor}>
+                    <span>{findVendor(vendor_id)}</span>
+                    <span className={styles.downArrow}><FaCaretDown /></span>
+                </span>
                 <span className="flex-grow"></span>
             </div>
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -55,16 +60,16 @@ export default function Shipments({ selectedTap='shipments',vendors, stockShipme
             <div className="space-y-2 overflow-y-auto ">
 
                 <div className="overflow-x-auto">
-                    <table className="min-w-full bg-gray-100">
+                    <table className={styles.table}>
                         <thead>
-                            <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                                <th className="py-3 px-6 text-left font-semibold">Shipment</th>
-                                <th className="py-3 px-6 text-left font-semibold">Create Date</th>
-                                <th className="py-3 px-6 text-center font-semibold">SKUs</th>
+                            <tr className="text-gray-600 uppercase text-sm leading-normal">
+                                <th className="py-3 px-6 text-left font-bold">Shipment</th>
+                                <th className="py-3 px-6 text-left font-bold">Create Date</th>
+                                <th className="py-3 px-6 text-center font-bold">SKUs</th>
                                 {/* <th className="py-3 px-6 text-center font-semibold">Total</th> */}
-                                <th className="py-3 px-6 text-center font-semibold">Received</th>
-                                <th className="py-3 px-6 text-center font-semibold">Missing</th>
-                                <th className="py-3 px-6 text-center font-semibold">Faulty</th>
+                                <th className="py-3 px-6 text-center font-bold">Received</th>
+                                <th className="py-3 px-6 text-center font-bold">Missing</th>
+                                <th className="py-3 px-6 text-center font-bold">Faulty</th>
                                 <th className="py-3 px-6 text-center"></th>
                             </tr>
                         </thead>
@@ -72,9 +77,9 @@ export default function Shipments({ selectedTap='shipments',vendors, stockShipme
                             {allShipments.length > 0 ? (
                                 allShipments.map((shipment, index) => (
 
-                                    <tr 
-                                        className="border-b border-gray-200 hover:bg-gray-100" 
-                                        key={index} 
+                                    <tr
+                                        className={styles.tableRow}
+                                        key={index}
                                         onClick={() => window.location.href = `${selectedTap}/${shipment.shipment_id}`}>
                                         <td className="py-3 px-6 text-left">
                                             <span className="text-orange-500 font-bold">#{shipment.shipment_id}</span>

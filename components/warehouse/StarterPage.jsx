@@ -1,16 +1,26 @@
 import Link from "next/link";
+import { FaBoxOpen, FaTruck, FaWarehouse } from "react-icons/fa";
 
 export default function StarterPage() {
     return (
-        <div className="flex items-center justify-center h-full text-white">
-            <div className="text-center">
-                <h1 className="text-4xl font-semibold">Welcome to Warehouse</h1>
-                <p className="mt-2 text-white">Please select a menu to start</p>
-                <Link href="/warehouse/all/stocks" className={`px-6 py-2 rounded-md  bg-gray-800`}>Stock</Link>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800 p-4">
+            <h1 className="text-4xl font-bold mb-8 text-center text-gray-500">INDELOGISTICS</h1>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+                <MenuCard href="/warehouse/all/stocks" icon={<FaBoxOpen />} title="Stock" />
+                <MenuCard href="/warehouse/all/shipments" icon={<FaTruck />} title="Shipments" />
+                <MenuCard href="/warehouse/all/unshelved" icon={<FaWarehouse />} title="Unshelved" />
             </div>
-            
-            {/* <Link>Picking</Link>
-            <Link>Packing</Link> */}
-        </div >
+        </div>
+    );
+}
+
+function MenuCard({ href, icon, title }) {
+    return (
+        <Link href={href} className="group">
+            <div className="flex flex-col items-center justify-center p-6 bg-gray-100 rounded-lg transition-all duration-300 transform hover:scale-105 hover:bg-gray-200 border border-gray-200 shadow-sm">
+                <div className="text-4xl mb-4 text-blue-600 group-hover:text-blue-700">{icon}</div>
+                <h2 className="text-xl font-semibold">{title}</h2>
+            </div>
+        </Link>
     );
 }

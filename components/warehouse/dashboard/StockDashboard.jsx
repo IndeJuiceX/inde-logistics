@@ -10,7 +10,7 @@ export default function StockDashboard({ children }) {
     return (
         // <LoadingProvider>
         <GlobalStateProvider>
-            <div className="bg-gray-900 min-h-screen p-6 text-white">
+            <div className="bg-[#f6f6f6] min-h-screen text-black">
                 <TapMenu />
                 <PageSpinner />
                 <ErrorModal />

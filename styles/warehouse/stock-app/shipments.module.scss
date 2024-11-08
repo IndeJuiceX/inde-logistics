@@ -1,0 +1,58 @@
+.vendorSelector {
+  background-color: #35363b;
+  color: #fff;
+  padding: 5px;
+}
+
+.vendor {
+  display: flex;
+  align-items: center;
+  background-color: #ffffff1a;
+  font-size: 15px;
+  padding: 15px 40px 15px 20px;
+  text-align: left;
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.downArrow {
+  margin-left: auto;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.table {
+  width: 100%;
+  background-color: #f8f9fa;
+  border-collapse: separate;
+  border-spacing: 0 10px; /* Adjust the value to add space between rows */
+  padding: 0 10px;
+
+  td {
+    padding: 15px 20px; /* Adjust as needed */
+    white-space: nowrap;
+
+    &:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+  }
+}
+
+.tableRow {
+  background: #fff;
+  box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}

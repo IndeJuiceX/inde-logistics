@@ -1,8 +1,8 @@
 'use client'
 
-import Link from "next/link"
+import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
-
+import styles from '@/styles/warehouse/stock-app/menu.module.scss';
 
 export default function TapMenu() {
     const { vendor_id } = useParams();
@@ -10,18 +10,35 @@ export default function TapMenu() {
     const activePage = pathname.split("/").pop();
 
     return (
-        <div className="flex items-center space-x-4 mb-6">
-            <Link href={`/warehouse/${vendor_id}/stocks`} className={`px-6 py-2 rounded-md ${activePage === 'stocks' ? 'bg-gray-700' : 'bg-gray-800'}`}>STOCK</Link>
+        <div className={styles.menuContainer}>
+            <Link
+                href={`/warehouse/${vendor_id}/stocks`}
+                className={`${styles.menuLink} ${activePage === 'stocks' ? styles.menuLinkActive : ''
+                    }`}
+            >
+                STOCK
+            </Link>
 
-            <Link href={`/warehouse/${vendor_id}/shipments`} className={`px-6 py-2 rounded-md ${activePage === 'shipments' ? 'bg-gray-700' : 'bg-gray-800'
-                }`}>SHIPMENTS</Link>
+            <Link
+                href={`/warehouse/${vendor_id}/shipments`}
+                className={`${styles.menuLink} ${activePage === 'shipments' ? styles.menuLinkActive : ''
+                    }`}
+            >
+                SHIPMENTS
+            </Link>
 
-            <Link href={`/warehouse/${vendor_id}/unshelved`} className={`px-6 py-2 rounded-md ${activePage === 'unshelved' ? 'bg-gray-700' : 'bg-gray-800'
-                }`}>UNSHELVED</Link>
+            <Link
+                href={`/warehouse/${vendor_id}/unshelved`}
+                className={`${styles.menuLink} ${activePage === 'unshelved' ? styles.menuLinkActive : ''
+                    }`}
+            >
+                UNSHELVED
+            </Link>
 
-            <span className="flex-grow"></span>
-            <button className="bg-green-500 w-3 h-3 rounded-full mr-2"></button>
-            <span className="font-semibold">LOGOUT</span>
+            <button className={styles.logout}>
+                <span className={styles.statusCircle}></span>
+                <span>LOGOUT</span>
+            </button>
         </div>
-    )
+    );
 }
