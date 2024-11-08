@@ -11,11 +11,15 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
     // const vendor_sku = searchParams.get('vendor_sku');
     const query = searchParams.get('q');
     const queryBy = searchParams.get('query_by');
-
+    const lastEvaluatedKey = searchParams.get('last_evaluated_key')
+    const options = {}
     // console.log(brands)
     if (!vendorId) {
       // If the role is neither 'vendor' nor 'admin', return Forbidden
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (lastEvaluatedKey) {
+      options.lastEvaluatedKey = lastEvaluatedKey
     }
 
     if (!query || !queryBy) {
@@ -24,13 +28,14 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
     }
     // Query paginated products
     // const result = await searchProducts(vendorId, query,brands, page, pageSize);  // stop the search function
-    const result = await searchProducts(vendorId, query, queryBy);
+    const result = await searchProducts(vendorId, query, queryBy, options);
 
 
     if (result && result.success) {
       return NextResponse.json({
         success: true,
         data: result.data,
+        last_evaluated_key: result.lastEvaluatedKey
 
       }, { status: 200 });
     }
