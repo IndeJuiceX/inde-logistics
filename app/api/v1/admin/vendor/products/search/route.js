@@ -12,6 +12,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
     const query = searchParams.get('q');
     const queryBy = searchParams.get('query_by');
     const lastEvaluatedKey = searchParams.get('last_evaluated_key')
+    const limit = searchParams.get('limit') || 25
     const options = {}
     // console.log(brands)
     if (!vendorId) {
@@ -21,6 +22,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
     if (lastEvaluatedKey) {
       options.lastEvaluatedKey = lastEvaluatedKey
     }
+    options.limit=limit
 
     if (!query || !queryBy) {
       return NextResponse.json({ error: 'q and query_by parameters are required' }, { status: 400 });
@@ -35,7 +37,8 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
       return NextResponse.json({
         success: true,
         data: result.data,
-        last_evaluated_key: result.lastEvaluatedKey
+        last_evaluated_key: result.lastEvaluatedKey,
+        has_more : result.hasMore
 
       }, { status: 200 });
     }

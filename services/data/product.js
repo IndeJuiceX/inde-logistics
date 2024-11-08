@@ -62,16 +62,19 @@ export const searchProducts = async (vendorId, query, queryBy = 'name', options)
                 },
             };
             if(options?.lastEvaluatedKey) {
-                params.ExclusiveStartKey=lastEvaluatedKey
+                params.ExclusiveStartKey=options.lastEvaluatedKey
+            }
+            if(options?.limit) {
+                params.Limit = options.limit
             }
             const queryRes = await queryItems(params)
             if (queryRes.success) {
-                return { success: true, data: queryRes.data }
+                return { success: true, data: queryRes.data, hasMore: queryRes?.hasMore, lastEvaluatedKey:queryRes?.lastEvaluatedKey }
             }
         }
         const resp = await getVendorProductsByName(vendorId, query, options)
         if (resp.success) {
-            return { success: true, data: resp.data }
+            return { success: true, data: resp.data , hasMore: resp?.hasMore, lastEvaluatedKey: resp?.lastEvaluatedKey}
         }
         return { success: false, error: 'Product Search failed.' }
 
