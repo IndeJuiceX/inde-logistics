@@ -40,11 +40,14 @@ export async function getVendorProductsByName(vendorId, name,options={}) {
         },
     };
     if(options?.lastEvaluatedKey) {
-        params.ExclusiveStartKey=lastEvaluatedKey
+        params.ExclusiveStartKey=options.lastEvaluatedKey
     }
+    params.Limit = options.limit
+   
+
     const data = await queryItems(params);
     if(data && data.success) {
-       return {success: true , data: cleanResponseData(data.data), lastEvaluatedKey: data.lastEvaluatedKey}
+       return {success: true , data: cleanResponseData(data.data), lastEvaluatedKey: data.lastEvaluatedKey, hasMore:data.hasMore}
     }
     return {success : false, error:data.error}
    
@@ -73,6 +76,8 @@ export const searchProducts = async (vendorId, query, queryBy = 'name', options)
             }
         }
         const resp = await getVendorProductsByName(vendorId, query, options)
+        console.log('QUER RESP')
+        console.log(resp)
         if (resp.success) {
             return { success: true, data: resp.data , hasMore: resp?.hasMore, lastEvaluatedKey: resp?.lastEvaluatedKey}
         }
