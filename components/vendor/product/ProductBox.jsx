@@ -1,3 +1,5 @@
+'use client';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
@@ -38,14 +40,14 @@ export default function ProductBox({ product, handleViewProduct, vendorId }) {
                 <Link
                     // /vendor/${vendorId}/product/${productId}/edit
                     // href={`/vendor/${product.sk.split('PRODUCT#')[1]}`}
-                    href={`/vendor/${vendorId}/product/${product.sk.split('PRODUCT#')[1]}/edit`}
+                    href={`/vendor/${vendorId}/product/${product.vendor_sku}/edit`}
                     className="text-blue-500 hover:text-blue-700 flex items-center space-x-2"
                 >
                     <FontAwesomeIcon icon={faPencilAlt} />
                     <span className="sr-only">Edit</span>
                 </Link>
                 <button
-                    onClick={() => handleViewProduct(product.sk.split('PRODUCT#')[1])}
+                    onClick={() => handleViewProduct(product.vendor_sku)}
                     className="text-blue-500 hover:text-blue-700 flex items-center space-x-2"
                 >
                     <FontAwesomeIcon icon={faEye} />

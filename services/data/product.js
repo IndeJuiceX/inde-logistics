@@ -51,6 +51,8 @@ export const searchProducts = async (vendorId, query, queryBy = 'name') => {
             }
         }
         const resp = await getVendorProductsByName(vendorId, query)
+        console.log('search response ', resp);
+
         if (resp.success) {
             return { success: true, data: resp.data }
         }

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { searchProducts } from '@/services/data/product';  // Your search function
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+import { getVendorIdFromRequest } from '@/services/utils';
+
 export const GET = withAuthAndLogging(async (request, { params, user }) => {
   try {
 
@@ -42,4 +44,4 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
   } catch (error) {
     return NextResponse.json({ error: 'Unexpected server error', details: error.message }, { status: 500 });
   }
-}, ['admin', 'warehouse'])
+}, ['admin', 'warehouse', 'vendor']);
