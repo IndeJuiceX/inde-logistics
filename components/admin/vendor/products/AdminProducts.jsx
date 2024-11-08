@@ -7,7 +7,7 @@ import VendorMenu from '@/components/admin/VendorMenu'; // Adjust the import pat
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 
-export default function AdminProducts() {
+export default function AdminProducts({totalProductCount}) {
   const { vendorId } = useParams();  // Get the vendorId from the route
   const router = useRouter();  // Use Next.js router for navigation
 
@@ -16,30 +16,30 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);  // Current page
   const [pageSize] = useState(25);  // Number of products per page
-  const [totalProducts, setTotalProducts] = useState(0);  // Total product count
-  const [loadingCount, setLoadingCount] = useState(true); // Loading state for count
+  const [totalProducts, setTotalProducts] = useState(totalProductCount);  // Total product count
+  const [loadingCount, setLoadingCount] = useState(false); // Loading state for count
   const [searchTerm, setSearchTerm] = useState("");  // State for search term
 
   // Fetch vendor name
- 
+
 
   // Fetch total product count once when vendorId is available
-  useEffect(() => {
-    if (vendorId) {
-      const fetchTotalProducts = async () => {
-        try {
-          const response = await fetch(`/api/v1/admin/vendor/products/count?vendor_id=${vendorId}`);
-          const data = await response.json();
-          setTotalProducts(data.count); // Assuming your API returns { count: number }
-          setLoadingCount(false);
-        } catch (error) {
-          console.error('Error fetching total products count:', error);
-          setLoadingCount(false);
-        }
-      };
-      fetchTotalProducts();
-    }
-  }, [vendorId]);
+  // useEffect(() => {
+  //   if (vendorId) {
+  //     const fetchTotalProducts = async () => {
+  //       try {
+  //         const response = await fetch(`/api/v1/admin/vendor/products/count?vendor_id=${vendorId}`);
+  //         const data = await response.json();
+  //         setTotalProducts(data.count); // Assuming your API returns { count: number }
+  //         setLoadingCount(false);
+  //       } catch (error) {
+  //         console.error('Error fetching total products count:', error);
+  //         setLoadingCount(false);
+  //       }
+  //     };
+  //     fetchTotalProducts();
+  //   }
+  // }, [vendorId]);
 
   // Fetch paginated products when page or vendorId changes
   useEffect(() => {
@@ -241,9 +241,8 @@ export default function AdminProducts() {
                   <button
                     onClick={handlePreviousPage}
                     disabled={page === 1}
-                    className={`px-4 py-2 mr-2 rounded-md ${
-                      page === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'
-                    }`}
+                    className={`px-4 py-2 mr-2 rounded-md ${page === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
                   >
                     Previous Page
                   </button>
@@ -251,9 +250,8 @@ export default function AdminProducts() {
                   <button
                     onClick={handleNextPage}
                     disabled={products.length < pageSize}
-                    className={`px-4 py-2 ml-2 rounded-md ${
-                      products.length < pageSize ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'
-                    }`}
+                    className={`px-4 py-2 ml-2 rounded-md ${products.length < pageSize ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
                   >
                     Next Page
                   </button>
