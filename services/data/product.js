@@ -27,18 +27,24 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
 };
 
 export async function getVendorProductsByName(vendorId, name) {
+    const capitalizedName = capitalizeWords(name)
     const params = {
         IndexName: 'product_name_index',  // Your GSI's name in DynamoDB
-        KeyConditionExpression: 'pk = :pk AND #productName = :productName',
+        KeyConditionExpression: 'pk = :pk AND begins_with(#productName, :productName)',
         ExpressionAttributeNames: {
             '#productName': 'name'
         },
         ExpressionAttributeValues: {
-            ':pk': `VENDORPRODUCT#${vendorId}`,  // Partition key (pk)
-            ':productName': name,  // Sort key (vendor_sku)
+            ':productName': capitalizedName,  // Partition key (name)
+            ':pk': `VENDORPRODUCT#${vendorId}`,  // Sort key (pk)
         },
     };
-    return await queryItems(params);
+    const data = await queryItems(params);
+    if(data && data.success) {
+        return {success: true , data: cleanResponseData(data.data)}
+    }
+    return {success : false, error:data.error}
+   
 }
 
 export const searchProducts = async (vendorId, query, queryBy = 'name') => {
@@ -174,3 +180,6 @@ export const getAllVendorProducts = async (vendorId, pageSize = 25, exclusiveSta
 };
 
 
+function capitalizeWords(string) {
+    return string.replace(/\b\w/g, char => char.toUpperCase());
+}
