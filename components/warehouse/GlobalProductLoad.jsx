@@ -16,10 +16,10 @@ export default function GlobalProductLoad() {
             // app/api/v1/admin/vendor/products/route.js
             const response = await fetch(`/api/v1/admin/vendor/products?vendor_id=${params.vendor_id}`);
             const result = await response.json();
-            // console.log('result', result);
-            
-            if (result.success) {
-                setGlobalProducts(result.data);
+
+
+            if (!result.error) {
+                setGlobalProducts(result);
             }
         }
 
