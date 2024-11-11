@@ -81,8 +81,8 @@ export default function Shipments({ selectedTap='shipments',vendors, stockShipme
                                         </td>
                                         <td className="py-3 px-6 text-left">{formatDate(shipment.created_at)}</td>
                                         <td className="py-3 px-6 text-center">{shipment.items ? shipment.items.length : 0}</td>
-                                        {/* <td className="py-3 px-6 text-center">537</td> */}
-                                        <td className="py-3 px-6 text-center">-</td>
+                                        {/* received_at  */}
+                                        <td className="py-3 px-6 text-center">{shipment.received_at ? formatDate(shipment.received_at) : '-'}</td>
                                         <td className="py-3 px-6 text-center">-</td>
                                         <td className="py-3 px-6 text-center">-</td>
                                         <td className="py-3 px-6 text-center">
