@@ -24,7 +24,7 @@ export default function Picking({ order }) {
         <>
             <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
                 <div className={styles.container}>
-                    {/* Main Container */}
+
                     {/* Header Section */}
                     <div className={styles.headerSection}>
                         <div className={styles.orderCode}>{order.orderCode || 'X1'}</div>
@@ -47,6 +47,7 @@ export default function Picking({ order }) {
 
 
                     </div>
+
                     {/* Product & Location Section */}
                     <div className={styles.productList} style={{ 'maxHeight': maxHeight }}>
                         {order.items.map((item, index) => (
