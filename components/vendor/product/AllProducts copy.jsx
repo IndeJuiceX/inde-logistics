@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 import ProductSearch from './ProductSearch';
 import ProductBox from './ProductBox';
-import ManualPagination from './Pagination/ManualPagination';
+import ManualPagination from '../Pagination/ManualPagination';
 import ProductSearchByFields from '@/components/vendor/product/ProductSearchByFields';
 
 export default function AllProducts({ vendorId, totalProductsData }) {

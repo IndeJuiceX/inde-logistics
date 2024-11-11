@@ -13,9 +13,13 @@ export default function GlobalProductLoad() {
     useEffect(() => {
 
         const fetchGlobalProducts = async () => {
-            const result = await queryItemsWithPkAndSk(`VENDORPRODUCT#${params.vendor_id}`, 'PRODUCT#');
-            if (result.success) {
-                setGlobalProducts(result.data);
+            // app/api/v1/admin/vendor/products/route.js
+            const response = await fetch(`/api/v1/admin/vendor/products?vendor_id=${params.vendor_id}`);
+            const result = await response.json();
+
+
+            if (!result.error) {
+                setGlobalProducts(result);
             }
         }
 

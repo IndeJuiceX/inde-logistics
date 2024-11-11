@@ -16,14 +16,8 @@ export default function ProductBox({ product, handleViewProduct, vendorId }) {
                     <p className="text-gray-700">Stock: {product.stock_available}</p>
                 </div>
                 {product.image && (
-                    <div className="ml-4 w-24 h-24 flex-shrink-0">
-                        <Image
-                            src={product.image}
-                            alt={product.name}
-                            width={96}
-                            height={96}
-                            className="object-cover rounded-md"
-                        />
+                    <div className="ml-4 w-24 h-24 flex-shrink-0 overflow-hidden">
+                        <img src={product.image} alt={product.name} className="object-cover w-full h-full rounded-md" />
                     </div>
                 )}
             </div>

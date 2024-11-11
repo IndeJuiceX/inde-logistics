@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { GlobalStateContext } from "@/contexts/GlobalStateContext";
 import SearchableDropdown from "@/components/warehouse/dropdown/SearchableDropdown";
 
@@ -11,6 +11,14 @@ export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, se
     const [expandedRow, setExpandedRow] = useState(null);
     const [products, setProducts] = useState(globalProducts);
     const [selectedBrand, setSelectedBrand] = useState(null);
+
+
+    useEffect(() => {
+        if (globalProducts && globalProducts.length > 0) {
+            setProducts(globalProducts);
+        }
+    }, [globalProducts]);
+
 
     const toggleExpand = (index) => {
         setExpandedRow(expandedRow === index ? null : index);
@@ -26,6 +34,7 @@ export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, se
 
     const handleProductSearch = (e) => {
         const searchQuery = e.target.value.toLowerCase();
+
         if (!searchQuery) {
             setProducts([]);
             return;
@@ -113,7 +122,7 @@ export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, se
                 </div>
             )}
 
-            <div className="overflow-x-auto">
+            <div className="overflow-y-auto h-[31rem]">
                 <table className="min-w-full bg-white border rounded-lg shadow-md">
                     <thead>
                         <tr>
@@ -141,7 +150,6 @@ export default function MissingItem({ vendor_id, shipment_id, setIsModalOpen, se
                                 <React.Fragment key={index}>
                                     <tr className="hover:bg-gray-100">
                                         <td className="px-6 py-4 border-b">
-                                            {/* eslint-disable-next-line */}
                                             <img
                                                 src={product.image}
                                                 alt={product.name}

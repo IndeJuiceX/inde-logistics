@@ -2,18 +2,20 @@
 
 import { useState } from 'react';
 
-export default function ProductSearchByFields({ vendorId, setProducts, setTotalProducts, clearSearch = false, onClearSearch }) {
+export default function ProductSearchByFields({ vendorId, setFilter, clearSearch = false, onClearSearch }) {
     const [searchField, setSearchField] = useState('name'); // State for search field
     const [searchTerm, setSearchTerm] = useState(''); // State for search term
 
 
     const handleSearch = async () => {
-        const searchResponse = await fetch(`/api/v1/admin/vendor/products/search?vendor_id=${vendorId}&q=${searchTerm}&query_by=${searchField}`);
-        const searchResult = await searchResponse.json();
-        if (searchResult.success) {
-            setProducts(searchResult.data);
-            setTotalProducts(searchResult.data.length);
-        }
+        // const searchResponse = await fetch(`/api/v1/admin/vendor/products/search?vendor_id=${vendorId}&q=${searchTerm}&query_by=${searchField}`);
+        // const searchResult = await searchResponse.json();
+        // if (searchResult.success) {
+        //     setProducts(searchResult.data);
+        //     setTotalProducts(searchResult.data.length);
+        // }
+        setFilter({ searchField, searchTerm });
+
     };
 
     const handleClearSearch = async () => {

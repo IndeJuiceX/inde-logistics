@@ -299,12 +299,10 @@ export async function getStockShipmentDetails(vendorId, stockShipmentId) {
     const stockShipmentItems = shipmentItems.map((item) => {
 
         const productInfo = productDataMap[item.vendor_sku] || {};
-
+        const cleanShipmentItemData = cleanResponseData(item)
         return {
             vendor_sku: item.vendor_sku,
-            stock_in: item.stock_in,
-            ...(item.received !== undefined && { received: item.received }),
-            ...(item.shelved !== undefined && { shelved: item.shelved }),
+            ...cleanShipmentItemData,
             ...productInfo,
         };
     });
