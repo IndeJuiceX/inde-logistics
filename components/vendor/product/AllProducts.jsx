@@ -1,25 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 import ProductSearch from './ProductSearch';
 import ProductBox from './ProductBox';
-import ManualPagination from './Pagination/ManualPagination';
+import ManualPagination from '../Pagination/ManualPagination';
 import ProductSearchByFields from '@/components/vendor/product/ProductSearchByFields';
 
 export default function AllProducts({ vendorId, totalProductsData }) {
   const router = useRouter(); // Use Next.js router for navigation
   // console.log('totalProductsData:', totalProductsData);
-  
+
   const [products, setProducts] = useState(totalProductsData); // Products to display on the current page
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1); // Current page
   const pageSize = 25; // Number of products per page
   const [totalProducts, setTotalProducts] = useState(totalProductsData.length); // Total product count
-  const [searchTerm, setSearchTerm] = useState(''); // State for search term
+  const [filter, setFilter] = useState({
+    searchField: 'name',
+    searchTerm: ''
+  });
 
   // Constants for pagination
   const [maxPageButtons] = useState(5); // Max number of page buttons to show
@@ -34,10 +37,10 @@ export default function AllProducts({ vendorId, totalProductsData }) {
   };
 
   // Handle search term change
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    setPage(1); // Reset to first page when search term changes
-  };
+  // const handleSearch = (term) => {
+  //   setSearchTerm(term);
+  //   setPage(1); // Reset to first page when search term changes
+  // };
 
   const handleDeleteCatalogue = async () => {
     const confirmed = confirm(
@@ -77,6 +80,27 @@ export default function AllProducts({ vendorId, totalProductsData }) {
     { text: 'All Products', url: `/vendor/${vendorId}/product/all` },
   ];
 
+  const handleSearch = async () => {
+    const { searchField, searchTerm } = filter;
+    const searchResponse = await fetch(`/api/v1/admin/vendor/products/search?vendor_id=${vendorId}&q=${searchTerm}&query_by=${searchField}`);
+    const searchResult = await searchResponse.json();
+    console.log('Search Result:', searchResult);
+    
+    if (searchResult.success) {
+      setProducts(searchResult.data);
+      setTotalProducts(searchResult.data.length);
+    }
+  };
+
+  useEffect(() => {
+
+    console.log('Filter:', filter);
+    if (filter && filter.searchTerm !== '') {
+      handleSearch();
+    }
+
+  }, [filter]);
+
   return (
     <>
       <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />
@@ -92,10 +116,12 @@ export default function AllProducts({ vendorId, totalProductsData }) {
             handleDeleteCatalogue={handleDeleteCatalogue}
           /> */}
 
-          <ProductSearchByFields 
+          <ProductSearchByFields
             vendorId={vendorId}
             setProducts={setProducts}
             setTotalProducts={setTotalProducts}
+            // filter={filter}
+            setFilter={setFilter}
           />
 
           {/* Total Products Count */}
