@@ -42,7 +42,20 @@
   color: #000;
 }
 
-.productLocationSection {
+// .productLocationSection {
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   padding: 1rem;
+// }
+
+.productList {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+
+.productItem {
   display: flex;
   align-items: center;
   justify-content: space-between;

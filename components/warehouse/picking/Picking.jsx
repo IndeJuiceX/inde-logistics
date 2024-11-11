@@ -17,6 +17,8 @@ export default function Picking({ order }) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const maxHeight = (windowHeight - 160) + 'px';
+
     console.log('order', order);
     return (
         <>
@@ -46,27 +48,31 @@ export default function Picking({ order }) {
 
                     </div>
                     {/* Product & Location Section */}
-                    <div className={styles.productLocationSection}>
-                        {/* Product Image */}
-                        <div className={styles.productImageContainer}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={order.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
-                                alt="Product"
-                                className={styles.productImage}
-                            />
-                            <div className={styles.productQuantity}>
-                                x{order.productQuantity || 1}
-                            </div>
-                        </div>
+                    <div className={styles.productList} style={{ 'maxHeight': maxHeight }}>
+                        {order.items.map((item, index) => (
+                            <div className={styles.productItem} key={index}>
+                                {/* Product Image */}
+                                <div className={styles.productImageContainer}>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={order.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
+                                        alt="Product"
+                                        className={styles.productImage}
+                                    />
+                                    <div className={styles.productQuantity}>
+                                        x{order.productQuantity || 1}
+                                    </div>
+                                </div>
 
-                        {/* Location Details */}
-                        <div className={styles.locationDetails}>
-                            <div className={`${styles.locationItem} ${styles.width8rem}`}>A</div>
-                            <div className={`${styles.locationItem} ${styles.width5rem}`}>2</div>
-                            <div className={`${styles.locationItem} ${styles.width8rem}`}>4</div>
-                            <div className={`${styles.locationItem} ${styles.width5rem}`}>A</div>
-                        </div>
+                                {/* Location Details */}
+                                <div className={styles.locationDetails}>
+                                    <div className={`${styles.locationItem} ${styles.width8rem}`}>A</div>
+                                    <div className={`${styles.locationItem} ${styles.width5rem}`}>2</div>
+                                    <div className={`${styles.locationItem} ${styles.width8rem}`}>4</div>
+                                    <div className={`${styles.locationItem} ${styles.width5rem}`}>A</div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     {/* Picker Info & Barcode */}
