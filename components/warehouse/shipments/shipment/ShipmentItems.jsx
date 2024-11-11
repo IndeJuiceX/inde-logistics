@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { useParams } from 'next/navigation';
 
 import Modal from '@/components/warehouse/modal/Modal';
@@ -23,19 +23,11 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedModalItem, setSelectedModalItem] = useState(null);
+    const [expandedRowIndex, setExpandedRowIndex] = useState(null);
 
 
     const attributeKeys = [];
-    if (shipmentDetails.items && shipmentDetails.items.length > 0) {
-        shipmentDetails.items.forEach((item) => {
-            const keys = Object.keys(item.attributes || {});
-            keys.forEach(key => {
-                if (!attributeKeys.includes(key)) {
-                    attributeKeys.push(key);
-                }
-            });
-        });
-    }
+
     // console.log('attributeKeys', attributeKeys);
 
     const handleShowItem = (item) => {
@@ -78,6 +70,24 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
         setIsModalOpen(true);
     }
 
+    const handleToggleShowMore = (rowIndex) => {
+        if (expandedRowIndex === rowIndex) {
+            setExpandedRowIndex(null);
+        } else {
+            if (shipmentDetails.items && shipmentDetails.items.length > 0) {
+                shipmentDetails.items.forEach((item) => {
+                    const keys = Object.keys(item.attributes || {});
+                    keys.forEach(key => {
+                        if (!attributeKeys.includes(key)) {
+                            attributeKeys.push(key);
+                        }
+                    });
+                });
+            }
+            setExpandedRowIndex(rowIndex);
+        }
+    };
+
     return (
         <>
             <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
@@ -90,16 +100,12 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                             <th className="py-3 px-4 text-gray-600 font-semibold">PRODUCT</th>
                             <th className="py-3 px-4 text-gray-600 font-semibold">BRAND</th>
                             {/* Render table headers dynamically */}
-                            {attributeKeys.length > 0 &&
-                                attributeKeys.map((attribute, index) => (
-                                    <th className="py-3 px-4 text-gray-600 font-semibold" key={index}>
-                                        {attribute.toUpperCase()}
-                                    </th>
-                                ))}
+
                             <th className="py-3 px-4 text-gray-600 font-semibold">SENT</th>
                             <th className="py-3 px-4 text-gray-600 font-semibold">R.</th>
                             <th className="py-3 px-4 text-gray-600 font-semibold">F.</th>
                             <th className="py-3 px-4 text-gray-600 font-semibold">A.</th>
+                            <th className="py-3 px-4 text-gray-600 font-semibold">ACTION</th>
                         </tr>
                     </thead>
                     <tbody className="text-black">
@@ -107,46 +113,83 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                         {shipmentDetails.items &&
                             shipmentDetails.items.length > 0 &&
                             shipmentDetails.items.map((item, index) => (
-                                <tr
-                                    className="border-b hover:bg-gray-50"
-                                    key={index}
-                                    onClick={() => handleShowItem(item)}
-                                >
-                                    <td className="py-4 px-4">
-                                        {/* eslint-disable-next-line */}
-                                        <img src={item.image} alt={item.name} className="w-12 h-12" />
-                                    </td>
-                                    <td className="py-4 px-4 flex items-center space-x-2">
-                                        {item.name}
-                                    </td>
-                                    <td className="py-4 px-4">{item.brand_name}</td>
+                                <React.Fragment key={index}>
+                                    <tr
+                                        className="border-b hover:bg-gray-50"
 
-                                    {attributeKeys.length > 0 &&
-                                        attributeKeys.map((attribute, index) => (
-                                            <td className="py-4 px-4" key={index}>
-                                                {item.attributes[attribute]}
+                                        onClick={() => handleShowItem(item)}
+                                    >
+                                        <td className="py-4 px-4">
+                                            {/* eslint-disable-next-line */}
+                                            <img src={item.image} alt={item.name} className="w-12 h-12" />
+                                        </td>
+                                        <td className="py-4 px-4 flex items-center space-x-2">
+                                            {item.name}
+                                        </td>
+                                        <td className="py-4 px-4">{item.brand_name}</td>
+                                        <td className="py-4 px-4">{item.stock_in}</td>
+                                        <td className="py-4 px-4">
+                                            {item.received !== null && item.received !== undefined
+                                                ? item.received
+                                                : '-'}
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            {item.faulty !== null && item.faulty !== undefined
+                                                ? item.faulty
+                                                : '-'}
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            {item.received !== null &&
+                                                item.received !== undefined &&
+                                                item.faulty !== null &&
+                                                item.faulty !== undefined
+                                                ? Math.max(item.received - item.faulty, 0)
+                                                : '-'}
+                                        </td>
+                                        <td className="py-4 px-4">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleShowMore(
+                                                        index
+                                                    );
+                                                }}
+                                                className="text-blue-500 underline"
+                                            >
+                                                {expandedRowIndex === index
+                                                    ? 'Show Less'
+                                                    : 'Show More'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {expandedRowIndex === index && (
+                                        <tr>
+                                            <td
+                                                colSpan={8}
+                                                className="bg-gray-50"
+                                            >
+                                                <div className="py-4 px-4">
+                                                    <div className="font-bold text-lg mb-2">Attributes</div>
+                                                    {Object.entries(
+                                                        item.attributes
+                                                    ).map(([key, value]) => (
+                                                        <div
+                                                            key={key}
+                                                            className="flex"
+                                                        >
+                                                            <div className="font-semibold w-1/3">
+                                                                {key}:
+                                                            </div>
+                                                            <div className="w-2/3">
+                                                                {value}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </td>
-                                        ))}
-                                    <td className="py-4 px-4">{item.stock_in}</td>
-                                    <td className="py-4 px-4">
-                                        {item.received !== null && item.received !== undefined
-                                            ? item.received
-                                            : '-'}
-                                    </td>
-                                    <td className="py-4 px-4">
-                                        {item.faulty !== null && item.faulty !== undefined
-                                            ? item.faulty
-                                            : '-'}
-                                    </td>
-                                    <td className="py-4 px-4">
-                                        {item.received !== null &&
-                                            item.received !== undefined &&
-                                            item.faulty !== null &&
-                                            item.faulty !== undefined
-                                            ? Math.max(item.received - item.faulty, 0)
-                                            : '-'}
-                                    </td>
-                                </tr>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
                             ))}
                     </tbody>
                 </table>
