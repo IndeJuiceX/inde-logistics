@@ -6,6 +6,7 @@
     "dev": "next dev -p 3002",
     "build": "next build",
     "start": "next start",
+    "start-clean": "rm -rf .next && next dev -p 3002",
     "lint": "next lint",
     "generate-products": "node ./scripts/generate-dummy-products.js",
     "generate-stock-shipment": "node ./scripts/generate-dummy-stock-shipment.js",
