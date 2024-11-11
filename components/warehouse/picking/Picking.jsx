@@ -1,90 +1,98 @@
 'use client';
 
+import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
+import { useEffect, useState } from 'react';
+
 export default function Picking({ order }) {
+    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowHeight(window.innerHeight);
+            setWindowWidth(window.innerWidth);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    console.log('order', order);
     return (
-        <div className="bg-black text-white h-screen w-screen flex flex-col items-center justify-center">
-            {/* Main Container */}
-            <div className="bg-gray-900 h-full w-full flex flex-col justify-between">
-                {/* Header Section */}
-                <div className="grid grid-cols-5 items-center gap-4 py-4 border-b border-gray-700">
-                    <div className="text-center font-bold text-2xl bg-gray-800 rounded-lg py-2 px-4">
-                        {order.orderCode || 'X1'}
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-400">Customer</p>
-                        <p className="font-bold text-white">{order.customerName || 'G M'}</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-400">Referral</p>
-                        <p className="font-bold text-white">{order.referralCode || 'INVITERI'}</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-400">Delivery</p>
-                        <p className="font-bold text-white">{order.deliveryTime || '48H'}</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-sm text-gray-400">Order</p>
-                        <p className="font-bold text-white">{order.orderNumber || '#AOYL'}</p>
-                    </div>
-                </div>
+        <>
+            <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
+                <div className={styles.container}>
+                    {/* Main Container */}
+                    {/* Header Section */}
+                    <div className={styles.headerSection}>
+                        <div className={styles.orderCode}>{order.orderCode || 'X1'}</div>
+                        <div className={styles.infoSection}>
+                            <p className={styles.label}>Customer</p>
+                            <p className={styles.value}>{order.customerName || 'G M'}</p>
+                        </div>
+                        <div className={styles.infoSection}>
+                            <p className={styles.label}>Referral</p>
+                            <p className={styles.value}>{order.referralCode || 'INVITERI'}</p>
+                        </div>
+                        <div className={styles.infoSection}>
+                            <p className={styles.label}>Delivery</p>
+                            <p className={styles.value}>{order.deliveryTime || '48H'}</p>
+                        </div>
+                        <div className={styles.infoSection}>
+                            <p className={styles.label}>Order</p>
+                            <p className={styles.value}>{order.orderNumber || '#AOYL'}</p>
+                        </div>
 
-                {/* Product & Location Section */}
-                <div className="flex items-center justify-between px-4 py-4">
-                    {/* Product Image */}
-                    <div className="flex items-center bg-gray-800 p-2 rounded-lg">
-                        {/* eslint-disable-next-line */}
-                        <img
-                            src={order.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
-                            alt="Product"
-                            className="w-[20rem] h-[11rem] rounded-lg"
-                        />
-                        <div className="ml-4 bg-gray-700 rounded-full px-4 py-2 text-center text-white font-bold">
-                            x{order.productQuantity || 1}
+
+                    </div>
+                    {/* Product & Location Section */}
+                    <div className={styles.productLocationSection}>
+                        {/* Product Image */}
+                        <div className={styles.productImageContainer}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={order.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
+                                alt="Product"
+                                className={styles.productImage}
+                            />
+                            <div className={styles.productQuantity}>
+                                x{order.productQuantity || 1}
+                            </div>
+                        </div>
+
+                        {/* Location Details */}
+                        <div className={styles.locationDetails}>
+                            <div className={`${styles.locationItem} ${styles.width8rem}`}>A</div>
+                            <div className={`${styles.locationItem} ${styles.width5rem}`}>2</div>
+                            <div className={`${styles.locationItem} ${styles.width8rem}`}>4</div>
+                            <div className={`${styles.locationItem} ${styles.width5rem}`}>A</div>
                         </div>
                     </div>
 
-                    {/* Location Details */}
-                    <div className="flex items-center space-x-2">
-                        <div className="w-[8rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
-                            A
+                    {/* Picker Info & Barcode */}
+                    <div className={styles.pickerBarcodeSection}>
+                        <div className={styles.pickerInfo}>
+                            <p className={styles.pickerName}>{order.pickerName || 'Ali B.'}</p>
+                            <p className={styles.containerInfo}>Container {order.container || '1'}</p>
                         </div>
-                        
-                        <div className="w-[5rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
-                            2
+                        <div className={styles.barcodeInfo}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={order.barcodeImage || '/placeholder-barcode.png'}
+                                alt="Barcode"
+                                className={styles.barcodeImage}
+                            />
+                            <p className={styles.barcodeText}>{order.barcodeText || '1234567890'}</p>
                         </div>
-                        <div className="w-[8rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
-                            4
-                        </div>
-                        <div className="w-[5rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
-                            A
+                        {/* Warning Button */}
+                        <div className={styles.warningButtonContainer}>
+                            <button className={styles.warningButton}>!</button>
                         </div>
                     </div>
-                </div>
 
-                {/* Picker Info & Barcode */}
-                <div className="flex justify-between items-center px-4 py-4 bg-gray-800">
-                    <div className="text-center">
-                        <p className="text-white font-bold">{order.pickerName || 'Ali B.'}</p>
-                        <p className="text-sm text-gray-400">Container {order.container || '1'}</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        {/* eslint-disable-next-line */}
-                        <img
-                            src={order.barcodeImage || '/placeholder-barcode.png'}
-                            alt="Barcode"
-                            className="w-32 h-auto mb-2"
-                        />
-                        <p className="text-gray-400">{order.barcodeText || '1234567890'}</p>
-                    </div>
-                </div>
 
-                {/* Warning Button */}
-                <div className="flex justify-end px-4 pb-4">
-                    <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full">
-                        !
-                    </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

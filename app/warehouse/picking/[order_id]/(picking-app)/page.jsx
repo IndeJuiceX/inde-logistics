@@ -1,4 +1,3 @@
-'use server';
 import Picking from "@/components/warehouse/picking/picking";
 
 export default async function PickingPage({ params }) {
@@ -38,7 +37,9 @@ export default async function PickingPage({ params }) {
     return (
 
         // sampleOrders.map((order, index) => (
-        <Picking  order={sampleOrders[order_id]} />
+        <>
+            <Picking order={sampleOrders[order_id]} />
+        </>
         // ))
     )
 }

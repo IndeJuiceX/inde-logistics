@@ -1,0 +1,168 @@
+.container {
+  background-color: #fff;
+  color: white;
+  height: 100%;
+  max-height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr;
+}
+
+.headerSection {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #4a5568; /* gray-700 */
+  padding: 10px;
+  max-height: 80px;
+}
+
+.orderCode {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem; /* text-2xl */
+  background-color: #2d3748; /* gray-800 */
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.infoSection {
+  text-align: center;
+}
+
+.label {
+  font-size: 0.875rem; /* text-sm */
+  color: #000; /* gray-400 */
+}
+
+.value {
+  font-weight: bold;
+  color: #000;
+}
+
+.productLocationSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.productImageContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2d3748; /* gray-800 */
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  flex-wrap: wrap;
+  row-gap: 32px;
+}
+
+.productImage {
+  width: auto;
+  height: 11rem;
+  border-radius: 0.5rem;
+  object-fit: contain;
+  aspect-ratio: 1/1;
+}
+
+.productQuantity {
+  margin-left: 1rem;
+  background-color: #4a5568; /* gray-700 */
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
+
+.locationDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 20px;
+}
+
+.locationDetails > *:not(:last-child) {
+  margin-right: 0.5rem;
+}
+
+.locationItem {
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4a5568; /* gray-700 */
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 1.125rem; /* text-lg */
+  font-weight: bold;
+}
+
+.width8rem {
+  width: 8rem;
+}
+
+.width5rem {
+  width: 5rem;
+}
+
+.pickerBarcodeSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #2d3748; /* gray-800 */
+  max-height: 80px;
+}
+
+.pickerInfo {
+  text-align: center;
+}
+
+.pickerName {
+  color: white;
+  font-weight: bold;
+}
+
+.containerInfo {
+  font-size: 0.875rem; /* text-sm */
+  color: #cbd5e0; /* gray-400 */
+}
+
+.barcodeInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.barcodeImage {
+  width: 8rem;
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.barcodeText {
+  color: #cbd5e0; /* gray-400 */
+}
+
+.warningButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.warningButton {
+  background-color: #f56565; /* red-500 */
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+}
+
+.warningButton:hover {
+  background-color: #c53030; /* red-700 */
+}
