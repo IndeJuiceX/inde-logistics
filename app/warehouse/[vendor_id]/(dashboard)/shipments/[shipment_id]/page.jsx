@@ -10,7 +10,7 @@ export default async function ShipmentPage({ params }) {
     const { vendor_id, shipment_id } = params;
 
     const getShipmentDetails = await getStockShipmentDetails(vendor_id, shipment_id);
-    console.log('getShipmentDetails', getShipmentDetails);
+   
     
     let shipmentDetails = []
     if (getShipmentDetails.success) {
