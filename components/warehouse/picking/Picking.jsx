@@ -32,6 +32,7 @@ export default function Picking({ order }) {
                 <div className="flex items-center justify-between px-4 py-4">
                     {/* Product Image */}
                     <div className="flex items-center bg-gray-800 p-2 rounded-lg">
+                        {/* eslint-disable-next-line */}
                         <img
                             src={order.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
                             alt="Product"
@@ -44,16 +45,17 @@ export default function Picking({ order }) {
 
                     {/* Location Details */}
                     <div className="flex items-center space-x-2">
-                        <div className="w-[6rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
+                        <div className="w-[8rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
                             A
                         </div>
-                        <div className="w-[6rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
+                        
+                        <div className="w-[5rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
                             2
                         </div>
-                        <div className="w-[6rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
+                        <div className="w-[8rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
                             4
                         </div>
-                        <div className="w-[6rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
+                        <div className="w-[5rem] h-10 flex items-center justify-center bg-gray-700 rounded-lg text-white text-lg font-bold">
                             A
                         </div>
                     </div>
@@ -66,6 +68,7 @@ export default function Picking({ order }) {
                         <p className="text-sm text-gray-400">Container {order.container || '1'}</p>
                     </div>
                     <div className="flex flex-col items-center">
+                        {/* eslint-disable-next-line */}
                         <img
                             src={order.barcodeImage || '/placeholder-barcode.png'}
                             alt="Barcode"
