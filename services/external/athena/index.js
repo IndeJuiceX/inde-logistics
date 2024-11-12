@@ -1,6 +1,6 @@
 // athena/index.js
 
-import { AthenaWrapper } from '.@/services/external/athena/wrapper.js'; // Adjust the path as necessary
+import { AthenaWrapper } from '@/services/external/athena/wrapper.js'; // Adjust the path as necessary
 
 // Extract environment variables
 const { AWS_REGION, APP_ENV } = process.env;

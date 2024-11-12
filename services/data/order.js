@@ -3,6 +3,7 @@ import { checkProductStock } from '@/services/data/product'; // Adjust the impor
 import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
 import { executeDataQuery } from '@/services/external/athena';
+import { createShipmentAndUpdateOrder } from './order-shipment';
 
 export const createOrder = async (vendorId, order) => {
     try {
@@ -376,27 +377,26 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     return { success: true, data: orderDetails };
 }
 
-export const getNextUnPickedOrder = async() => {
+export const getNextUnPickedOrder = async () => {
     console.log('hitting get next unpicked---')
     const query = `
-    SELECT pk,sk
+    SELECT vendor_order_id,vendor_id
     FROM orders
     WHERE status = 'accepted'
-    ORDER BY created_at DESC
+    ORDER BY created_at ASC
     LIMIT 1;
   `;// get the order with accepted status..
-  const data = await executeDataQuery(query); 
-  console.log(data);
-  
-  // create a Ordershipment entry with status processing
-  //change the order status to processing..
-}
+    const data = await executeDataQuery({ query });
+    const nextOrderKeys = data?.data[0] || null
+    if (!nextOrderKeys) {
+        return { success: false, error: 'No orders found' }
+    }
 
-export const updateOrderStatus = async() =>{
-    console.log('UPDATE ORDER STATUS---')
-}
+    const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+    console.log(updateResponse)
 
-export const createOrderShipment = async() =>{
-    console.log('CREATING ORDER SHIPMENT FOR THE ORDER')
+    // create a Ordershipment entry with status processing
+    //change the order status to processing..
+    //get the order and order details 
 }
 
