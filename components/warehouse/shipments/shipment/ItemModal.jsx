@@ -5,6 +5,7 @@ import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
 import { getStockShipmentDetails } from "@/services/data/stock-shipment";
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
+import styles from '@/styles/warehouse/modals/itemModal.module.scss';
 
 export default function ItemModal({ setIsModalOpen, itemData = null, items = null, setShipmentDetails = null }) {
     const { setLoading, setLoaded } = useContext(GlobalStateContext);
@@ -151,82 +152,84 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
         }
     }
     return (
-        <div className="mt-4 flex flex-col h-full">
-            <h2 className="text-center text-lg font-semibold text-black mb-2">{item?.name}</h2>
-            <p className="text-center text-sm text-gray-500 mb-4">
+        <div className={styles.container}>
+            <h2 className={styles.title}>{item?.name}</h2>
+            <p className={styles.subtitle}>
                 {item &&
                     Object.values(item.attributes)
                         .filter((value) => !Array.isArray(value))
                         .join(' • ')}
             </p>
 
-            <div className="space-y-2 flex-grow">
-                {/* Sent Quantity */}
-                <div className={`flex items-center justify-between p-2 bg-white border border-4 rounded-md ${activeField === 'sent' ? 'border-green-500' : ''}`}>
-                    <span className="text-black">Sent:</span>
-                    <span className="font-semibold text-black">{quantities.sent}</span>
-                </div>
-
-                {/* Editable Quantities */}
-                {['received', 'faulty'].map((field) => (
-                    <div
-                        key={field}
-                        className={`flex items-center justify-between p-2 bg-white border border-4 rounded-md ${activeField === field ? 'border-green-500' : ''}`}
-                        onClick={() => handleActiveClick(field)}
-                    >
-                        <span className={fieldColors[field]}>{fieldNames[field]}:</span>
-                        <span className="font-semibold text-black">{quantities[field]}</span>
+            <div className={styles.gridWrapper}>
+                <div className={styles.content}>
+                    {/* Sent Quantity */}
+                    <div className={`${styles.quantityItem} ${styles.sent} ${activeField === 'sent' ? styles.active : ''}`}>
+                        <span className={styles.label}>Sent:</span>
+                        <span className={styles.value}>{quantities.sent}</span>
                     </div>
-                ))}
 
-                {/* Accepted Quantity (Computed and Non-Editable) */}
-                <div className={`flex items-center justify-between p-2 bg-white border border-4 rounded-md`}>
-                    <span className={fieldColors['accepted']}>{fieldNames['accepted']}:</span>
-                    <span className="font-semibold text-black">{quantities.accepted}</span>
+                    {/* Editable Quantities */}
+                    {['received', 'faulty'].map((field) => (
+                        <div
+                            key={field}
+                            className={`${styles.quantityItem} ${activeField === field ? styles.active : ''}`}
+                            onClick={() => handleActiveClick(field)}
+                        >
+                            <span className={styles.label}>{fieldNames[field]}:</span>
+                            <span className={styles.value}>{quantities[field]}</span>
+                        </div>
+                    ))}
+
+                    {/* Accepted Quantity (Computed and Non-Editable) */}
+                    <div className={`${styles.quantityItem} ${styles.accepted}`}>
+                        <span className={styles.label}>{fieldNames['accepted']}:</span>
+                        <span className={styles.value}>{quantities.accepted}</span>
+                    </div>
                 </div>
+
+                <div className={styles.imageWrapper}>
+                    {/* eslint-disable-next-line */}
+                    <img src="https://cdn.indejuice.com/images/ZAE_small.jpg" alt="Product" className={styles.productImage} />
+                </div>
+                {/* Conditionally render DialPad or additional content */}
+                {activeField === null ? (
+                    <>
+
+                        <div className={styles.barcodeWrapper}>
+                            <div className={styles.barcode}>{item?.barcode}</div>
+                        </div>
+
+                        <div className={styles.buttonGroup}>
+                            <button
+                                className={`${styles.button} ${currentIndex <= 0 ? styles.disabledButton : ''}`}
+                                disabled={currentIndex <= 0}
+                                onClick={handlePrevious}
+                            >
+                                Previous
+                            </button>
+                            <button className={styles.closeButton} onClick={() => setIsModalOpen(false)}>
+                                Close
+                            </button>
+                            <button
+                                className={`${styles.button} ${items && currentIndex >= items.length - 1 ? styles.disabledButton : ''}`}
+                                disabled={items && currentIndex >= items.length - 1}
+                                onClick={handleNext}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className={styles.dialPadTitle}>
+                            {`Enter ${fieldNames[activeField]} Quantity`}
+                        </div>
+                        <div className={styles.dialPadDisplay}>{numberInput || '0'}</div>
+                        <DialPad onNumberEntered={handleNumberEntered} />
+                    </>
+                )}
             </div>
-
-            {/* Conditionally render DialPad or additional content */}
-            {activeField === null ? (
-                <>
-                    <div className="flex justify-center mt-4">
-                        {/* eslint-disable-next-line */}
-                        <img src="https://cdn.indejuice.com/images/ZAE_small.jpg" alt="Product" className="w-[18rem] h-auto" />
-                    </div>
-
-                    <div className="flex justify-center mt-2">
-                        <div className="bg-black text-white text-sm font-mono px-3 py-1 rounded-md">{item?.barcode}</div>
-                    </div>
-
-                    <div className="flex justify-between mb-8">
-                        <button
-                            className={`bg-gray-200 text-gray-500 px-4 py-2 rounded-md ${currentIndex <= 0 ? 'cursor-not-allowed opacity-50' : ''}`}
-                            disabled={currentIndex <= 0}
-                            onClick={handlePrevious}
-                        >
-                            Previous
-                        </button>
-                        <button className="bg-red-500 text-white px-4 py-2 rounded-md" onClick={() => setIsModalOpen(false)}>
-                            Close
-                        </button>
-                        <button
-                            className={`bg-gray-200 text-gray-500 px-4 py-2 rounded-md ${items && currentIndex >= items.length - 1 ? 'cursor-not-allowed opacity-50' : ''}`}
-                            disabled={items && currentIndex >= items.length - 1}
-                            onClick={handleNext}
-                        >
-                            Next
-                        </button>
-                    </div>
-                </>
-            ) : (
-                <>
-                    <div className="text-center text-lg font-semibold mb-2">
-                        {`Enter ${fieldNames[activeField]} Quantity`}
-                    </div>
-                    <div className="text-center text-2xl font-bold mb-2">{numberInput || '0'}</div>
-                    <DialPad onNumberEntered={handleNumberEntered} />
-                </>
-            )}
         </div>
     );
 }

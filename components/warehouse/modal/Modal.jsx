@@ -27,8 +27,8 @@ export default function Modal({ isOpen, onClose, classNames, children }) {
     if (!isOpen || !mounted) return null;
 
     const clsName = (classNames === undefined || classNames === null) ? 'max-w-md' : classNames;
-    
-    
+
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center"
@@ -43,7 +43,7 @@ export default function Modal({ isOpen, onClose, classNames, children }) {
             ></div>
 
             {/* Modal content */}
-            <div className={`relative bg-white rounded-lg shadow-lg w-full h-[85%] mx-auto p-4 z-10 ${classNames ?? 'max-w-md'}`}>
+            <div className={`relative bg-white rounded-lg shadow-lg w-[85%] h-[85%] mx-auto p-4 z-10 overflow-y-auto`}>
                 {/* <div className="mt-4"> */}
                 {children}
                 {/* </div> */}

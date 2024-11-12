@@ -7,7 +7,7 @@ import styles from '@/styles/warehouse/stock-app/menu.module.scss';
 export default function TapMenu() {
     const { vendor_id } = useParams();
     const pathname = usePathname();
-    const activePage = pathname.split("/").pop();
+    const activePage = pathname.split("/").find(part => ['stocks', 'shipments', 'unshelved'].includes(part));
 
     return (
         <div className={styles.menuContainer}>
