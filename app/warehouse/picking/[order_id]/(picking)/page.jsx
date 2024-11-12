@@ -3,6 +3,7 @@ import Picking from "@/components/warehouse/picking/Picking";
 export default async function PickingPage({ params }) {
     const order_id = params.order_id;
     console.log('order_id', order_id);
+    const sampleBarcode = ['5056348057744', '5060656828026', '5060656827968', '4895258300042']
     const generateRandomItems = () => {
         const itemCount = 4//Math.floor(Math.random() * 5) + 1; // Random count between 1 and 5
         const items = Array.from({ length: itemCount }, (_, i) => ({
@@ -16,7 +17,9 @@ export default async function PickingPage({ params }) {
                 aisle_number: 1,
                 location_id: "2B64NH",
                 shelf: "R"
-            }
+            },
+            barcode: sampleBarcode[i],
+
         }));
         return items;
     };

@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from 'react';
 import JsBarcode from 'jsbarcode';
 import styles from '@/styles/warehouse/picking-app/InitiateBarcodeScanner.module.scss';
 
-export default function InitiateBarcodeScanner() {
+export default function InitiateBarcodeScanner({ setIsInitiated }) {
     const svgRef = useRef(null);
     const [showPopup, setShowPopup] = useState(true);
     const [barcodeValue, setBarcodeValue] = useState('');
@@ -30,6 +30,7 @@ export default function InitiateBarcodeScanner() {
             // Assuming the barcode scanner inputs as keyboard events
             if (event.key === 'Enter') {
                 if (barcodeValue === barcodeSetUp) {
+                    setIsInitiated(true);
                     setShowPopup(false);
                 }
                 setBarcodeValue('');
