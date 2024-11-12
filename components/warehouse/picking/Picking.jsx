@@ -35,6 +35,7 @@ export default function Picking({ order }) {
 
     return (
         <>
+            <InitiateBarcodeScanner  />
             <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
                 <div className={styles.container}>
 
@@ -91,7 +92,7 @@ export default function Picking({ order }) {
                             <p className={styles.containerInfo}>Container {order.container || '1'}</p>
                         </div>
                         <div className={styles.barcodeInfo}>
-                            <InitiateBarcodeScanner value={order.barcodeText || '1234567890'} />
+
                             <p onClick={handleNextClick} className={styles.barcodeText}>{order.barcodeText || '1234567890'}</p>
                         </div>
                         {/* Warning Button */}
