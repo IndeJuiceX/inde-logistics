@@ -3,6 +3,7 @@
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 import { useEffect, useRef, useState } from 'react';
 import LocationDetails from '@/components/warehouse/picking/Locations';
+import InitiateBarcodeScanner from '@/components/warehouse/barcode/InitiateBarcodeScanner';
 
 export default function Picking({ order }) {
     const [windowHeight, setWindowHeight] = useState(0);
@@ -90,6 +91,7 @@ export default function Picking({ order }) {
                             <p className={styles.containerInfo}>Container {order.container || '1'}</p>
                         </div>
                         <div className={styles.barcodeInfo}>
+                            <InitiateBarcodeScanner value={order.barcodeText || '1234567890'} />
                             <p onClick={handleNextClick} className={styles.barcodeText}>{order.barcodeText || '1234567890'}</p>
                         </div>
                         {/* Warning Button */}
