@@ -51,7 +51,7 @@ export default function Picking({ order }) {
                     {/* Product & Location Section */}
                     <div className={styles.productList} style={{ 'maxHeight': maxHeight }}>
                         {order.items.map((item, index) => (
-                            <div className={styles.productItem} key={index}>
+                            <div className={styles.productItem} key={index} >
                                 {/* Product Image */}
                                 <div className={styles.productImageContainer}>
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -67,9 +67,9 @@ export default function Picking({ order }) {
 
                                 {/* Location Details */}
                                 <div className={styles.locationDetails}>
-                                    <div className={`${styles.locationItem} ${styles.width8rem}`}>A</div>
+                                    <div className={`${styles.locationItem} ${styles.width5rem}`}>A</div>
                                     <div className={`${styles.locationItem} ${styles.width5rem}`}>2</div>
-                                    <div className={`${styles.locationItem} ${styles.width8rem}`}>4</div>
+                                    <div className={`${styles.locationItem} ${styles.width5rem}`}>4</div>
                                     <div className={`${styles.locationItem} ${styles.width5rem}`}>A</div>
                                 </div>
                             </div>
