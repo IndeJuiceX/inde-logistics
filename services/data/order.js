@@ -2,7 +2,7 @@ import { validateOrderItems } from '@/services/schema';
 import { checkProductStock } from '@/services/data/product'; // Adjust the import path
 import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
-
+import { executeDataQuery } from '@/services/external/athena';
 
 export const createOrder = async (vendorId, order) => {
     try {
@@ -374,5 +374,15 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
         items: cleanResponseData(orderItemsData.data),
     };
     return { success: true, data: orderDetails };
+}
+
+export const getAllUnPickedOrders = async() => {
+    const query = `
+    SELECT pk,sk
+    FROM orders
+    WHERE status = 'accepted'
+    ORDER BY created_at DESC
+    LIMIT 1;
+  `;
 }
 

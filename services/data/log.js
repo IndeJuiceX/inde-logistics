@@ -1,5 +1,5 @@
 //import { runAthenaQuery } from "@/services/external/athena/index-1";
-import { executeLogsQuery } from "@services/external/athena";
+import { executeLogsQuery } from "@/services/external/athena";
 
 export async function getFilteredLogs(vendorId, startTimestamp, endTimestamp) {
   // Construct WHERE conditions
