@@ -126,18 +126,25 @@
   width: 5rem;
 }
 
-.pickerBarcodeSection {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
+.footer {
+  // display: flex;
+  // justify-content: space-between;
+  // align-items: center;
   background-color: #2d3748;
+  gap: 20px;
   /* gray-800 */
-  max-height: 80px;
+  height: 80px;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  align-items: center;
 }
 
 .pickerInfo {
-  // text-align: center;
+  display: flex;
+  align-items: center;
+  column-gap: 30px;
+  padding-left: 16px;
+  white-space: nowrap;
 }
 
 .pickerName {
@@ -152,17 +159,37 @@
   /* gray-400 */
 }
 
-.barcodeInfo {
+.barcodeMenu {
+  height: 100%;
+  width: 70%;
+}
+
+.barcodeError {
+  background: #f56565;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  height: 100%;
+  width: 100%;
+  justify-content: space-around;
+  border-radius: 10px 0 0 10px;
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 .barcodeImage {
   width: 8rem;
   height: auto;
   margin-bottom: 0.5rem;
-  background-color: white;
+  margin-left: auto;
 }
 
 .barcodeText {
