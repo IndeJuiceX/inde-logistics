@@ -1,4 +1,4 @@
-import Picking from "@/components/warehouse/picking/picking";
+import Picking from "@/components/warehouse/picking/Picking";
 
 export default async function PickingPage({ params }) {
     const order_id = params.order_id;
@@ -34,14 +34,15 @@ export default async function PickingPage({ params }) {
         barcodeText: `BAR-${1000 + i}`,
     }));
 
-// console.log('sampleOrders', sampleOrders);
+    console.log('sampleOrders', sampleOrders);
 
 
-return (
+    return (
 
         // sampleOrders.map((order, index) => (
         <>
             <Picking order={sampleOrders[order_id]} />
+            {/* <div>Order ID{order_id}</div> */}
         </>
         // ))
     )
