@@ -376,13 +376,24 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     return { success: true, data: orderDetails };
 }
 
-export const getAllUnPickedOrders = async() => {
+export const getNextUnPickedOrder = async() => {
     const query = `
     SELECT pk,sk
     FROM orders
     WHERE status = 'accepted'
     ORDER BY created_at DESC
     LIMIT 1;
-  `;
+  `;// get the order with accepted status..
+  const data = await executeDataQuery(query); 
+  // create a Ordershipment entry with status processing
+  //change the order status to processing..
+}
+
+export const updateOrderStatus = async(pk,sk,newStatus) =>{
+
+}
+
+export const createOrderShipment = async(item) =>{
+
 }
 
