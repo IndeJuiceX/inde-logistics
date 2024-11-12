@@ -1,12 +1,14 @@
 'use client';
 
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LocationDetails from '@/components/warehouse/picking/Locations';
 
 export default function Picking({ order }) {
     const [windowHeight, setWindowHeight] = useState(0);
     const [windowWidth, setWindowWidth] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(0); // Track the current item index
+    const itemRefs = useRef([]); // Array of refs for each item
 
     useEffect(() => {
         const handleResize = () => {
@@ -20,7 +22,16 @@ export default function Picking({ order }) {
 
     const maxHeight = (windowHeight - 160) + 'px';
 
-    console.log('order', order);
+    const handleNextClick = () => {
+        console.log('next clicked');
+
+        if (currentIndex < order.items.length - 1) {
+            const nextIndex = currentIndex + 1;
+            setCurrentIndex(nextIndex);
+            itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
     return (
         <>
             <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
@@ -45,27 +56,28 @@ export default function Picking({ order }) {
                             <p className={styles.label}>Order</p>
                             <p className={styles.value}>{order.orderNumber || '#AOYL'}</p>
                         </div>
-
-
                     </div>
 
                     {/* Product & Location Section */}
-                    <div className={styles.productList} style={{ 'maxHeight': maxHeight}}>
+                    <div className={styles.productList} style={{ maxHeight }}>
                         {order.items.map((item, index) => (
-                            <div className={styles.productItem} key={index} >
-
+                            <div
+                                className={`${styles.productItem} ${index < currentIndex ? styles.disabledItem : ''
+                                    }`}
+                                key={index}
+                                ref={(el) => (itemRefs.current[index] = el)} // Assign refs to each item
+                            >
                                 <div className={styles.productImageContainer}>
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
-                                        src={order.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
+                                        src={item.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
                                         alt="Product"
                                         className={styles.productImage}
                                     />
                                     <div className={styles.productQuantity}>
-                                        x{order.productQuantity || 1}
+                                        x{item.productQuantity || 1}
                                     </div>
                                 </div>
-                               
                                 <LocationDetails location={item.warehouse} styles={styles} />
                             </div>
                         ))}
@@ -78,14 +90,7 @@ export default function Picking({ order }) {
                             <p className={styles.containerInfo}>Container {order.container || '1'}</p>
                         </div>
                         <div className={styles.barcodeInfo}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            
-                            {/* <img
-                                src={order.barcodeImage || '/placeholder-barcode.png'}
-                                alt="Barcode"
-                                className={styles.barcodeImage}
-                            /> */}
-                            <p className={styles.barcodeText}>{order.barcodeText || '1234567890'}</p>
+                            <p onClick={handleNextClick} className={styles.barcodeText}>{order.barcodeText || '1234567890'}</p>
                         </div>
                         {/* Warning Button */}
                         <div className={styles.warningButtonContainer}>
@@ -93,7 +98,16 @@ export default function Picking({ order }) {
                         </div>
                     </div>
 
-
+                    {/* Next Button */}
+                    {/* <div className={styles.nextButtonContainer}>
+                        <button
+                            className={styles.nextButton}
+                            onClick={handleNextClick}
+                            disabled={currentIndex >= order.items.length - 1}
+                        >
+                            Next
+                        </button>
+                    </div> */}
                 </div>
             </div>
         </>

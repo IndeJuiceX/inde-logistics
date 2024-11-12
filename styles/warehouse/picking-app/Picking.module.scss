@@ -193,16 +193,12 @@
 // Button Colors
 .G {
   background-color: #22c55e;
-  /* green-500 */
   color: #ffffff;
-  /* white */
 }
 
 .W {
   background-color: #e5e7eb;
-  /* gray-200 */
   color: #374151;
-  /* gray-700 */
 }
 
 .BK {
@@ -214,9 +210,7 @@
 
 .R {
   background-color: #ef4444;
-  /* red-500 */
   color: #ffffff;
-  /* white */
 }
 
 .B {
@@ -228,56 +222,46 @@
 
 .GY {
   background-color: #6b7280;
-  /* gray-500 */
   color: #ffffff;
-  /* white */
 }
 
 .O {
   background-color: #f97316;
-  /* orange-500 */
   color: #ffffff;
-  /* white */
 }
 
 .W2 {
   background-color: #d1d5db;
-  /* gray-300 */
   color: #374151;
-  /* gray-700 */
 }
 
 .R2 {
   background-color: #dc2626;
-  /* red-600 */
   color: #ffffff;
-  /* white */
 }
 
 .B2 {
   background-color: #2563eb;
-  /* blue-600 */
   color: #ffffff;
-  /* white */
 }
 
 .Y {
   background-color: #facc15;
-  /* yellow-400 */
   color: #374151;
-  /* gray-700 */
 }
 
 .P {
   background-color: #f9a8d4;
-  /* pink-300 */
   color: #374151;
-  /* gray-700 */
 }
 
 .LI {
   background-color: #d8b4fe;
-  /* purple-300 */
   color: #ffffff;
-  /* white */
+}
+
+.disabledItem {
+  opacity: 0.5;
+  pointer-events: none;
+  background-color: #f8f8f8;
 }

@@ -1,7 +1,7 @@
 
 
 export default function Locations({ styles, location }) {
-    console.log('location', location);
+    // console.log('location', location);
 
     // const colors = {
     //     G: 'bg-green-500 text-white',
