@@ -93,7 +93,7 @@ export const createOrder = async (vendorId, order) => {
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
                     entity_type: 'Order',
-                    status: 'Accepted',
+                    status: 'accepted',
                     created_at: timestamp,
                     updated_at: timestamp,
                     // Include other necessary fields from 'order'
@@ -244,9 +244,9 @@ export const cancelOrder = async (order) => {
                     '#status': 'status',
                 },
                 ExpressionAttributeValues: {
-                    ':status': 'Cancelled',
+                    ':status': 'cancelled',
                     ':updated_at': timestamp,
-                    ':cancelled': 'Cancelled', // Define the :cancelled attribute value
+                    ':cancelled': 'cancelled', // Define the :cancelled attribute value
 
                 },
                 ConditionExpression: 'attribute_exists(pk) AND #status <> :cancelled',
@@ -297,7 +297,7 @@ export const cancelOrder = async (order) => {
             success: true,
             updatedOrder: {
                 ...order,
-                status: 'Cancelled',
+                status: 'cancelled',
                 updated_at: timestamp,
             },
         };
