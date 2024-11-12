@@ -2,18 +2,22 @@
 
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import LocationDetails from '@/components/warehouse/picking/Locations';
 import InitiateBarcodeScanner from '@/components/warehouse/barcode/InitiateBarcodeScanner';
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
+import { usePickingAppContext } from '@/contexts/PickingAppContext';
 
-export default function Picking({ order }) {
+export default function Picking({ order, order_id }) {
+    const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
+    const router = useRouter();
     const [windowHeight, setWindowHeight] = useState(0);
     const [windowWidth, setWindowWidth] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0); // Track the current item index
     const itemRefs = useRef([]); // Array of refs for each item
-    const [isInitiated, setIsInitiated] = useState(false);
+    // const [isInitiated, setIsInitiated] = useState(false);
 
-    console.log('order', order);
+    // console.log('order', order);
 
 
     useEffect(() => {
@@ -36,13 +40,17 @@ export default function Picking({ order }) {
                 setCurrentIndex(nextIndex);
                 itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+            else {
+                order_id++;
+                router.push(`/warehouse/picking/${order_id}`);
+            }
         }
     };
 
     return (
         <>
-            <InitiateBarcodeScanner setIsInitiated={setIsInitiated} />
-            {isInitiated &&
+            {/* <InitiateBarcodeScanner setIsInitiated={setBarcodeInitiated} /> */}
+            {isBarcodeInitiated &&
                 <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
                     <div className={styles.container}>
 
@@ -93,16 +101,17 @@ export default function Picking({ order }) {
                         </div>
 
                         {/* Picker Info & Barcode */}
-                        <div className={styles.pickerBarcodeSection}>
+                        <div className={styles.footer}>
                             <div className={styles.pickerInfo}>
-                                <p className={styles.pickerName}>{order.pickerName || 'Ali B.'}</p>
-                                <p className={styles.containerInfo}>Container {order.container || '1'}</p>
+                                <div>
+                                    <p className={styles.pickerName}>{order.pickerName || 'Ali B.'}</p>
+                                    <p className={styles.containerInfo}>Container {order.container || '1'}</p>
+                                </div>
+                                <div className={styles.warningButtonContainer}>
+                                    <button className={styles.warningButton}>!</button>
+                                </div>
                             </div>
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
-                            {/* Warning Button */}
-                            <div className={styles.warningButtonContainer}>
-                                <button className={styles.warningButton}>!</button>
-                            </div>
                         </div>
 
                         {/* Next Button */}

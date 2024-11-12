@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react"
+import { FaBarcode } from "react-icons/fa";
+import { MdAddCircleOutline, MdError, MdUpdate } from 'react-icons/md';
+
 
 
 
@@ -6,7 +9,7 @@ import { useEffect, useState } from "react"
 export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
     const [barcodeValue, setBarcodeValue] = useState('');
     const [barcodeError, setBarcodeError] = useState(false);
-    console.log('currentItem', currentItem);
+    // console.log('currentItem', currentItem);
 
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -33,15 +36,24 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
     }, [barcodeValue, currentItem]);
 
     return (
-        <div className={styles.barcodeInfo}>
+        <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {barcodeError &&
-                <img className={styles.barcodeImage} src="https://dev.indejuice.com/img/wh/barcode_scan.png" alt="Barcode Error" />
+                <>
+                    <div className={styles.barcodeError}>
+                            <button><MdAddCircleOutline /> New</button>
+                            <span style={{
+                                textAlign: 'center',
+                            }}>Barcode error.<br />Select option.</span>
+                            <button><MdUpdate /> Override</button>
+                    </div>
+                </>
             }
-            {!barcodeError &&
-                <img className={styles.barcodeImage} src="https://dev.indejuice.com/img/wh/barcode.png" alt="Barcode" />
+            {
+                !barcodeError &&
+                <FaBarcode className={styles.barcodeImage} />
             }
 
-        </div>
+        </>
     )
 }

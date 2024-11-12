@@ -44,7 +44,7 @@ export default async function PickingPage({ params }) {
 
         // sampleOrders.map((order, index) => (
         <>
-            <Picking order={sampleOrders[order_id]} />
+            <Picking order_id={order_id} order={sampleOrders[order_id]} />
             {/* <div>Order ID{order_id}</div> */}
         </>
         // ))
