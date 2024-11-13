@@ -3,7 +3,7 @@
 import PickingApp from '@/components/warehouse/picking/PickingApp';
 import React from 'react';
 
-export default function Layout({ children }) {
+export default async function Layout({ children }) {
     return (
         <PickingApp>{children}</PickingApp>
     );

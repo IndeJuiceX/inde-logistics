@@ -7,10 +7,11 @@ import LocationDetails from '@/components/warehouse/picking/Locations';
 import InitiateBarcodeScanner from '@/components/warehouse/barcode/InitiateBarcodeScanner';
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
+import { extractNameFromEmail } from '@/services/utils/index';
 
 export default function Picking({ order, order_id }) {
     // console.log('test order ', order);
-    
+
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
     const router = useRouter();
     const [windowHeight, setWindowHeight] = useState(0);
@@ -49,6 +50,20 @@ export default function Picking({ order, order_id }) {
         }
     };
 
+    const handleForceTick = () => {
+        if (currentIndex < order.items.length - 1) {
+            const nextIndex = currentIndex + 1;
+            setCurrentIndex(nextIndex);
+            itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        else {
+            order_id++;
+            router.push(`/warehouse/picking/${order_id}`);
+        }
+    }
+
+
+    const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     return (
         <>
             {/* <InitiateBarcodeScanner setIsInitiated={setBarcodeInitiated} /> */}
@@ -58,22 +73,22 @@ export default function Picking({ order, order_id }) {
 
                         {/* Header Section */}
                         <div className={styles.headerSection}>
-                            <div className={styles.orderCode}>{order.orderCode || 'X1'}</div>
+                            <div className={styles.orderCode}>X{totalQuantity || '0'}</div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Customer</p>
-                                <p className={styles.value}>{order.customerName || 'G M'}</p>
+                                <p className={styles.value}>{order.buyer.name || 'G M'}</p>
                             </div>
-                            <div className={styles.infoSection}>
-                                <p className={styles.label}>Referral</p>
-                                <p className={styles.value}>{order.referralCode || 'INVITERI'}</p>
-                            </div>
+                            {/* <div className={styles.infoSection}>
+                                <p className={styles.label}>Vendor</p>
+                                <p className={styles.value}>{order.vendor_id || 'INVITERI'}</p>
+                            </div> */}
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Delivery</p>
-                                <p className={styles.value}>{order.deliveryTime || '48H'}</p>
+                                <p className={styles.value}>24</p>
                             </div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Order</p>
-                                <p className={styles.value}>{order.orderNumber || '#AOYL'}</p>
+                                <p className={styles.value}>{order.order_id || '#ABCD'}</p>
                             </div>
                         </div>
 
@@ -89,12 +104,12 @@ export default function Picking({ order, order_id }) {
                                     <div className={styles.productImageContainer}>
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
-                                            src={item.productImage || 'https://cdn.indejuice.com/images/4j6.jpg'}
+                                            src={item.image || 'https://cdn.indejuice.com/images/4j6.jpg'}
                                             alt="Product"
                                             className={styles.productImage}
                                         />
                                         <div className={styles.productQuantity}>
-                                            x{item.productQuantity || 1}
+                                            x{item.quantity || 1}
                                         </div>
                                     </div>
                                     <div className={styles.productInfo}>
@@ -108,6 +123,7 @@ export default function Picking({ order, order_id }) {
                                                     .join(', ')}
                                             </p>
                                         </div>
+                                        <button onClick={handleForceTick}> force tick </button>
                                     </div>
                                     <LocationDetails location={item.warehouse} styles={styles} />
                                 </div>
@@ -118,8 +134,8 @@ export default function Picking({ order, order_id }) {
                         <div className={styles.footer}>
                             <div className={styles.pickerInfo}>
                                 <div>
-                                    <p className={styles.pickerName}>{order.pickerName || 'Ali B.'}</p>
-                                    <p className={styles.containerInfo}>Container {order.container || '1'}</p>
+                                    <p className={styles.pickerName}>{extractNameFromEmail(order.picker) || 'Ali B.'}</p>
+                                    <p className={styles.containerInfo}>Container 1</p>
                                 </div>
                                 <div className={styles.warningButtonContainer}>
                                     <button className={styles.warningButton}>!</button>

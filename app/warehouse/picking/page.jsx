@@ -69,15 +69,18 @@ export default async function PickingPage() {
 
     console.log('unPickedResult', JSON.stringify(unPickedResult, null, 2));
 
+    // console.log('unPickedResult.data', unPickedResult.data.length);
 
 
     return (
-
-        // sampleOrders.map((order, index) => (sampleOrders[order_id]
         <>
-            <Picking  order={unPickedResult.data} />
-            {/* <div>Order ID{order_id}</div> */}
+            {Array.isArray(unPickedResult.data) && unPickedResult.data.length === 0 && (
+                <div>No orders found</div>
+            )}
+            {unPickedResult.data && !Array.isArray(unPickedResult.data) && (
+                <Picking order={unPickedResult.data} />
+            )}
         </>
-        // ))
+
     )
 }

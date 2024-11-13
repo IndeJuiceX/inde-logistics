@@ -102,3 +102,12 @@ export const urlFormatter = (pathname, vendorId) => {
   const newPath = `/warehouse/${vendorId}/${currentSubPage}`;
   return newPath;
 }
+
+export const extractNameFromEmail = (email) => {
+  const match = email.match(/^(.+)-warehouse@indejuice\.com$/);
+  if (match) {
+    const name = match[1];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+  return null;
+}

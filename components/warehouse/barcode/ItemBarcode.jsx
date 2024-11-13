@@ -15,7 +15,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
         const handleKeyDown = (event) => {
             // Assuming the barcode scanner inputs as keyboard events
             if (event.key === 'Enter') {
-                if (barcodeValue === currentItem.barcode) {
+                if (currentItem.barcode && barcodeValue === currentItem.barcode) {
                     setBarcodeError(false);
                     setBarcodeValue(barcodeValue);
                     onBarcodeScanned(barcodeValue);
@@ -41,17 +41,17 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
             {barcodeError &&
                 <>
                     <div className={styles.barcodeError}>
-                            <button><MdAddCircleOutline /> New</button>
-                            <span style={{
-                                textAlign: 'center',
-                            }}>Barcode error.<br />Select option.</span>
-                            <button><MdUpdate /> Override</button>
+                        <button><MdAddCircleOutline /> New</button>
+                        <span style={{
+                            textAlign: 'center',
+                        }}>Barcode error.<br />Select option.</span>
+                        <button><MdUpdate /> Override</button>
                     </div>
                 </>
             }
             {
                 !barcodeError &&
-                <FaBarcode className={styles.barcodeImage} />
+                <FaBarcode className={styles.barcodeImage}  />
             }
 
         </>

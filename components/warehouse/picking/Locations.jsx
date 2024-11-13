@@ -38,8 +38,8 @@ export default function Locations({ styles, location }) {
         <div className={styles.locationDetails}>
             <div className={`${styles.locationItem} ${styles.width5rem}`}>A</div> {/* Aisle */}
             <div className={`${styles.locationItem} ${styles.width5rem}`}>2</div> {/* Aisle Number */}
-            <div className={`${styles.locationItem} ${styles.width5rem} ${styles[location.shelf]}`}>4</div> {/* Shelf */}
-            <div className={`${styles.locationItem} ${styles.width5rem} ${styles[location.shelf]}`}>A</div> {/* Shelf Number */}
+            <div className={`${styles.locationItem} ${styles.width5rem} ${location && styles[location.shelf]}`}>4</div> {/* Shelf */}
+            <div className={`${styles.locationItem} ${styles.width5rem} ${location && styles[location.shelf]}`}>A</div> {/* Shelf Number */}
         </div>
     )
 }
