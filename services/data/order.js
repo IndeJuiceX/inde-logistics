@@ -1,10 +1,11 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock, getProductById } from '@/services/data/product'; // Adjust the import path
-import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/external/dynamo/wrapper';
+import { getItem, transactWriteItems, queryItems, updateItem,  } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
 import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
 import { getLoggedInUser } from '@/app/actions';
+import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 
 export const createOrder = async (vendorId, order) => {
     try {
@@ -379,7 +380,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 }
 
 export const getNextUnPickedOrder = async () => {
-    const user = getLoggedInUser()
+    const user = await getLoggedInUser()
     const query = `
     SELECT vendor_order_id,vendor_id
     FROM orders
@@ -394,17 +395,18 @@ export const getNextUnPickedOrder = async () => {
     }
 
     const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    console.log(updateResponse)
+    console.log('updateResponse',updateResponse)
     if(!updateResponse?.success) {
         return {success:false ,error:updateResponse.error || 'Error while updating order shipment'}
     }
     const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+    console.log('orderDetailsData',orderDetailsData)
     if(!orderDetailsData.success) {
         return {success:false ,error:orderDetailsData.error || 'Error in getting Order Details'}
     }
     const orderData = orderDetailsData.data
     orderData.picker = user?.email||'Unknown'
-
+    
     return {
         success: true,
         data : orderData,
@@ -414,7 +416,7 @@ export const getNextUnPickedOrder = async () => {
 }
 
 export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
-    const orderData = await getOrder(vendorId, vendorOrderId);
+    const orderData = await getOrder(vendorId, orderId);
     if (!orderData.success) {
         return { success: false, error: orderData?.error || 'Order not found ' };
     }
