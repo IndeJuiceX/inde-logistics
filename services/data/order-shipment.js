@@ -19,12 +19,12 @@ export const createShipmentAndUpdateOrder = async ({ vendorId, orderId }) => {
   const putVendorOrderShipment = {
     Put: {
       Item: {
-        pk: { S: `VENDORORDERSHIPMENT#${vendorId}` },
-        sk: { S: `ORDERSHIPMENT#${orderId}` },
-        create_at: { S: timestamp },
-        update_at: { S: timestamp },
-        entity_type: { S: 'OrderShipment' },
-        status: { S: 'processing' },
+        pk: `VENDORORDERSHIPMENT#${vendorId}` ,
+        sk:  `ORDERSHIPMENT#${orderId}` ,
+        create_at: timestamp,
+        update_at: timestamp,
+        entity_type: 'OrderShipment',
+        status: 'processing',
         picker : user?.email ||'unknown'
         // Add any additional fields as necessary
       },
@@ -36,13 +36,13 @@ export const createShipmentAndUpdateOrder = async ({ vendorId, orderId }) => {
   const updateOrder = {
     Update: {
       Key: {
-        pk: { S: `VENDORORDER#${vendorId}` }, // Replace with your actual PK format
-        sk: { S: `ORDER#${orderId}` }, // Replace with your actual SK format
+        pk: `VENDORORDER#${vendorId}`, // Replace with your actual PK format
+        sk: `ORDER#${orderId}`, // Replace with your actual SK format
       },
       UpdateExpression: 'SET update_at = :updateAt, #st = :status',
       ExpressionAttributeValues: {
-        ':updateAt': { S: timestamp },
-        ':status': { S: 'processing' },
+        ':updateAt': timestamp,
+        ':status': 'processing' ,
       },
       ExpressionAttributeNames: {
         '#st': 'status', // Alias for 'status' if it's a reserved keyword
