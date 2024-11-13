@@ -146,9 +146,8 @@ export default function AllProducts({ vendorId, totalProductsData }) {
                 ))}
               </ul>
 
-              {/* Pagination controls */}
+              {/* Manual Pagination controls */}
               {totalProducts > 0 && totalPages > 1 && (
-                // pageSize, totalProducts, setPage, page, totalProductsData, searchTerm, setProducts, setLoading, setTotalProducts
                 <ManualPagination
                   pageSize={pageSize}
                   totalProducts={totalProducts}
