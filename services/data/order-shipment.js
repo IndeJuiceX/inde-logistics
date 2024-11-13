@@ -21,8 +21,8 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
       Item: {
         pk: `VENDORORDERSHIPMENT#${vendorId}` ,
         sk:  `ORDERSHIPMENT#${orderId}` ,
-        create_at: timestamp,
-        update_at: timestamp,
+        created_at: timestamp,
+        updated_at: timestamp,
         entity_type: 'OrderShipment',
         status: 'processing',
         picker : user?.email ||'unknown'
