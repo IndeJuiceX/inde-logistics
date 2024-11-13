@@ -1,9 +1,10 @@
 import { validateOrderItems } from '@/services/schema';
-import { checkProductStock } from '@/services/data/product'; // Adjust the import path
+import { checkProductStock, getProductById } from '@/services/data/product'; // Adjust the import path
 import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
 import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
+import { getLoggedInUser } from '@/app/actions';
 
 export const createOrder = async (vendorId, order) => {
     try {
@@ -378,7 +379,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 }
 
 export const getNextUnPickedOrder = async () => {
-    console.log('hitting get next unpicked---')
+    const user = getLoggedInUser()
     const query = `
     SELECT vendor_order_id,vendor_id
     FROM orders
@@ -394,9 +395,64 @@ export const getNextUnPickedOrder = async () => {
 
     const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
     console.log(updateResponse)
+    if(!updateResponse?.success) {
+        return {success:false ,error:updateResponse.error || 'Error while updating order shipment'}
+    }
+    const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+    if(!orderDetailsData.success) {
+        return {success:false ,error:orderDetailsData.error || 'Error in getting Order Details'}
+    }
+    const orderData = orderDetailsData.data
+    orderData.picker = user?.email||'Unknown'
 
-    // create a Ordershipment entry with status processing
-    //change the order status to processing..
-    //get the order and order details 
+    return {
+        success: true,
+        data : orderData,
+
+    }
+
 }
 
+export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
+    const orderData = await getOrder(vendorId, vendorOrderId);
+    if (!orderData.success) {
+        return { success: false, error: orderData?.error || 'Order not found ' };
+    }
+    const order = orderData.data
+
+    const orderItemsData = await queryItemsWithPkAndSk(`VENDORORDERITEM#${vendorId}`, `ORDER#${orderId}#ITEM#`)
+    if (!orderItemsData.success) {
+        return { success: false, error: orderItemsData?.error || 'Order Items not found ' };
+    }
+
+    const orderItems = orderItemsData.data
+
+    const cleanOrderItem = []
+
+    const cleanOrderItems = await Promise.all(orderItems.map(async (orderItem) => {
+        const productData = await getProductById(vendorId, orderItem.vendor_sku);
+        const product = productData?.data;
+        if (product) {
+            return {
+                vendor_sku: orderItem.vendor_sku,
+                quantity: orderItem.quantity,
+                name: product.name, // Example of adding product data
+                brand_name: product.brand_name,
+                attributes: product.attributes,
+                image: product.image,
+                warehouse: product?.warehouse || null
+            };
+        }
+        return null;
+
+    }));
+    const filteredCleanOrderItems = cleanOrderItems.filter(item => item !== null);
+
+    const cleanOrder = cleanResponseData(order)
+    cleanOrder.items = filteredCleanOrderItems
+    return {
+        success: true,
+        data: cleanOrder
+    };
+
+}
