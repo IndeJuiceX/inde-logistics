@@ -391,11 +391,11 @@ export const getNextUnPickedOrder = async () => {
     const data = await executeDataQuery({ query });
     const nextOrderKeys = data?.data[0] || null
     if (!nextOrderKeys) {
-        return { success: false, error: 'No orders found' }
+        return { success: true, data: [] }
     }
 
     const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    // console.log('updateResponse',updateResponse)
+
     if(!updateResponse?.success) {
         return {success:false ,error:updateResponse.error || 'Error while updating order shipment'}
     }
