@@ -10,10 +10,10 @@ import { getLoggedInUser } from "@/app/actions";
  * @param {string} params.orderId - The ID of the order.
  * @returns {Promise<Object>} - The result of the transaction.
  */
-export const createShipmentAndUpdateOrder = async ({ vendorId, orderId }) => {
+export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
   // Current timestamp
   const timestamp = new Date().toISOString();
-  const user = getLoggedInUser()
+  const user = await getLoggedInUser()
 
   // Define the Put operation for VendorOrderShipment
   const putVendorOrderShipment = {
@@ -53,7 +53,8 @@ export const createShipmentAndUpdateOrder = async ({ vendorId, orderId }) => {
 
   // Combine the operations into an array
   const transactionItems = [putVendorOrderShipment, updateOrder];
-
+  console.log('transactionItems', JSON.stringify(transactionItems, null, 2));
+  
   // Execute the transaction
   const result = await transactWriteItems(transactionItems);
 
