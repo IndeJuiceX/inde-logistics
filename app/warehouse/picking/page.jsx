@@ -1,7 +1,10 @@
+'use server';
+
 import Picking from "@/components/warehouse/picking/Picking";
 import { getNextUnPickedOrder } from '@/services/data/order';
 
-export default async function PickingPage({ params }) {
+export default async function PickingPage() {
+    /*
     const order_id = 1;
     console.log('order_id', order_id);
     const sampleBarcode = ['5056348057744', '5060656828026', '5060656827968', '4895258300042']
@@ -57,14 +60,14 @@ export default async function PickingPage({ params }) {
         barcodeImage: "barcode.png",
         barcodeText: `BAR-${1000 + i}`,
     }));
-
+    */
     const unPickedResult = await getNextUnPickedOrder();
 
     if (!unPickedResult.success) {
         console.log('Failed to get unpicked order items', unPickedResult.error);
     }
 
-    console.log(unPickedResult);
+    console.log('unPickedResult', JSON.stringify(unPickedResult, null, 2));
 
 
 
@@ -72,7 +75,7 @@ export default async function PickingPage({ params }) {
 
         // sampleOrders.map((order, index) => (sampleOrders[order_id]
         <>
-            <Picking order_id={order_id} order={sampleOrders[order_id]} />
+            <Picking  order={unPickedResult.data} />
             {/* <div>Order ID{order_id}</div> */}
         </>
         // ))

@@ -9,7 +9,7 @@ import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 
 export default function Picking({ order, order_id }) {
-    console.log('test order ', order);
+    // console.log('test order ', order);
     
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
     const router = useRouter();

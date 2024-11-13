@@ -53,7 +53,7 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
 
   // Combine the operations into an array
   const transactionItems = [putVendorOrderShipment, updateOrder];
-  console.log('transactionItems', JSON.stringify(transactionItems, null, 2));
+  // console.log('transactionItems', JSON.stringify(transactionItems, null, 2));
   
   // Execute the transaction
   const result = await transactWriteItems(transactionItems);

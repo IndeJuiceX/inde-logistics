@@ -181,7 +181,7 @@ export const updateOrderBuyer = async (vendorId, vendor_order_id, buyer) => {
     // Call the updateItem function
     const result = await updateItem(pkVal, skVal, updatedFields);
 
-    console.log(result)
+    // console.log(result)
     if (result.success) {
         return {
             success: true,
@@ -351,7 +351,7 @@ export const getAllOrders = async (vendorId, pageSize = 25, exclusiveStartKey = 
 
 export const getOrderDetails = async (vendorId, vendorOrderId) => {
     const orderData = await getOrder(vendorId, vendorOrderId);
-    console.log(orderData)
+    // console.log(orderData)
     if (!orderData.success) {
         return { success: false, error: orderData?.error || 'Order not found ' };
     }
@@ -395,12 +395,12 @@ export const getNextUnPickedOrder = async () => {
     }
 
     const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    console.log('updateResponse',updateResponse)
+    // console.log('updateResponse',updateResponse)
     if(!updateResponse?.success) {
         return {success:false ,error:updateResponse.error || 'Error while updating order shipment'}
     }
     const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    console.log('orderDetailsData',orderDetailsData)
+    // console.log('orderDetailsData',orderDetailsData)
     if(!orderDetailsData.success) {
         return {success:false ,error:orderDetailsData.error || 'Error in getting Order Details'}
     }
