@@ -9,6 +9,7 @@ import ShipmentHeader from '@/components/warehouse/ShipmentHeader';
 import PageSpinner from '@/components/loader/PageSpinner';
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 import MissingItem from '@/components/warehouse/shipments/shipment/MissingItem';
+import styles from '@/styles/warehouse/stock-app/shipmentItems.module.scss';
 
 export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const params = useParams();
@@ -89,48 +90,49 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
         <>
             <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
 
-            <div className="overflow-x-auto bg-white">
-                <table className="min-w-full text-left">
-                    <thead className="bg-gray-100">
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead className={styles.tableHeader}>
                         <tr>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">IMAGE</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">PRODUCT</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">BRAND</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">SENT</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">R.</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">F.</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">A.</th>
-                            <th className="py-3 px-4 text-gray-600 font-semibold">ACTION</th>
+                            <th>IMAGE</th>
+                            <th>PRODUCT</th>
+                            <th>BRAND</th>
+                            <th>SENT</th>
+                            <th>R.</th>
+                            <th>F.</th>
+                            <th>A.</th>
+                            <th>ACTION</th>
                         </tr>
                     </thead>
-                    <tbody className="text-black">
+                    <tbody>
                         {shipmentDetails.items &&
                             shipmentDetails.items.length > 0 &&
                             shipmentDetails.items.map((item, index) => (
                                 <React.Fragment key={index}>
-                                    <tr
-                                        className="border-b hover:bg-gray-50"
-                                        onClick={() => handleShowItem(item)}
-                                    >
-                                        <td className="py-4 px-4">
-                                            <img src={item.image} alt={item.name} className="w-12 h-12" />
+                                    <tr className={styles.tableRow} onClick={() => handleShowItem(item)}>
+                                        <td>
+                                            <img src={item.image} alt={item.name} className={styles.itemImage} />
                                         </td>
-                                        <td className="py-4 px-4 flex items-center space-x-2">
+                                        <td className={styles.productCell}>
                                             {item.name}
                                         </td>
-                                        <td className="py-4 px-4">{item.brand_name}</td>
-                                        <td className="py-4 px-4">{item.stock_in}</td>
-                                        <td className="py-4 px-4">
+                                        <td className={styles.brandCell}>
+                                            {item.brand_name}
+                                        </td>
+                                        <td className={styles.sentCell}>
+                                            {item.stock_in}
+                                        </td>
+                                        <td className={styles.receivedCell}>
                                             {item.received !== null && item.received !== undefined
                                                 ? item.received
                                                 : '-'}
                                         </td>
-                                        <td className="py-4 px-4">
+                                        <td className={styles.faultyCell}>
                                             {item.faulty !== null && item.faulty !== undefined
                                                 ? item.faulty
                                                 : '-'}
                                         </td>
-                                        <td className="py-4 px-4">
+                                        <td className={styles.aCell}>
                                             {item.received !== null &&
                                                 item.received !== undefined &&
                                                 item.faulty !== null &&
@@ -138,17 +140,15 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                                                 ? Math.max(item.received - item.faulty, 0)
                                                 : '-'}
                                         </td>
-                                        <td className="py-4 px-4">
+                                        <td>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleToggleShowMore(index);
                                                 }}
-                                                className="text-blue-500 underline"
+                                                className={styles.showMoreButton}
                                             >
-                                                {expandedRowIndex === index
-                                                    ? 'Show Less'
-                                                    : 'Show More'}
+                                                {expandedRowIndex === index ? 'Show Less' : 'Show More'}
                                             </button>
                                         </td>
                                     </tr>
@@ -173,15 +173,12 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                 </table>
             </div>
 
-            <div className="flex flex-col items-center gap-4 mt-16">
-                <button className="w-full px-4 py-2 border border-gray-300 text-gray-500 rounded bg-gray-50" onClick={handleMissingItem}>
+            <div className={styles.buttonContainer}>
+                <button className={styles.missingButton} onClick={handleMissingItem}>
                     ADD MISSING ITEM
                 </button>
                 <button
-                    className={`w-full px-4 py-2 text-white rounded ${allItemsHaveReceivedKey
-                        ? 'bg-green-500'
-                        : 'bg-gray-400 cursor-not-allowed'
-                        }`}
+                    className={`${styles.updateButton} ${!allItemsHaveReceivedKey ? styles.updateButtonDisabled : ''}`}
                     disabled={!allItemsHaveReceivedKey}
                     onClick={updateConfirmStock}
                 >
@@ -189,7 +186,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                 </button>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} classNames={selectedModalItem === 'missingItem' ? 'w-[80%]' : null}>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} style={{ width: '85%' }}>
                 {selectedModalItem === 'missingItem' && (
                     <MissingItem
                         vendor_id={params.vendor_id}

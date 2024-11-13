@@ -1,0 +1,93 @@
+.tableWrapper {
+  overflow-x: auto;
+  background-color: white;
+}
+
+.table {
+  width: 100%;
+  background-color: #f8f9fa;
+  border-collapse: separate;
+  border-spacing: 0 10px; /* Adjust the value to add space between rows */
+  padding: 0 10px;
+
+  thead {
+    th {
+      text-align: left;
+      padding-left: 20px;
+    }
+  }
+
+  td {
+    padding: 15px 20px; /* Adjust as needed */
+    white-space: nowrap;
+
+    &:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+  }
+}
+
+.tableRow {
+  background: #fff;
+  box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.itemImage {
+  width: 3rem;
+  height: 3rem;
+}
+
+.showMoreButton {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 4rem;
+}
+
+.missingButton {
+  background-color: transparent;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  height: 50px;
+  margin: 8px 0;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  outline: 0;
+  width: 100%;
+  max-width: 98%;
+  border-radius: 6px;
+  font-weight: 600;
+  margin: 0 auto;
+}
+
+.updateButton {
+  outline: 0;
+  width: 100%;
+  max-width: 98%;
+  margin: 0 auto;
+  height: 80px;
+  border-radius: 6px;
+  border: 0;
+  font-weight: 600;
+  background-color: #4db789;
+  font-size: 18px;
+  color: #fff;
+
+  &.updateButtonDisabled {
+    background-color: #c4c4c4;
+    color: rgba(16, 16, 16, 0.3);
+    cursor: not-allowed;
+  }
+}
