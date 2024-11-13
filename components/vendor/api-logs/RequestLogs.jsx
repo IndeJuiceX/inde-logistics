@@ -5,6 +5,7 @@ import RequestLabel from "@/components/vendor/api-logs/RequestLabel";
 import { getDateAndTime } from "@/services/utils/convertTime";
 import FilterLog from "./FilterLog";
 import Breadcrumbs from "@/components/layout/common/Breadcrumbs";
+import NextKeyPagination from "@/components/vendor/Pagination/NextKeyPagination";
 
 export default function RequestLogs({ data, vendorId }) {
     const [loading, setLoading] = useState(true);
@@ -197,7 +198,7 @@ export default function RequestLogs({ data, vendorId }) {
                             ))}
                         </tbody>
                     </table>
-                    <div className="flex space-x-2 mt-4">
+                    {/* <div className="flex space-x-2 mt-4">
                         {Array.from({ length: page }, (_, index) => (
                             <button
                                 key={index + 1}
@@ -212,7 +213,8 @@ export default function RequestLogs({ data, vendorId }) {
                         <button onClick={handleNext} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" disabled={loading}>
                             Next
                         </button>
-                    </div>
+                    </div> */}
+                    <NextKeyPagination currentPage={selectedPage} totalPages={page} onPageChange={handlePageClick} onNext={handleNext} isLoading={loading} />
                 </div>
             </div>
         </>

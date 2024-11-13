@@ -9,6 +9,7 @@ import ProductSearch from './ProductSearch';
 import ProductBox from './ProductBox';
 import ManualPagination from '../Pagination/ManualPagination';
 import ProductSearchByFields from '@/components/vendor/product/ProductSearchByFields';
+import NextKeyPagination from "@/components/vendor/Pagination/NextKeyPagination";
 
 export default function AllProducts({ vendorId, totalProductsData }) {
   const router = useRouter(); // Use Next.js router for navigation
@@ -29,6 +30,9 @@ export default function AllProducts({ vendorId, totalProductsData }) {
 
   const [totalPages, setTotalPages] = useState(Math.ceil(totalProducts / pageSize)); // Total number of pages
 
+  const [nextTokens, setNextTokens] = useState([]);
+  const [selectedPage, setSelectedPage] = useState(1);
+  const [currentToken, setCurrentToken] = useState(null);
 
 
   // Handle page click
@@ -93,13 +97,20 @@ export default function AllProducts({ vendorId, totalProductsData }) {
   };
 
   useEffect(() => {
-
     console.log('Filter:', filter);
     if (filter && filter.searchTerm !== '') {
       handleSearch();
     }
 
   }, [filter]);
+
+  const handleNext = async () => {
+    const nextPage = page + 1;
+        setNextTokens([...nextTokens, { [nextPage]: currentToken }]);
+        setPage(nextPage);
+        setSelectedPage(nextPage);
+        // fetchLogs(currentToken, queryString);
+  };
 
   return (
     <>
@@ -147,7 +158,7 @@ export default function AllProducts({ vendorId, totalProductsData }) {
               </ul>
 
               {/* Manual Pagination controls */}
-              {totalProducts > 0 && totalPages > 1 && (
+              {/* {totalProducts > 0 && totalPages > 1 && (
                 <ManualPagination
                   pageSize={pageSize}
                   totalProducts={totalProducts}
@@ -160,7 +171,10 @@ export default function AllProducts({ vendorId, totalProductsData }) {
                   setTotalProducts={setTotalProducts}
                   handlePageClick={handlePageClick}
                 />
-              )}
+              )} */}
+
+              <NextKeyPagination currentPage={page} totalPages={totalPages} onPageChange={handlePageClick} isLoading={loading} onNext={handleNext} />
+
             </>
           )}
         </div>
