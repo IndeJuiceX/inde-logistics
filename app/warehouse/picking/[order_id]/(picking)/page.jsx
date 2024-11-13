@@ -4,6 +4,24 @@ export default async function PickingPage({ params }) {
     const order_id = params.order_id;
     console.log('order_id', order_id);
     const sampleBarcode = ['5056348057744', '5060656828026', '5060656827968', '4895258300042']
+    const sampleAttributes = [{
+        "volume": "10ml",
+        "nicotine": [
+            "5mg"
+        ],
+        "vgpg": "50VG/50PG"
+    }, {
+        "volume": "20ml",
+        "nicotine": [
+            "6mg"
+        ],
+        "vgpg": "60VG/60PG",
+        "flavor": "Mint",
+        "size": "Small",
+        "color": "Red",
+        "weight": "100g",
+        "size": ""
+    }]
     const generateRandomItems = () => {
         const itemCount = 4//Math.floor(Math.random() * 5) + 1; // Random count between 1 and 5
         const items = Array.from({ length: itemCount }, (_, i) => ({
@@ -11,14 +29,16 @@ export default async function PickingPage({ params }) {
             name: `Item ${i + 1}`,
             warning: "This item contains hazardous material. Handle with care.",
             quantity: Math.floor(Math.random() * 10) + 1, // Random quantity between 1 and 10
+            brand_name: `Brand Name ${i + 1}`,
             warehouse: {
                 shelf_number: 7,
                 aisle: "E",
                 aisle_number: 1,
                 location_id: "2B64NH",
-                shelf: "R"
+                shelf: "R2"
             },
             barcode: sampleBarcode[i],
+            attributes: sampleAttributes[i]
 
         }));
         return items;

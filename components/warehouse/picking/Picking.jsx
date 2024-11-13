@@ -17,7 +17,7 @@ export default function Picking({ order, order_id }) {
     const itemRefs = useRef([]); // Array of refs for each item
     // const [isInitiated, setIsInitiated] = useState(false);
 
-    // console.log('order', order);
+    console.log('order', order);
 
 
     useEffect(() => {
@@ -93,6 +93,18 @@ export default function Picking({ order, order_id }) {
                                         />
                                         <div className={styles.productQuantity}>
                                             x{item.productQuantity || 1}
+                                        </div>
+                                    </div>
+                                    <div className={styles.productInfo}>
+                                        <p className={styles.productName}>{item.name}</p>
+                                        <p className={styles.productWarning}>{item.brand_name}</p>
+                                        <div className={styles.productAttributes}>
+                                            <p className={styles.attributes}>
+                                                {Object.values(item.attributes || {})
+                                                    .filter(value => value && value.length > 0)
+                                                    .map(value => Array.isArray(value) ? value.join(', ') : value)
+                                                    .join(', ')}
+                                            </p>
                                         </div>
                                     </div>
                                     <LocationDetails location={item.warehouse} styles={styles} />
