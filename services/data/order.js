@@ -1,6 +1,6 @@
 import { validateOrderItems } from '@/services/schema';
 import { checkProductStock, getProductById } from '@/services/data/product'; // Adjust the import path
-import { getItem, transactWriteItems, queryItems, updateItem,  } from '@/services/external/dynamo/wrapper';
+import { getItem, transactWriteItems, queryItems, updateItem, } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
 import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
@@ -380,7 +380,33 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 }
 
 export const getNextUnPickedOrder = async () => {
-    const user = await getLoggedInUser()
+    const user = await getLoggedInUser();
+    if (!user || !user?.email || user.email.includes('warehouse@indejuice.com')) {
+        return { success: false, error: 'Not Authorized' }
+    }
+    const queryForOpenedProcessingOrder = `
+    SELECT pk,sk
+    FROM order_shipments
+    WHERE status = 'processing' AND picker = ${user.email}
+    ORDER BY created_at ASC
+    LIMIT 1;
+  `;
+    const existingData = await executeDataQuery({ queryForOpenedProcessingOrder });
+    const existingKeys = existingData?.data[0] || null
+    if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
+        const vendorId = existingKeys.pk.split('#')[1]
+        const orderId = existingKeys.sk.split('#')[1]
+        const orderDetailsData = await getOrderWithItemDetails(vendorId,orderId)
+        const orderData = orderDetailsData.data
+        orderData.picker = user.email
+        return {
+            success: true,
+            data: orderData,
+
+        }
+    }
+
+
     const query = `
     SELECT vendor_order_id,vendor_id
     FROM orders
@@ -396,20 +422,20 @@ export const getNextUnPickedOrder = async () => {
 
     const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
 
-    if(!updateResponse?.success) {
-        return {success:false ,error:updateResponse.error || 'Error while updating order shipment'}
+    if (!updateResponse?.success) {
+        return { success: false, error: updateResponse.error || 'Error while updating order shipment' }
     }
     const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    console.log('orderDetailsData',orderDetailsData)
-    if(!orderDetailsData.success) {
-        return {success:false ,error:orderDetailsData.error || 'Error in getting Order Details'}
+    console.log('orderDetailsData', orderDetailsData)
+    if (!orderDetailsData.success) {
+        return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
     }
     const orderData = orderDetailsData.data
-    orderData.picker = user?.email||'Unknown'
-    
+    orderData.picker = user?.email || 'Unknown'
+
     return {
         success: true,
-        data : orderData,
+        data: orderData,
 
     }
 
