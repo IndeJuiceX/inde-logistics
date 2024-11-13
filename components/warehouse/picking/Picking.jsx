@@ -9,6 +9,8 @@ import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 
 export default function Picking({ order, order_id }) {
+    console.log('test order ', order);
+    
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
     const router = useRouter();
     const [windowHeight, setWindowHeight] = useState(0);
@@ -123,6 +125,9 @@ export default function Picking({ order, order_id }) {
                                     <button className={styles.warningButton}>!</button>
                                 </div>
                             </div>
+                            {/* <div>
+                                <button>Item Completed</button>
+                            </div> */}
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
                         </div>
 
