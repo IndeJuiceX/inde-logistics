@@ -381,17 +381,17 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 
 export const getNextUnPickedOrder = async () => {
     const user = await getLoggedInUser();
-    if (!user || !user?.email || user.email.includes('warehouse@indejuice.com')) {
+    if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
         return { success: false, error: 'Not Authorized' }
     }
-    const queryForOpenedProcessingOrder = `
+    let query = `
     SELECT pk,sk
     FROM order_shipments
     WHERE status = 'processing' AND picker = ${user.email}
     ORDER BY created_at ASC
     LIMIT 1;
   `;
-    const existingData = await executeDataQuery({ queryForOpenedProcessingOrder });
+    const existingData = await executeDataQuery({ query });
     const existingKeys = existingData?.data[0] || null
     if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
         const vendorId = existingKeys.pk.split('#')[1]
@@ -407,7 +407,7 @@ export const getNextUnPickedOrder = async () => {
     }
 
 
-    const query = `
+    query = `
     SELECT vendor_order_id,vendor_id
     FROM orders
     WHERE status = 'accepted'
