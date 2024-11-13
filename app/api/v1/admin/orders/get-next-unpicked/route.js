@@ -23,7 +23,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
         // Update the stock shipment item
         const unPickedResult = await getNextUnPickedOrder();
 
-        if (!unshelvedResult.success) {
+        if (!unPickedResult.success) {
             return NextResponse.json({ error: 'Failed to get unpicked order items', details: unPickedResult.error }, { status: 400 });
         }
 
