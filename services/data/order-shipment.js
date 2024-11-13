@@ -47,7 +47,7 @@ export const createShipmentAndUpdateOrder = async ({ vendorId, orderId }) => {
       ExpressionAttributeNames: {
         '#st': 'status', // Alias for 'status' if it's a reserved keyword
       },
-      ConditionExpression: 'attribute_exists(PK) AND attribute_exists(SK)',
+      ConditionExpression: 'attribute_exists(pk) AND attribute_exists(sk)',
     }
   };
 
