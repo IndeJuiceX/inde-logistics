@@ -21,8 +21,8 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
       Item: {
         pk: `VENDORORDERSHIPMENT#${vendorId}` ,
         sk:  `ORDERSHIPMENT#${orderId}` ,
-        create_at: timestamp,
-        update_at: timestamp,
+        created_at: timestamp,
+        updated_at: timestamp,
         entity_type: 'OrderShipment',
         status: 'processing',
         picker : user?.email ||'unknown'
@@ -53,7 +53,6 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
 
   // Combine the operations into an array
   const transactionItems = [putVendorOrderShipment, updateOrder];
-  // console.log('transactionItems', JSON.stringify(transactionItems, null, 2));
   
   // Execute the transaction
   const result = await transactWriteItems(transactionItems);
