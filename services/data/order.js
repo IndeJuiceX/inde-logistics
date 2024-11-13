@@ -1,8 +1,10 @@
 import { validateOrderItems } from '@/services/schema';
-import { checkProductStock } from '@/services/data/product'; // Adjust the import path
+import { checkProductStock, getProductById } from '@/services/data/product'; // Adjust the import path
 import { getItem, transactWriteItems, queryItems, updateItem } from '@/services/external/dynamo/wrapper';
 import { generateOrderId, cleanResponseData } from '@/services/utils';
-
+import { executeDataQuery } from '@/services/external/athena';
+import { createShipmentAndUpdateOrder } from './order-shipment';
+import { getLoggedInUser } from '@/app/actions';
 
 export const createOrder = async (vendorId, order) => {
     try {
@@ -93,7 +95,7 @@ export const createOrder = async (vendorId, order) => {
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
                     entity_type: 'Order',
-                    status: 'Accepted',
+                    status: 'accepted',
                     created_at: timestamp,
                     updated_at: timestamp,
                     // Include other necessary fields from 'order'
@@ -244,9 +246,9 @@ export const cancelOrder = async (order) => {
                     '#status': 'status',
                 },
                 ExpressionAttributeValues: {
-                    ':status': 'Cancelled',
+                    ':status': 'cancelled',
                     ':updated_at': timestamp,
-                    ':cancelled': 'Cancelled', // Define the :cancelled attribute value
+                    ':cancelled': 'cancelled', // Define the :cancelled attribute value
 
                 },
                 ConditionExpression: 'attribute_exists(pk) AND #status <> :cancelled',
@@ -297,7 +299,7 @@ export const cancelOrder = async (order) => {
             success: true,
             updatedOrder: {
                 ...order,
-                status: 'Cancelled',
+                status: 'cancelled',
                 updated_at: timestamp,
             },
         };
@@ -376,3 +378,81 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     return { success: true, data: orderDetails };
 }
 
+export const getNextUnPickedOrder = async () => {
+    const user = getLoggedInUser()
+    const query = `
+    SELECT vendor_order_id,vendor_id
+    FROM orders
+    WHERE status = 'accepted'
+    ORDER BY created_at ASC
+    LIMIT 1;
+  `;// get the order with accepted status..
+    const data = await executeDataQuery({ query });
+    const nextOrderKeys = data?.data[0] || null
+    if (!nextOrderKeys) {
+        return { success: false, error: 'No orders found' }
+    }
+
+    const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+    console.log(updateResponse)
+    if(!updateResponse?.success) {
+        return {success:false ,error:updateResponse.error || 'Error while updating order shipment'}
+    }
+    const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+    if(!orderDetailsData.success) {
+        return {success:false ,error:orderDetailsData.error || 'Error in getting Order Details'}
+    }
+    const orderData = orderDetailsData.data
+    orderData.picker = user?.email||'Unknown'
+
+    return {
+        success: true,
+        data : orderData,
+
+    }
+
+}
+
+export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
+    const orderData = await getOrder(vendorId, vendorOrderId);
+    if (!orderData.success) {
+        return { success: false, error: orderData?.error || 'Order not found ' };
+    }
+    const order = orderData.data
+
+    const orderItemsData = await queryItemsWithPkAndSk(`VENDORORDERITEM#${vendorId}`, `ORDER#${orderId}#ITEM#`)
+    if (!orderItemsData.success) {
+        return { success: false, error: orderItemsData?.error || 'Order Items not found ' };
+    }
+
+    const orderItems = orderItemsData.data
+
+    const cleanOrderItem = []
+
+    const cleanOrderItems = await Promise.all(orderItems.map(async (orderItem) => {
+        const productData = await getProductById(vendorId, orderItem.vendor_sku);
+        const product = productData?.data;
+        if (product) {
+            return {
+                vendor_sku: orderItem.vendor_sku,
+                quantity: orderItem.quantity,
+                name: product.name, // Example of adding product data
+                brand_name: product.brand_name,
+                attributes: product.attributes,
+                image: product.image,
+                warehouse: product?.warehouse || null
+            };
+        }
+        return null;
+
+    }));
+    const filteredCleanOrderItems = cleanOrderItems.filter(item => item !== null);
+
+    const cleanOrder = cleanResponseData(order)
+    cleanOrder.items = filteredCleanOrderItems
+    return {
+        success: true,
+        data: cleanOrder
+    };
+
+}

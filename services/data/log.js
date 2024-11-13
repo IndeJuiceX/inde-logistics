@@ -1,4 +1,5 @@
-import { runAthenaQuery } from "@/services/external/athena";
+//import { runAthenaQuery } from "@/services/external/athena/index-1";
+import { executeLogsQuery } from "@/services/external/athena";
 
 export async function getFilteredLogs(vendorId, startTimestamp, endTimestamp) {
   // Construct WHERE conditions
@@ -23,7 +24,7 @@ export async function getFilteredLogs(vendorId, startTimestamp, endTimestamp) {
 
   try {
     // Execute the query using the reusable function
-    const result = await runAthenaQuery({ queryString });
+    const result = await executeLogsQuery(queryString)//runAthenaQuery({ queryString });
     console.log('result', result);
 
     // Return the first record or null if not found
