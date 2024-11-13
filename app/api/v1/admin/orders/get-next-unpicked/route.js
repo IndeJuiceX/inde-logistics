@@ -21,16 +21,16 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
 
 
         // Update the stock shipment item
-        const unshelvedResult = await getNextUnPickedOrder();
+        const unPickedResult = await getNextUnPickedOrder();
 
-        // if (!unshelvedResult.success) {
-        //     return NextResponse.json({ error: 'Failed to get unshelved stock shipment items', details: unshelvedResult.error }, { status: 400 });
-        // }
+        if (!unshelvedResult.success) {
+            return NextResponse.json({ error: 'Failed to get unpicked order items', details: unPickedResult.error }, { status: 400 });
+        }
 
-        // return NextResponse.json(unshelvedResult, { status: 200 });
+         return NextResponse.json(unPickedResult, { status: 200 });
 
     } catch (error) {
         console.error('Unhandled error:', error);
         return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
     }
-}, ['vendor','admin', 'warehouse']);
+}, ['admin', 'warehouse']);
