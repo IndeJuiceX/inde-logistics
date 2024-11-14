@@ -387,7 +387,7 @@ export const getNextUnPickedOrder = async () => {
     const query1 = `
     SELECT pk,sk
     FROM order_shipments
-    WHERE status = 'processing' AND error != 1 AND picker = '${user.email}'
+    WHERE status = 'processing' AND (error IS NULL OR error != 1) AND picker = '${user.email}'
     ORDER BY created_at ASC
     LIMIT 1;
   `;
