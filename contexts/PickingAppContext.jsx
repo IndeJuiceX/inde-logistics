@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useState, useContext, useEffect } from 'react';
+import { doLogOut } from '@/app/actions'; // Client-side sign-out
 
 export const PickingAppContext = createContext();
 
@@ -52,11 +53,13 @@ export const PickingAppProvider = ({ children }) => {
         };
     }, [lastActivityTime]);
 
-
+    const handleSignOut = async () => {
+        await doLogOut(); // Redirect to login after sign-out
+    };
     return (
         <PickingAppContext.Provider
             value={
-                { isBarcodeInitiated, setBarcodeInitiated }
+                { isBarcodeInitiated, setBarcodeInitiated, handleSignOut }
             }>
             {children}
         </PickingAppContext.Provider>

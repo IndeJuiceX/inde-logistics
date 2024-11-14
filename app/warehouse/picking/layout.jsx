@@ -1,10 +1,10 @@
 'use server'
 
-import PickingApp from '@/components/warehouse/picking/PickingApp';
+import PickingLayout from '@/components/warehouse/picking/PickingLayout';
 import React from 'react';
 
 export default async function Layout({ children }) {
     return (
-        <PickingApp>{children}</PickingApp>
+        <PickingLayout>{children}</PickingLayout>
     );
 }

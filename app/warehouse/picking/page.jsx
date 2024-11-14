@@ -1,6 +1,7 @@
 'use server';
 
 import Picking from "@/components/warehouse/picking/Picking";
+import PickingApp from "@/components/warehouse/picking/PickingApp";
 import { getNextUnPickedOrder } from '@/services/data/order';
 
 export default async function PickingPage() {
@@ -74,12 +75,14 @@ export default async function PickingPage() {
 
     return (
         <>
-            {Array.isArray(unPickedResult.data) && unPickedResult.data.length === 0 && (
+            {/* {Array.isArray(unPickedResult.data) && unPickedResult.data.length === 0 && (
                 <div>No orders found</div>
             )}
             {unPickedResult.data && !Array.isArray(unPickedResult.data) && (
                 <Picking order={unPickedResult.data} />
-            )}
+            )} */}
+
+            <PickingApp unPickedResult={unPickedResult} />
         </>
 
     )

@@ -1,14 +1,15 @@
-import { PickingAppProvider } from "@/contexts/PickingAppContext";
-import InitiateBarcodeScanner from "../barcode/InitiateBarcodeScanner";
+import Picking from "@/components/warehouse/picking/Picking";
 
 
-
-export default function PickingApp({ children }) {
+export default function PickingApp({ unPickedResult }) {
     return (
-        <PickingAppProvider >
-             <InitiateBarcodeScanner />
-            {children}
-
-        </PickingAppProvider>
-    );
+        <>
+            {Array.isArray(unPickedResult.data) && unPickedResult.data.length === 0 && (
+                <div>No orders found</div>
+            )}
+            {unPickedResult.data && !Array.isArray(unPickedResult.data) && (
+                <Picking order={unPickedResult.data} />
+            )}
+        </>
+    )
 }
