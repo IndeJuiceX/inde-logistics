@@ -394,11 +394,12 @@ export const getNextUnPickedOrder = async () => {
     const existingData = await executeDataQuery({ query: query1 });
     const existingKeys = existingData?.data[0] || null
     if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
-        const vendorId = existingKeys.pk.split('#')[1]
-        const orderId = existingKeys.sk.split('#')[1]
-        const orderDetailsData = await getOrderWithItemDetails(vendorId,orderId)
+        const vendorId = existingKeys.sk.substring(existingKeys.pk.indexOf('#') + 1);
+        const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+
+        const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
         const orderData = orderDetailsData?.data || null
-        if(!orderData) {
+        if (!orderData) {
             return {
                 success: false,
                 error: `Order not found for vendor ${vendorId} and order ${orderId}`,
@@ -436,7 +437,7 @@ export const getNextUnPickedOrder = async () => {
     if (!updateResponse?.success) {
         return { success: false, error: 'Error while creating order or updating order shipment' }
     }
-    
+
     const orderData = orderDetailsData.data
     orderData.picker = user?.email || 'Unknown'
 
