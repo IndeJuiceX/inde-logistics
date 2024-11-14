@@ -212,9 +212,10 @@ export default function Picking({ order, order_id }) {
                                 <div className={styles.warningButtonContainer}>
                                     <button onClick={handleErrorQueue} className={styles.warningButton}>!</button>
                                 </div>
+                                <button onClick={handlePicked}>Item Completed</button>
                             </div>
 
-                            {/* <button onClick={handlePicked}>Item Completed</button> */}
+                            
 
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
                         </div>
