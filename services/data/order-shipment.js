@@ -82,13 +82,14 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
   }
   // Define the fields to update, including status and updated_at
   const updatedFields = {
-    status: newStatus,
-    updated_at: new Date().toISOString()  // Set updated_at to current ISO time
+    attr0: newStatus,  // New status value
+    attr1: new Date().toISOString()  // Updated timestamp
   };
 
+  // Define expression attribute names to match the generic keys
   const expressionAttributeNames = {
-    '#status': 'status',
-    '#updated_at': 'updated_at'
+    '#attr0': 'status',
+    '#attr1': 'updated_at'
   };
   // Use the updateItem wrapper function to update the item
   return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields, expressionAttributeNames);
