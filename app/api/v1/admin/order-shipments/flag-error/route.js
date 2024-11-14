@@ -32,7 +32,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
 
 
         // Update the order's buyer information
-        const updateResult = await updateOrderShipmentError(vendor_id, vendor_order_id,error_reason);
+        const updateResult = await updateOrderShipmentError(...updateParams);
 
         if (!updateResult || !updateResult?.success) {
             return NextResponse.json({ error: 'Order Shipment error update failed', details: updateResult?.error || 'Order Shipment error update failed' }, { status: 400 });
