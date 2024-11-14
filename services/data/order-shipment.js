@@ -1,6 +1,6 @@
 // executeTransaction.js
 
-import { transactWriteItems } from "../external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem } from "../external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
 /**
  * Function to create a new VendorOrderShipment and update an existing Order
@@ -10,7 +10,7 @@ import { getLoggedInUser } from "@/app/actions";
  * @param {string} params.orderId - The ID of the order.
  * @returns {Promise<Object>} - The result of the transaction.
  */
-export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
+export const createShipmentAndUpdateOrder = async (vendorId, orderId) => {
   // Current timestamp
   const timestamp = new Date().toISOString();
   const user = await getLoggedInUser()
@@ -19,13 +19,13 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
   const putVendorOrderShipment = {
     Put: {
       Item: {
-        pk: `VENDORORDERSHIPMENT#${vendorId}` ,
-        sk:  `ORDERSHIPMENT#${orderId}` ,
+        pk: `VENDORORDERSHIPMENT#${vendorId}`,
+        sk: `ORDERSHIPMENT#${orderId}`,
         created_at: timestamp,
         updated_at: timestamp,
         entity_type: 'OrderShipment',
         status: 'processing',
-        picker : user?.email ||'unknown'
+        picker: user?.email || 'unknown'
         // Add any additional fields as necessary
       },
       ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
@@ -42,7 +42,7 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
       UpdateExpression: 'SET update_at = :updateAt, #st = :status',
       ExpressionAttributeValues: {
         ':updateAt': timestamp,
-        ':status': 'processing' ,
+        ':status': 'processing',
       },
       ExpressionAttributeNames: {
         '#st': 'status', // Alias for 'status' if it's a reserved keyword
@@ -53,7 +53,7 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
 
   // Combine the operations into an array
   const transactionItems = [putVendorOrderShipment, updateOrder];
-  
+
   // Execute the transaction
   const result = await transactWriteItems(transactionItems);
 
@@ -65,3 +65,32 @@ export const createShipmentAndUpdateOrder = async ( vendorId, orderId ) => {
 
   return result;
 };
+
+export const getOrderShipment = async (vendorId, orderId) => {
+  return await getItem(`VENDORORDERSHIPMENT#${vendorId}`, `ORDERSHIPMENT#${orderId}`);
+}
+
+export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = 'picked') => {
+  // get the ordershipment and ensure that it exists... and has the status of processing before it can be set to picked..
+  const orderShipmentResponse = await getOrderShipment(vendorId, orderId)
+  const orderShipment = orderShipmentResponse?.data || null
+  if (!orderShipment) {
+    return { success: false, error: 'Order Shipment not found' }
+  }
+  if (newStatus === 'picked' && orderShipment.status != 'processing') {
+    return { success: false, error: 'Order Shipment must have processing status to be updated to picked' }
+  }
+  // Define the fields to update, including status and updated_at
+  const updatedFields = {
+    status: newStatus,
+    updated_at: new Date().toISOString()  // Set updated_at to current ISO time
+  };
+
+  const expressionAttributeNames = {
+    '#status': 'status',
+    '#updated_at': 'updated_at'
+  };
+  // Use the updateItem wrapper function to update the item
+  return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields, expressionAttributeNames);
+
+}
