@@ -80,19 +80,12 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
   if (newStatus === 'picked' && orderShipment.status != 'processing') {
     return { success: false, error: 'Order Shipment must have processing status to be updated to picked' }
   }
-  // Define the fields to update, including status and updated_at
   const updatedFields = {
-    attr0: newStatus,  // New status value
-    attr1: new Date().toISOString()  // Updated timestamp
-  };
-
-  // Define expression attribute names to match the generic keys
-  const expressionAttributeNames = {
-    '#attr0': 'status',
-    '#attr1': 'updated_at'
+    status: newStatus,
+    updated_at: new Date().toISOString()
   };
   // Use the updateItem wrapper function to update the item
-  return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields, expressionAttributeNames);
+  return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
 
 }
 
