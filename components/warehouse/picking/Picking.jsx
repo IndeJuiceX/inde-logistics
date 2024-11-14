@@ -91,6 +91,9 @@ export default function Picking({ order, order_id }) {
             }
             const data = await response.json();
             console.log('data', data);
+            if(data.success){
+                router.reload();
+            }
 
         };
 
