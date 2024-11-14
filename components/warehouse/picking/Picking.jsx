@@ -91,14 +91,42 @@ export default function Picking({ order, order_id }) {
             }
             const data = await response.json();
             console.log('data', data);
-            if(data.success){
-                router.reload();
+            if (data.success) {
+                router.push('/warehouse/picking');
             }
 
         };
 
     }
 
+    const handleErrorQueue = async () => {
+        console.log('handleErrorQueue');
+
+        const errorItem = order.items[currentIndex];
+        console.log('order current', errorItem);
+
+        const payload = {
+            vendor_id: order.vendor_id,
+            vendor_order_id: order.vendor_order_id,
+            error_reason: {
+                reason: 'Missing Item',
+                details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
+            }
+        }
+        // app/api/v1/admin/order-shipments/flag-error/route.js
+        const response = await fetch('/api/v1/admin/order-shipments/flag-error', {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+            console.log('Error in marking order as error');
+        }
+        const data = await response.json();
+        console.log('data', data);
+        if(data.success){
+            router.push('/warehouse/picking');
+        }
+    }
     useEffect(() => {
         console.log('selectedItem', selectedItem);
 
@@ -138,11 +166,11 @@ export default function Picking({ order, order_id }) {
                             {order.items.map((item, index) => (
                                 // ${index < currentIndex ? styles.disabledItem : ''}
                                 <div
-                                    className={`${styles.productItem} ${selectedItem[currentIndex] === index ? styles.disabledItem : ''
+                                    className={`${styles.productItem} ${selectedItem[index] === index ? styles.disabledItem : ''
                                         }`}
                                     key={index}
                                     data-index={index}
-                                    data-current={selectedItem[currentIndex]}
+                                    data-current={selectedItem[index]}
                                     ref={(el) => (itemRefs.current[index] = el)} // Assign refs to each item
                                 >
                                     <div className={styles.productImageContainer}>
@@ -182,11 +210,11 @@ export default function Picking({ order, order_id }) {
                                     <p className={styles.containerInfo}>Container 1</p>
                                 </div>
                                 <div className={styles.warningButtonContainer}>
-                                    <button className={styles.warningButton}>!</button>
+                                    <button onClick={handleErrorQueue} className={styles.warningButton}>!</button>
                                 </div>
                             </div>
 
-                            <button onClick={handlePicked}>Item Completed</button>
+                            {/* <button onClick={handlePicked}>Item Completed</button> */}
 
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
                         </div>
