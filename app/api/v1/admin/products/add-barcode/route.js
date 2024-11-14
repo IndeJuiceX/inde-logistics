@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { updateOrderShipmentStatus } from '@/services/data/order-shipment';
-export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
+export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract authentication details
         const { searchParams } = new URL(request.url);
@@ -16,19 +16,19 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         }
 
 
-        const { vendor_id, vendor_order_id } = body;
+        const { vendor_id, vendor_sku, barcode } = body;
 
         // Validate that vendor_id, stock_shipment_id, and item are present
-        if (!vendor_id || !vendor_order_id) {
-            return NextResponse.json({ error: 'vendor_id, vendor_order_id are required' }, { status: 400 });
+        if (!vendor_id || !vendor_sku || !barcode) {
+            return NextResponse.json({ error: 'vendor_id, vendor_sku and barcode are required' }, { status: 400 });
         }
 
 
         // Update the order's buyer information
-        const updateResult = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
+        const updateResult = await appendProductBarcode(vendor_id, vendor_order_id, barcode);
 
         if (!updateResult || !updateResult?.success) {
-            return NextResponse.json({ error: 'Order Shipment status update failed', details: updateResult?.error || 'Order Shipment update failed' }, { status: 400 });
+            return NextResponse.json({ error: 'Product barcode update failed', details: updateResult?.error || 'Product barcode update failed' }, { status: 400 });
         }
         return NextResponse.json(updateResult, { status: 200 });
     } catch (error) {
