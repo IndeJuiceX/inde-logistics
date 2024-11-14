@@ -3,7 +3,7 @@ import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { updateOrderShipmentError } from '@/services/data/order-shipment';
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
-       
+
         const bodyText = await request.text();
         let body;
         try {
@@ -20,19 +20,16 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
             return NextResponse.json({ error: 'vendor_id, vendor_order_id, and item are required' }, { status: 400 });
         }
 
-        const updateParams = {
-            vendor_id,
-            vendor_order_id,
-        };
-        
-        if (error_reason) {
-            updateParams.error_reason = error_reason;
+        // Prepare the arguments array
+        const args = [vendor_id, vendor_order_id];
+        if (error_reason && error_reason != '' && error_reason !== undefined) {
+            args.push(error_reason);
         }
-        
+
 
 
         // Update the order's buyer information
-        const updateResult = await updateOrderShipmentError(...updateParams);
+        const updateResult = await updateOrderShipmentError(...args);
 
         if (!updateResult || !updateResult?.success) {
             return NextResponse.json({ error: 'Order Shipment error update failed', details: updateResult?.error || 'Order Shipment error update failed' }, { status: 400 });

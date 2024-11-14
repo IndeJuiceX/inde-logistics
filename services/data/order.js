@@ -398,6 +398,12 @@ export const getNextUnPickedOrder = async () => {
         const orderId = existingKeys.sk.split('#')[1]
         const orderDetailsData = await getOrderWithItemDetails(vendorId,orderId)
         const orderData = orderDetailsData.data
+        if(!orderData || !orderData?.success) {
+            return {
+                success: false,
+                error: `Order not found for vendor ${vendorId} and order ${orderId}`,
+            }
+        }
         orderData.picker = user.email
         return {
             success: true,
@@ -420,16 +426,17 @@ export const getNextUnPickedOrder = async () => {
         return { success: true, data: [] }
     }
 
+    const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+    console.log('orderDetailsData', orderDetailsData)
+    if (!orderDetailsData || !orderDetailsData?.success) {
+        return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
+    }
     const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
 
     if (!updateResponse?.success) {
-        return { success: false, error: updateResponse.error || 'Error while updating order shipment' }
+        return { success: false, error: 'Error while creating order or updating order shipment' }
     }
-    const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    console.log('orderDetailsData', orderDetailsData)
-    if (!orderDetailsData.success) {
-        return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
-    }
+    
     const orderData = orderDetailsData.data
     orderData.picker = user?.email || 'Unknown'
 
