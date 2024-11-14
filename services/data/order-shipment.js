@@ -82,15 +82,52 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
   }
   // Define the fields to update, including status and updated_at
   const updatedFields = {
-    status: newStatus,
-    updated_at: new Date().toISOString()  // Set updated_at to current ISO time
+    attr0: newStatus,  // New status value
+    attr1: new Date().toISOString()  // Updated timestamp
   };
 
+  // Define expression attribute names to match the generic keys
   const expressionAttributeNames = {
-    '#status': 'status',
-    '#updated_at': 'updated_at'
+    '#attr0': 'status',
+    '#attr1': 'updated_at'
   };
   // Use the updateItem wrapper function to update the item
   return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields, expressionAttributeNames);
 
 }
+
+export const updateOrderShipmentError = async (vendorId, orderId, errorReason = '') => {
+  // Fetch the order shipment to ensure it exists
+  const orderShipmentResponse = await getOrderShipment(vendorId, orderId);
+  const orderShipment = orderShipmentResponse?.data || null;
+  
+  if (!orderShipment) {
+    return { success: false, error: 'Order Shipment not found' };
+  }
+
+  // Prepare fields for updating
+  const updatedFields = {};
+  const expressionAttributeNames = {};
+
+  // Infer error value based on errorReason
+  const error = errorReason ? 1 : 0;
+  updatedFields['error'] = error;
+  expressionAttributeNames['#error'] = 'error';
+
+  // Set error_reason to the provided reason or reset it to an empty string if not provided
+  updatedFields['error_reason'] = errorReason ? JSON.stringify(errorReason) : '';
+  expressionAttributeNames['#error_reason'] = 'error_reason';
+
+  // Always update the updated_at timestamp
+  updatedFields['updated_at'] = new Date().toISOString();
+  expressionAttributeNames['#updated_at'] = 'updated_at';
+
+  // Use the updateItem wrapper function to update the item
+  return await updateItem(
+    orderShipment.pk, 
+    orderShipment.sk, 
+    updatedFields, 
+    expressionAttributeNames
+  );
+};
+
