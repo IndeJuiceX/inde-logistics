@@ -384,14 +384,14 @@ export const getNextUnPickedOrder = async () => {
     if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
         return { success: false, error: 'Not Authorized' }
     }
-    let query = `
+    const query1 = `
     SELECT pk,sk
     FROM order_shipments
-    WHERE status = 'processing' AND picker = ${user.email}
+    WHERE status = 'processing' AND picker = '${user.email}'
     ORDER BY created_at ASC
     LIMIT 1;
   `;
-    const existingData = await executeDataQuery({ query });
+    const existingData = await executeDataQuery({ query: query1 });
     const existingKeys = existingData?.data[0] || null
     if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
         const vendorId = existingKeys.pk.split('#')[1]
@@ -407,14 +407,14 @@ export const getNextUnPickedOrder = async () => {
     }
 
 
-    query = `
+    const query2 = `
     SELECT vendor_order_id,vendor_id
     FROM orders
     WHERE status = 'accepted'
     ORDER BY created_at ASC
     LIMIT 1;
   `;// get the order with accepted status..
-    const data = await executeDataQuery({ query });
+    const data = await executeDataQuery({ query: query2 });
     const nextOrderKeys = data?.data[0] || null
     if (!nextOrderKeys) {
         return { success: true, data: [] }
