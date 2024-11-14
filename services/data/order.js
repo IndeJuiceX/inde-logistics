@@ -397,8 +397,8 @@ export const getNextUnPickedOrder = async () => {
         const vendorId = existingKeys.pk.split('#')[1]
         const orderId = existingKeys.sk.split('#')[1]
         const orderDetailsData = await getOrderWithItemDetails(vendorId,orderId)
-        const orderData = orderDetailsData.data
-        if(!orderData || !orderData?.success) {
+        const orderData = orderDetailsData?.data || null
+        if(!orderData) {
             return {
                 success: false,
                 error: `Order not found for vendor ${vendorId} and order ${orderId}`,
