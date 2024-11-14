@@ -202,3 +202,7 @@ export const getAllVendorProducts = async (vendorId, pageSize = 25, exclusiveSta
 function capitalizeWords(string) {
     return string.replace(/\b\w/g, char => char.toUpperCase());
 }
+
+export async function appendProductBarcode(vendorId, vendorSku, barcode) {
+    //check if the barcode exists append it if not add barcode...
+}
