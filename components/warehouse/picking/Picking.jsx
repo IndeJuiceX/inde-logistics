@@ -18,7 +18,7 @@ export default function Picking({ order, order_id }) {
     const [windowWidth, setWindowWidth] = useState(0);
     const [currentIndex, setCurrentIndex] = useState(0); // Track the current item index
     const itemRefs = useRef([]); // Array of refs for each item
-    // const [isInitiated, setIsInitiated] = useState(false);
+    const [selectedItem, setSelectedItem] = useState([]);
 
     console.log('order', order);
 
@@ -51,17 +51,55 @@ export default function Picking({ order, order_id }) {
     };
 
     const handleForceTick = () => {
+        console.log('force tick');
+        console.log('currentIndex', currentIndex);
+        console.log('order.items.length', order.items.length);
+        console.log('condition', order.items.length - 1);
+
+        setSelectedItem(prevSelectedItem => {
+            const newSelectedItem = [...prevSelectedItem];
+            newSelectedItem[currentIndex] = currentIndex;
+            return newSelectedItem;
+        });
+
+
         if (currentIndex < order.items.length - 1) {
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        else {
-            order_id++;
-            router.push(`/warehouse/picking/${order_id}`);
-        }
+
+    }
+    const handlePicked = async () => {
+        const totalItems = order.items.length; //index starts from 0
+        const pickedItems = selectedItem.filter(item => item !== undefined).length;
+        console.log('pickedItems', pickedItems);
+        console.log('totalItems', totalItems);
+
+        if (pickedItems === totalItems) {
+            const payload = {
+                vendor_id: order.vendor_id,
+                vendor_order_id: order.vendor_order_id,
+            }
+            // app/api/v1/admin/order-shipments/mark-picked/route.js
+            const response = await fetch('/api/v1/admin/order-shipments/mark-picked', {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                console.log('Error in marking order as picked');
+            }
+            const data = await response.json();
+            console.log('data', data);
+
+        };
+
     }
 
+    useEffect(() => {
+        console.log('selectedItem', selectedItem);
+
+    }, [selectedItem]);
 
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     return (
@@ -95,10 +133,13 @@ export default function Picking({ order, order_id }) {
                         {/* Product & Location Section */}
                         <div className={styles.productList} style={{ maxHeight }}>
                             {order.items.map((item, index) => (
+                                // ${index < currentIndex ? styles.disabledItem : ''}
                                 <div
-                                    className={`${styles.productItem} ${index < currentIndex ? styles.disabledItem : ''
+                                    className={`${styles.productItem} ${selectedItem[currentIndex] === index ? styles.disabledItem : ''
                                         }`}
                                     key={index}
+                                    data-index={index}
+                                    data-current={selectedItem[currentIndex]}
                                     ref={(el) => (itemRefs.current[index] = el)} // Assign refs to each item
                                 >
                                     <div className={styles.productImageContainer}>
@@ -141,22 +182,12 @@ export default function Picking({ order, order_id }) {
                                     <button className={styles.warningButton}>!</button>
                                 </div>
                             </div>
-                            {/* <div>
-                                <button>Item Completed</button>
-                            </div> */}
+
+                            <button onClick={handlePicked}>Item Completed</button>
+
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
                         </div>
 
-                        {/* Next Button */}
-                        {/* <div className={styles.nextButtonContainer}>
-                        <button
-                            className={styles.nextButton}
-                            onClick={handleNextClick}
-                            disabled={currentIndex >= order.items.length - 1}
-                        >
-                            Next
-                        </button>
-                    </div> */}
                     </div>
                 </div>
             }
