@@ -211,7 +211,7 @@ export async function addBarcodeToProduct(vendorId, vendorSku, newBarcode) {
             return { success: false, message: "vendor_id, vendor_sku and barcode is required" };
 
         }
-        const existingProductData = await getItem(vendorId,vendorSku);
+        const existingProductData = await getItem(`VENDORPRODUCT#${vendorId}`,`PRODUCT#${vendorSku}`);
         const existingProduct = existingProductData?.data || null
         if(!existingProduct) {
             return { success: false, message: "Product not found" };
