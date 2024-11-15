@@ -394,7 +394,7 @@ export const getNextUnPickedOrder = async () => {
     const existingData = await executeDataQuery({ query: query1 });
     const existingKeys = existingData?.data[0] || null
     if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
-        const vendorId = existingKeys.sk.substring(existingKeys.pk.indexOf('#') + 1);
+        const vendorId = existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
         const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
 
         const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
