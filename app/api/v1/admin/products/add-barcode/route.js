@@ -3,10 +3,7 @@ import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { addBarcodeToProduct } from '@/services/data/product';
 export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
-        // Extract authentication details
-        const { searchParams } = new URL(request.url);
-
-
+      
         const bodyText = await request.text();
         let body;
         try {
