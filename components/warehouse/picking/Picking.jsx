@@ -230,7 +230,7 @@ export default function Picking({ order, order_id }) {
 
 
 
-                            <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
+                            <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} order={order} />
                         </div>
 
                     </div>

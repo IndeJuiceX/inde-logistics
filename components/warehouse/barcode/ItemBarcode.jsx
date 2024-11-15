@@ -3,13 +3,13 @@ import { FaBarcode } from "react-icons/fa";
 import { MdAddCircleOutline, MdUpdate } from 'react-icons/md';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 
-export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
+export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, order }) {
     const [barcodeValue, setBarcodeValue] = useState('');
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
 
     console.log('currentItem', currentItem);
-    
+
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.key === 'Enter') {
@@ -52,7 +52,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
     const addNewBarcode = async () => {
         console.log('addNewBarcode');
         const payload = {
-            vendor_id: currentItem.vendor_id,
+            vendor_id: order.vendor_id,
             vendor_sku: currentItem.vendor_sku,
             barcode: barcodeValue
         }
