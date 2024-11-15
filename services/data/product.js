@@ -1,5 +1,5 @@
 // services/data/vendor.js
-import { getItem, queryItems, putItem, deleteItem, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
+import { getItem, queryItems, putItem, deleteItem, queryItemsWithPkAndSk, updateItem } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
 export const getProductById = async (vendorId, productUUID, excludeFields = []) => {
