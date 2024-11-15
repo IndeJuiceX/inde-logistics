@@ -207,7 +207,7 @@ export async function addBarcodeToProduct(vendorId, vendorSku, newBarcode) {
     // Step 1: Fetch the existing product item
 
     try {
-        if(!vendorId || !vendorSku || newBarcode) {
+        if(!vendorId || !vendorSku || !newBarcode) {
             return { success: false, message: "vendor_id, vendor_sku and barcode is required" };
 
         }
@@ -217,7 +217,7 @@ export async function addBarcodeToProduct(vendorId, vendorSku, newBarcode) {
             return { success: false, message: "Product not found" };
         }
 
-        const existingBarcodes = existingProduct?.barcodes || [];
+        const existingBarcodes = Array.isArray(existingProduct?.barcodes) ? existingProduct.barcodes : [];
 
         // Step 2: Check if the barcode already exists
         if (existingBarcodes.includes(newBarcode)) {
