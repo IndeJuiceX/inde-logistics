@@ -9,6 +9,7 @@ import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail } from '@/services/utils/index';
 
+
 export default function Picking({ order, order_id }) {
     // console.log('test order ', order);
 
@@ -20,7 +21,9 @@ export default function Picking({ order, order_id }) {
     const itemRefs = useRef([]); // Array of refs for each item
     const [selectedItem, setSelectedItem] = useState([]);
 
-    console.log('order', order);
+  
+
+    // console.log('order', order);
 
 
     useEffect(() => {
@@ -37,6 +40,13 @@ export default function Picking({ order, order_id }) {
 
     const moveToNextItem = (barcodeValue) => {
         const currentItem = order.items[currentIndex];
+        if (currentItem.barcode) {
+            console.log('currentItem.barcode', currentItem.barcode);
+            return;
+
+        }
+
+
         if (barcodeValue === currentItem.barcode) {
             if (currentIndex < order.items.length - 1) {
                 const nextIndex = currentIndex + 1;
@@ -124,9 +134,9 @@ export default function Picking({ order, order_id }) {
         }
         const data = await response.json();
         console.log('data', data.success);
-        if(data.success){
+        if (data.success) {
             window.location.reload();
-        
+
         }
     }
     useEffect(() => {
@@ -137,6 +147,7 @@ export default function Picking({ order, order_id }) {
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     return (
         <>
+           
             {/* <InitiateBarcodeScanner setIsInitiated={setBarcodeInitiated} /> */}
             {isBarcodeInitiated &&
                 <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
@@ -217,7 +228,7 @@ export default function Picking({ order, order_id }) {
                                 <button onClick={handlePicked}>Item Completed</button>
                             </div>
 
-                            
+
 
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} />
                         </div>
