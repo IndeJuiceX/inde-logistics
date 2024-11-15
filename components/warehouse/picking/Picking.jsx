@@ -8,6 +8,7 @@ import InitiateBarcodeScanner from '@/components/warehouse/barcode/InitiateBarco
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail } from '@/services/utils/index';
+import { FaCheckCircle } from 'react-icons/fa';
 
 
 export default function Picking({ order, order_id }) {
@@ -21,7 +22,7 @@ export default function Picking({ order, order_id }) {
     const itemRefs = useRef([]); // Array of refs for each item
     const [selectedItem, setSelectedItem] = useState([]);
 
-  
+
 
     // console.log('order', order);
 
@@ -40,14 +41,27 @@ export default function Picking({ order, order_id }) {
 
     const moveToNextItem = (barcodeValue) => {
         const currentItem = order.items[currentIndex];
-        if (currentItem.barcode) {
-            console.log('currentItem.barcode', currentItem.barcode);
-            return;
+        setSelectedItem(prevSelectedItem => {
+            const newSelectedItem = [...prevSelectedItem];
+            newSelectedItem[currentIndex] = currentIndex;
+            return newSelectedItem;
+        });
+        // const barcodes = currentItem?.barcodes;
+        // if (barcodes && Array.isArray(barcodes) && barcodes.includes(barcodeValue)) {
+        if (currentIndex < order.items.length - 1) {
+            const nextIndex = currentIndex + 1;
+            setCurrentIndex(nextIndex);
 
+
+
+            itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // order_id++;
+            // router.push(`/warehouse/picking/${order_id}`);
         }
-
-
-        if (barcodeValue === currentItem.barcode) {
+        // }
+        /*
+        if (barcodeValue === currentItem.barcodes) {
             if (currentIndex < order.items.length - 1) {
                 const nextIndex = currentIndex + 1;
                 setCurrentIndex(nextIndex);
@@ -58,6 +72,7 @@ export default function Picking({ order, order_id }) {
                 router.push(`/warehouse/picking/${order_id}`);
             }
         }
+            */
     };
 
     const handleForceTick = () => {
@@ -147,7 +162,7 @@ export default function Picking({ order, order_id }) {
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     return (
         <>
-           
+
             {/* <InitiateBarcodeScanner setIsInitiated={setBarcodeInitiated} /> */}
             {isBarcodeInitiated &&
                 <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
@@ -220,16 +235,22 @@ export default function Picking({ order, order_id }) {
                             <div className={styles.pickerInfo}>
                                 <div>
                                     <p className={styles.pickerName}>{extractNameFromEmail(order.picker) || 'Ali B.'}</p>
-                                    <p className={styles.containerInfo}>Container 1</p>
+                                    {/* <p className={styles.containerInfo}>Container 1</p> */}
                                 </div>
                                 <div className={styles.warningButtonContainer}>
                                     <button onClick={handleErrorQueue} className={styles.warningButton}>!</button>
                                 </div>
-                                <button onClick={handlePicked}>Item Completed</button>
+                                {selectedItem.length === order.items.length && (
+                                    <button
+                                        onClick={handlePicked}
+                                        className={styles.completeButton}
+                                    >
+                                        <FaCheckCircle style={{ color: 'green', marginRight: '8px' }} />
+                                        Items Ready
+                                    </button>
+                                )}
+
                             </div>
-
-
-
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} order={order} />
                         </div>
 

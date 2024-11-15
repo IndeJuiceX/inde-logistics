@@ -186,6 +186,17 @@
   }
 }
 
+.completeButton {
+  background: #fff;
+  color: black;
+  border-radius: 8px;
+  padding: 7px;
+  width: 191px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .barcodeImage {
   width: 8rem;
   height: auto;

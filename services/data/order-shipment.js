@@ -73,6 +73,8 @@ export const getOrderShipment = async (vendorId, orderId) => {
 export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = 'picked') => {
   // get the ordershipment and ensure that it exists... and has the status of processing before it can be set to picked..
   const orderShipmentResponse = await getOrderShipment(vendorId, orderId)
+  console.log('orderShipmentResponse', orderShipmentResponse);
+  
   const orderShipment = orderShipmentResponse?.data || null
   if (!orderShipment) {
     return { success: false, error: 'Order Shipment not found' }

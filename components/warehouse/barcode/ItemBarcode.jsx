@@ -15,13 +15,12 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
             if (event.key === 'Enter') {
                 console.log('barcodeValue 1', barcodeValue);
                 if (isNewBarcode) {
-
                     setIsNewBarcode(false);
                     addNewBarcode();
                     return;
                 }
 
-                if (currentItem.barcode && barcodeValue === currentItem.barcode) {
+                if (currentItem.barcodes && Array.isArray(currentItem.barcodes) && currentItem.barcodes.includes(barcodeValue)) {
                     setBarcodeError(false);
                     setBarcodeValue(barcodeValue);
                     onBarcodeScanned(barcodeValue);
