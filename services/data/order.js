@@ -476,7 +476,8 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
                 brand_name: product.brand_name,
                 attributes: product.attributes,
                 image: product.image,
-                warehouse: product?.warehouse || null
+                warehouse: product?.warehouse || null,
+                barcodes : product?.barcodes || null
             };
         }
         return null;
