@@ -233,7 +233,7 @@ export async function addBarcodeToProduct(vendorId, vendorSku, newBarcode) {
         };
 
         const result = await updateItem(existingProduct.pk, existingProduct.sk, updatedFields);
-        if(!result || result?.success) {
+        if(!result || !result?.success) {
             return { success: false, message: "Failed to add barcode to the Product" };
 
         }
