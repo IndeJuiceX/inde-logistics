@@ -26,7 +26,7 @@ export const getProductByVendorSku = async (vendorId, vendor_sku) => {
     return await queryItems(params);
 };
 
-export async function getVendorProductsByName(vendorId, name,options={}) {
+export async function getVendorProductsByName(vendorId, name, options = {}) {
     const capitalizedName = capitalizeWords(name)
     const params = {
         IndexName: 'product_name_index',  // Your GSI's name in DynamoDB
@@ -39,18 +39,18 @@ export async function getVendorProductsByName(vendorId, name,options={}) {
             ':pk': `VENDORPRODUCT#${vendorId}`,  // Sort key (pk)
         },
     };
-    if(options?.lastEvaluatedKey) {
-        params.ExclusiveStartKey=options.lastEvaluatedKey
+    if (options?.lastEvaluatedKey) {
+        params.ExclusiveStartKey = options.lastEvaluatedKey
     }
     params.Limit = options.limit
-   
+
 
     const data = await queryItems(params);
-    if(data && data.success) {
-       return {success: true , data: cleanResponseData(data.data), lastEvaluatedKey: data.lastEvaluatedKey, hasMore:data.hasMore}
+    if (data && data.success) {
+        return { success: true, data: cleanResponseData(data.data), lastEvaluatedKey: data.lastEvaluatedKey, hasMore: data.hasMore }
     }
-    return {success : false, error:data.error}
-   
+    return { success: false, error: data.error }
+
 }
 
 export const searchProducts = async (vendorId, query, queryBy = 'name', options) => {
@@ -64,22 +64,22 @@ export const searchProducts = async (vendorId, query, queryBy = 'name', options)
                     ':pk': `VENDORPRODUCT#${vendorId}`,  // Sort key (pk)
                 },
             };
-            if(options?.lastEvaluatedKey) {
-                params.ExclusiveStartKey=options.lastEvaluatedKey
+            if (options?.lastEvaluatedKey) {
+                params.ExclusiveStartKey = options.lastEvaluatedKey
             }
-            if(options?.limit) {
+            if (options?.limit) {
                 params.Limit = options.limit
             }
             const queryRes = await queryItems(params)
             if (queryRes.success) {
-                return { success: true, data: queryRes.data, hasMore: queryRes?.hasMore, lastEvaluatedKey:queryRes?.lastEvaluatedKey }
+                return { success: true, data: queryRes.data, hasMore: queryRes?.hasMore, lastEvaluatedKey: queryRes?.lastEvaluatedKey }
             }
         }
         const resp = await getVendorProductsByName(vendorId, query, options)
         console.log('QUER RESP')
         console.log(resp)
         if (resp.success) {
-            return { success: true, data: resp.data , hasMore: resp?.hasMore, lastEvaluatedKey: resp?.lastEvaluatedKey}
+            return { success: true, data: resp.data, hasMore: resp?.hasMore, lastEvaluatedKey: resp?.lastEvaluatedKey }
         }
         return { success: false, error: 'Product Search failed.' }
 
@@ -203,6 +203,46 @@ function capitalizeWords(string) {
     return string.replace(/\b\w/g, char => char.toUpperCase());
 }
 
-export async function appendProductBarcode(vendorId, vendorSku, barcode) {
-    //check if the barcode exists append it if not add barcode...
+export async function addBarcodeToProduct(vendorId, vendorSku, newBarcode) {
+    // Step 1: Fetch the existing product item
+
+    try {
+        if(!vendorId || !vendorSku || newBarcode) {
+            return { success: false, message: "vendor_id, vendor_sku and barcode is required" };
+
+        }
+        const existingProductData = await getItem(vendorId,vendorSku);
+        const existingProduct = existingProductData?.data || null
+        if(!existingProduct) {
+            return { success: false, message: "Product not found" };
+        }
+
+        const existingBarcodes = existingProduct?.barcodes || [];
+
+        // Step 2: Check if the barcode already exists
+        if (existingBarcodes.includes(newBarcode)) {
+            return { success: false, message: "Barcode already exists" };
+        }
+
+        // Step 3: Add the new barcode to the list
+        const updatedBarcodes = [...existingBarcodes, newBarcode];
+
+        // Step 4: Use updateItem to update the item in DynamoDB
+        const updatedFields = {
+            barcodes: updatedBarcodes
+        };
+
+        const result = await updateItem(existingProduct.pk, existingProduct.sk, updatedFields);
+        if(!result || result?.success) {
+            return { success: false, message: "Failed to add barcode to the Product" };
+
+        }
+        return { success: true, message: "Barcode added successfully" };
+
+        //return result;
+
+    } catch (error) {
+        console.error("Error updating product:", error);
+        throw error;
+    }
 }

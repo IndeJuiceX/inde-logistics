@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
-import { updateOrderShipmentStatus } from '@/services/data/order-shipment';
+import { addBarcodeToProduct } from '@/services/data/product';
 export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {
         // Extract authentication details
@@ -25,10 +25,10 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
 
         // Update the order's buyer information
-        const updateResult = await appendProductBarcode(vendor_id, vendor_order_id, barcode);
+        const updateResult = await addBarcodeToProduct(vendor_id, vendor_order_id, barcode);
 
         if (!updateResult || !updateResult?.success) {
-            return NextResponse.json({ error: 'Product barcode update failed', details: updateResult?.error || 'Product barcode update failed' }, { status: 400 });
+            return NextResponse.json({ error: 'Product barcode update failed', details: updateResult?.error || 'Failed to add barcode to product' }, { status: 400 });
         }
         return NextResponse.json(updateResult, { status: 200 });
     } catch (error) {
