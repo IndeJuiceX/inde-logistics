@@ -7,15 +7,17 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
     const [barcodeValue, setBarcodeValue] = useState('');
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
-    const [isNewBarcodeValue, setIsNewBarcodeValue] = useState('');
 
+    console.log('currentItem', currentItem);
+    
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.key === 'Enter') {
                 console.log('barcodeValue 1', barcodeValue);
                 if (isNewBarcode) {
-                    setIsNewBarcodeValue(barcodeValue);
+
                     setIsNewBarcode(false);
+                    addNewBarcode();
                     return;
                 }
 
@@ -46,16 +48,35 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem }) {
     }
 
     // create the callback function for the button onClick event
-    // const addNewBarcode = async () => {
-    //     console.log('addNewBarcode');
-    //     const response 
-    // }
+    // vendor_id, vendor_sku, barcode
+    const addNewBarcode = async () => {
+        console.log('addNewBarcode');
+        const payload = {
+            vendor_id: currentItem.vendor_id,
+            vendor_sku: currentItem.vendor_sku,
+            barcode: barcodeValue
+        }
+        const response = await fetch('/api/v1/admin/products/add-barcode', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('data', data);
+            if (data.success) {
+                setBarcodeError(false);
+                setBarcodeValue(barcodeValue);
+                onBarcodeScanned(barcodeValue);
+            }
+            else {
+                console.log('error', data.error);
+            }
+        }
+        else {
+            console.log('error', response.statusText);
 
-
-
-
-
-
+        }
+    }
     return (
         <>
             {barcodeError &&
