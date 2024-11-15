@@ -92,7 +92,8 @@ export default function Picking({ order, order_id }) {
             const data = await response.json();
             console.log('data', data);
             if (data.success) {
-                router.push('/warehouse/picking');
+                // router.push('/warehouse/picking');
+                window.location.reload();
             }
 
         };
@@ -122,9 +123,10 @@ export default function Picking({ order, order_id }) {
             console.log('Error in marking order as error');
         }
         const data = await response.json();
-        console.log('data', data);
+        console.log('data', data.success);
         if(data.success){
-            router.push('/warehouse/picking');
+            window.location.reload();
+        
         }
     }
     useEffect(() => {
