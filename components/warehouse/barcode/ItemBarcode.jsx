@@ -38,6 +38,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
         return () => {
             window.removeEventListener('keypress', handleKeyDown);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [barcodeValue, currentItem, isNewBarcode]);
 
     const handleAddNewBarcode = () => {
