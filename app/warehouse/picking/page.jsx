@@ -3,6 +3,7 @@
 import Picking from "@/components/warehouse/picking/Picking";
 import PickingApp from "@/components/warehouse/picking/PickingApp";
 import { getNextUnPickedOrder } from '@/services/data/order';
+import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 
 export default async function PickingPage() {
     /*
@@ -68,9 +69,13 @@ export default async function PickingPage() {
         console.log('Failed to get unpicked order items', unPickedResult.error);
     }
 
-    console.log('unPickedResult', JSON.stringify(unPickedResult, null, 2));
+    // console.log('unPickedResult', JSON.stringify(unPickedResult, null, 2));
 
     // console.log('unPickedResult.data', unPickedResult.data.length);
+    //testing for the orders
+     const result = ''; //await queryItemsWithPkAndSk(`VENDORPRODUCT#b71812ec`, 'PRODUCT#')
+
+    // console.log('result', result);
 
 
     return (
@@ -82,7 +87,7 @@ export default async function PickingPage() {
                 <Picking order={unPickedResult.data} />
             )} */}
 
-            <PickingApp unPickedResult={unPickedResult} />
+            <PickingApp unPickedResult={unPickedResult} testing={result} />
         </>
 
     )
