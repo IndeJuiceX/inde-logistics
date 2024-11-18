@@ -11,64 +11,7 @@
 
     
 
-    .parcelOptions {
-        flex: 1; // Adjust based on how much space you want
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
-        padding: 10px;
-        background-color: #b2f4d3;
-        overflow-y: auto;
-  
-
-        .parcel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-            width: 100%;
-
-            img {
-                max-width: 189px;
-                height: auto;
-            }
-
-            &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-            }
-
-            &.small {
-                background: #fff;
-                // margin: 0px;
-                height: 290px;
-                justify-content: center;
-
-            }
-
-            &.large {
-                background: #fff;
-                // margin: 20px;
-                height: 290px;
-                justify-content: center;
-                margin-top: 0;
-                margin-bottom: 0;
-            }
-
-            &.attention {
-                background-color: #ffccbc;
-                color: red;
-            }
-        }
-    }
+    
 }
 
 .footer {
