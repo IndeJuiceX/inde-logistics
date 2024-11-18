@@ -7,7 +7,7 @@ import { createShipmentAndUpdateOrder } from './order-shipment';
 import { getLoggedInUser } from '@/app/actions';
 import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { validateOrderShippingCode } from '@/services/data/courier';
-
+import { getExpectedDeliveryDate } from '@/services/utils';
 export const createOrder = async (vendorId, order) => {
     try {
         const errors = [];
@@ -133,15 +133,18 @@ export const createOrder = async (vendorId, order) => {
                 };
             }
         }
-
+ 
         // Return success and the created order
+        const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
+        const expectedDelivery = expectedDeliveryData?.data  || null
         return {
             success: true,
             createdOrder: {
-                ...order,
                 order_id: uniqueOrderId,
+                vendor_order_id : order.vendor_order_id,
+                expected_delivery : expectedDelivery?.data?.expected_delivery_date,
                 created_at: timestamp,
-                updated_at: timestamp,
+               
             },
         };
     } catch (error) {

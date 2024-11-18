@@ -21,7 +21,7 @@ export const validateOrderShippingCode = async (vendorId, code) => {
         if(!courierCodes || courierCodes.length === 0) {
             return {success:false, error : 'Invalid Shipping Code' , details:"Please check shipping_code and try again"}
         }else {
-            return { success: true, message: 'shipping code is valid' };
+            return { success: true, data:{'shipping_code':code,'courier':courierCodes[0].courier_name,'shipping_id' : courierCodes[0].inde_shipping_id} };
         }
 
     } catch (error) {
