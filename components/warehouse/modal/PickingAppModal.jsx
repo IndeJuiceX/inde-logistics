@@ -1,11 +1,11 @@
 import React, { Children } from 'react';
 import styles from '@/styles/warehouse/modals/PickingAppModal.module.scss';
 
-export default function PickingAppModal({ isOpen, onClose, children }) {
+export default function PickingAppModal({ isOpen, onClose, statusClass = 'noOrder', children }) {
 
     if (!isOpen) return null;
     return (
-        <div className={styles.modalOverlay}>
+        <div className={`${styles.modalOverlay} ${statusClass === 'noOrder' ? styles.noOrder : ''} ${statusClass === 'newOrder' ? styles.newOrder : ''}`}>
             <div className={styles.modalContainer}>
                 <button className={styles.closeButton} onClick={onClose}>&times;</button>
                 {/* <div className={styles.iconContainer}>

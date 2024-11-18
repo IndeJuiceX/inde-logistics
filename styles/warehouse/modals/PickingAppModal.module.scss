@@ -4,15 +4,25 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    // background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+
+    &.newOrder {
+        background-color: rgba(0, 255, 0, 0.5); // Green background for success
+    }
+
+    &.noOrder {
+        background-color: rgba(0, 0, 0, 0.5); // Red background for error
+    }
+
+
 }
 
 .modalContainer {
-    background-color: #00d084; // Green background
+    // background-color: #00d084; // Green background
     border-radius: 12px;
     padding: 2rem;
     width: 100%;
@@ -24,6 +34,9 @@
     color: white;
     font-family: Arial, sans-serif;
 }
+
+
+
 
 .closeButton {
     position: absolute;
@@ -91,3 +104,4 @@
         color: #00d084;
     }
 }
+

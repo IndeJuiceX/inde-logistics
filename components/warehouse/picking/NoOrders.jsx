@@ -1,11 +1,49 @@
-import { usePickingAppContext } from "@/contexts/PickingAppContext";
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePickingAppContext } from '@/contexts/PickingAppContext';
+import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
+import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 
 export default function NoOrders() {
     const { handleSignOut } = usePickingAppContext();
+    const [isOpenModal, setIsOpenModal] = useState(true);
+    const [isNewOrder, setIsNewOrder] = useState(false);
+    const [status, setStatus] = useState('noOrder');
+    const [statusHeading, setStatusHeading] = useState('No Orders Found');
+
+    const checkingNewOrders = async () => {
+        console.log('checkingNewOrders');
+        const response = await fetch('/api/v1/admin/orders/get-next-unpicked');
+        const data = await response.json();
+        console.log('data', data);
+
+        if (data.success && data.data && !Array.isArray(data.data)) {
+            setIsNewOrder(true);
+            setStatus('newOrder');
+            setStatusHeading('New Order Found');
+        }
+
+    };
+
+    useEffect(() => {
+        const intervalId = setInterval(checkingNewOrders, 2 * 60 * 1000); // 2 minutes in milliseconds
+        // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
+    }, []);
+
+
+
     return (
-        <div>
-            <h1>No Orders</h1>
-            <button onClick={handleSignOut}>Sign Out</button>
-        </div>
+        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={status} >
+            {/* background-color: #00d084; */}
+            <div>
+                <h1>{statusHeading}</h1>
+                {isNewOrder && <button className={styles.viewOrderLink} onClick={()=> window.location.href = '/warehouse/picking'}>View Order</button>}
+                <button onClick={handleSignOut}>Sign Out</button>
+
+            </div>
+        </ PickingAppModal>
     )
 }
