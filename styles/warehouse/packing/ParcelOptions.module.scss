@@ -1,0 +1,64 @@
+// .parcelOptions {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 10px;
+  
+//     .parcel {
+//       padding: 10px;
+//       border-radius: 5px;
+//       text-align: center;
+//       font-weight: bold;
+//       cursor: pointer;
+//     }
+  
+//     .small {
+//       background-color: #e0f7fa;
+//     }
+  
+//     .large {
+//       background-color: #ffe0b2;
+//     }
+  
+//     .attention {
+//       background-color: #ffccbc;
+//       color: red;
+//       font-weight: bold;
+//       padding: 10px;
+//       border-radius: 5px;
+//     }
+//   }
+  
+.parcelOptions {
+    position: fixed;
+    right: 10px;
+    top: 80px; /* Push it down to clear the header */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 5;
+  
+    .parcel {
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  
+    .small {
+      background-color: #e0f7fa;
+    }
+  
+    .large {
+      background-color: #ffe0b2;
+    }
+  
+    .attention {
+      background-color: #ffccbc;
+      color: red;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  }
+  

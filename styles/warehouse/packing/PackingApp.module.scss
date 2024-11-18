@@ -1,0 +1,190 @@
+.layout {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f4f4f4;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #ccc;
+
+    .orderCount {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .customerInfo {
+        text-align: center;
+        font-size: 14px;
+
+        span {
+            display: block;
+            font-size: 12px;
+            color: #666;
+        }
+    }
+
+    .orderDetails {
+        display: flex;
+        gap: 10px;
+
+        span {
+            font-size: 12px;
+            color: #666;
+        }
+    }
+}
+
+.content {
+    display: flex;
+    overflow-y: auto;
+    padding: 10px;
+    width: 67%;
+
+    .products {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .productItem {
+            display: flex;
+            gap: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background: #fff;
+
+            .imageContainer {
+                position: relative;
+                width: 400px;
+                height: 251px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                overflow: hidden;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                    /* Ensures the entire image is visible without distortion */
+                }
+
+                .quantity {
+                    position: absolute;
+                    right: 5px;
+                    bottom: 5px;
+                    background: #000;
+                    color: #fff;
+                    padding: 5px 5px;
+                    font-size: 30px;
+                    border-radius: 55%;
+                    width: 61px;
+                    text-align: center;
+                    height: 60px;
+                }
+            }
+
+
+            .productDetails {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                h3 {
+                    margin: 0;
+                    font-size: 16px;
+                }
+
+                p {
+                    margin: 0;
+                    font-size: 12px;
+                    color: #666;
+                }
+            }
+        }
+    }
+
+    .parcelOptions {
+        position: fixed;
+        right: 20px;
+        top: 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        background-color: #B2F4D3;
+        width: 400px;
+
+        .parcel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.2);
+
+            transition: transform 0.2s;
+
+
+
+            img {
+                max-width: 189px !important;
+                // width: 60px;
+                // height: 60px;
+                object-fit: contain;
+            }
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            &.small {
+                background: #fff;
+                margin: 20px;
+                height: 290px;
+                justify-content: center;
+
+            }
+
+            &.large {
+                background: #fff;
+                margin: 20px;
+                height: 290px;
+                justify-content: center;
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+
+            &.attention {
+                background-color: #ffccbc;
+                /* Light red */
+                color: red;
+            }
+        }
+    }
+}
+
+.footer {
+    background-color: #f4f4f4;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #ccc;
+    position: sticky;
+    bottom: 0;
+}

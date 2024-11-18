@@ -1,0 +1,25 @@
+.productItem {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 10px 0;
+  
+    .productImage {
+      width: 50px;
+      height: auto;
+      margin-right: 10px;
+    }
+  
+    .productDetails {
+      flex: 1;
+    }
+  
+    .quantity {
+      font-size: 16px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+  }
+  
