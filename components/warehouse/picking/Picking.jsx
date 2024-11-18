@@ -154,10 +154,7 @@ export default function Picking({ order, order_id }) {
 
         }
     }
-    useEffect(() => {
-        console.log('selectedItem', selectedItem);
 
-    }, [selectedItem]);
 
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     return (

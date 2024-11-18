@@ -8,7 +8,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
 
-    console.log('currentItem', currentItem);
+    // console.log('currentItem', currentItem);
 
     useEffect(() => {
         const handleKeyDown = (event) => {
