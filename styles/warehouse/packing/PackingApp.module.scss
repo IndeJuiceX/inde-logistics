@@ -9,70 +9,7 @@
     flex: 1;
     overflow-y: hidden;
 
-    .content {
-        flex: 3; // Adjust based on how much space you want for products
-        display: flex;
-        flex-direction: column;
-        padding: 10px;
-        overflow-y: auto;
-
-        .products {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            .productItem {
-                display: flex;
-                gap: 10px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                padding: 10px;
-                background: #fff;
-
-                .imageContainer {
-                    position: relative;
-                    width: 400px;
-                    height: 251px;
-                    border: 1px solid #ccc;
-                    border-radius: 5px;
-                    overflow: hidden;
-
-                    img {
-                        width: 100%;
-                        height: 100%;
-                        object-fit: contain;
-                    }
-
-                    .quantity {
-                        position: absolute;
-                        right: 5px;
-                        bottom: 5px;
-                        background: #000;
-                        color: #fff;
-                        padding: 5px 10px;
-                        border-radius: 50%;
-                    }
-                }
-
-                .productDetails {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-
-                    h3 {
-                        margin: 0;
-                        font-size: 16px;
-                    }
-
-                    p {
-                        margin: 0;
-                        font-size: 12px;
-                        color: #666;
-                    }
-                }
-            }
-        }
-    }
+    
 
     .parcelOptions {
         flex: 1; // Adjust based on how much space you want

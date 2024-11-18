@@ -1,6 +1,7 @@
 import React from "react";
 import styles from '@/styles/warehouse/packing/PackingApp.module.scss';
 import PackingHeader from "@/components/warehouse/packing/PackingHeader";
+import PackingItems from "@/components/warehouse/packing/PackingItems";
 
 export default function PackingApp() {
     return (
@@ -11,27 +12,8 @@ export default function PackingApp() {
             {/* Main Section */}
             <div className={styles.main}>
                 {/* Product List */}
-                <div className={styles.content}>
-                    <div className={styles.products}>
-                        {/* Product Item */}
-                        {["Cool Crush", "Avalanche", "Berry Blast"].map((product, index) => (
-                            <div key={index} className={styles.productItem}>
-                                <div className={styles.imageContainer}>
-                                    {/* eslint-disable-next-line */}
-                                    <img
-                                        src="https://cdn.indejuice.com/images/GvS.jpg"
-                                        alt={product}
-                                    />
-                                    <div className={styles.quantity}>x1</div>
-                                </div>
-                                <div className={styles.productDetails}>
-                                    <h3>{product}</h3>
-                                    <p>10ml | 3mg | 70VG/30PG</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+
+                <PackingItems />
 
                 {/* Parcel Options */}
                 <div className={styles.parcelOptions}>
