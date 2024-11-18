@@ -1,22 +1,12 @@
 import React from "react";
 import styles from '@/styles/warehouse/packing/PackingApp.module.scss';
+import PackingHeader from "@/components/warehouse/packing/PackingHeader";
 
 export default function PackingApp() {
     return (
         <div className={styles.layout}>
             {/* Header */}
-            <header className={styles.header}>
-                <div className={styles.orderCount}>x4</div>
-                <div className={styles.customerInfo}>
-                    <div>Neil Gardner</div>
-                    <span>CUSTOMER</span>
-                </div>
-                <div className={styles.orderDetails}>
-                    <span>INVITEXZZ</span>
-                    <span>48H DELIVERY</span>
-                    <span>#FT ORDER</span>
-                </div>
-            </header>
+            <PackingHeader />
 
             {/* Main Content */}
             <div className={styles.content}>

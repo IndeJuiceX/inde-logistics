@@ -1,21 +1,37 @@
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #f4f4f4;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  
-    .orderCount {
-      font-size: 20px;
-      font-weight: bold;
-    }
-  
-    .customerInfo,
-    .orderDetails {
-      text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f4f4f4;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #ccc;
+
+  .orderCount {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .customerInfo {
+    text-align: center;
+    font-size: 14px;
+
+    span {
+      display: block;
+      font-size: 12px;
+      color: #666;
     }
   }
-  
+
+  .orderDetails {
+    display: flex;
+    gap: 10px;
+
+    span {
+      font-size: 12px;
+      color: #666;
+    }
+  }
+}
