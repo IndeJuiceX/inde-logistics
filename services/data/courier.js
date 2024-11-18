@@ -1,0 +1,35 @@
+import { getItem, transactWriteItems, queryItems, updateItem, queryItemsWithPkAndSk, } from '@/services/external/dynamo/wrapper';
+import { coreKnownTags } from 'yaml/dist/schema/tags';
+
+
+export const validateOrderShippingCode = async (vendorId, code) => {
+    try {
+        //get the vendor couriers 
+        const vendorData = await getItem(`VENDOR#${vendorId}`,`VENDOR#${vendorId}`)
+        const vendor = vendorData?.data || null
+        if(!vendor) {
+            return {success:false, error : 'Vendor not found' , details:"Invalid vendor id"}
+        }
+        const vendorCourier = vendor?.courier_name || null
+        if(!vendorCourier) {
+            return {success:false, error : 'Vendor Courier is not set' , details:"Please set the vendor courier and try again"}
+        }
+        const courierNameKey = vendorCourier.toLowerCase().replace(/\s+/g, '');
+        const courierData = await queryItemsWithPkAndSk(`COURIER#${courierNameKey}`, `CODE#${code}#`)
+
+        const courierCodes = courierData?.data || null
+        if(!courierCodes || courierCodes.length === 0) {
+            return {success:false, error : 'Invalid Shipping Code' , details:"Please check shipping_code and try again"}
+        }else {
+            return { success: true, message: 'shipping code is valid' };
+        }
+
+    } catch (error) {
+        console.error('Error in createOrder:', error);
+        return {
+            success: false,
+            error: 'Server error.',
+            details: error.message,
+        };
+    }
+};
