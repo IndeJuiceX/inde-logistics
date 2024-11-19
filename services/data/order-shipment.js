@@ -1,8 +1,11 @@
 // executeTransaction.js
 
-import { transactWriteItems, getItem, updateItem } from "../external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
-import { getOrder } from "./order";
+import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
+import { getCourierDetails } from "@/services/data/courier";
+import { cleanResponseData } from "@/services/utils";
+import { executeDataQuery } from "@/services/external/athena";
 /**
  * Function to create a new VendorOrderShipment and update an existing Order
  *
@@ -15,12 +18,12 @@ export const createShipmentAndUpdateOrder = async (vendorId, orderId) => {
   // Current timestamp
   const timestamp = new Date().toISOString();
   const user = await getLoggedInUser()
-  
-  const orderData = await getOrder(vendorId, orderId)
-  const order = orderData?.data || null 
 
-  if(!order) {
-    return {success:false, error : 'Order not found'}
+  const orderData = await getOrder(vendorId, orderId)
+  const order = orderData?.data || null
+
+  if (!order) {
+    return { success: false, error: 'Order not found' }
   }
   // Define the Put operation for VendorOrderShipment
   const putVendorOrderShipment = {
@@ -33,8 +36,8 @@ export const createShipmentAndUpdateOrder = async (vendorId, orderId) => {
         entity_type: 'OrderShipment',
         status: 'processing',
         picker: user?.email || 'unknown',
-        shipping_code : order.shipping_code,
-        expected_delivery_date : order.expected_delivery_date
+        shipping_code: order.shipping_code,
+        expected_delivery_date: order.expected_delivery_date
         // Add any additional fields as necessary
       },
       ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
@@ -83,7 +86,7 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
   // get the ordershipment and ensure that it exists... and has the status of processing before it can be set to picked..
   const orderShipmentResponse = await getOrderShipment(vendorId, orderId)
   console.log('orderShipmentResponse', orderShipmentResponse);
-  
+
   const orderShipment = orderShipmentResponse?.data || null
   if (!orderShipment) {
     return { success: false, error: 'Order Shipment not found' }
@@ -123,5 +126,184 @@ export const updateOrderShipmentError = async (vendorId, orderId, errorReason = 
   return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
 };
 
+export const getNextUnPackedOrderShipment = async () => {
+  const user = await getLoggedInUser();
+  if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
+    return { success: false, error: 'Not Authorized' }
+  }
+  const query1 = `
+  SELECT pk,sk
+  FROM order_shipments
+  WHERE status = 'picked' AND (error IS NULL OR error != 1) AND packer = '${user.email}'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;
+  const existingData = await executeDataQuery({ query: query1 });
+  const existingKeys = existingData?.data[0] || null
+  if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
+    const vendorId = existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+
+    const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
+    const orderData = orderDetailsData?.data || null
+    if (!orderData) {
+      return {
+        success: false,
+        error: `Order not found for vendor ${vendorId} and order ${orderId}`,
+      }
+    }
+    orderData.picker = user.email
+    return {
+      success: true,
+      data: orderData,
+
+    }
+  }
+
+  // if packer has no opened order for packing i.e no picked order with packer email set..
+  //then get the top order from picked orders which has no error queue set
+  const query2 = `
+  SELECT pk,sk
+  FROM order_shipments
+  WHERE status = 'picked' AND (error IS NULL OR error != 1)'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;// get the order with accepted status..
+  const data = await executeDataQuery({ query: query2 });
+  const nextOrderKeys = data?.data[0] || null
+  if (!nextOrderKeys) {
+    return { success: true, data: [] }
+  }
+
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+  const orderData = orderDetailsData?.data || null
+
+  if (!orderData || !orderDetailsData?.success) {
+    return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
+  }
+
+  const updateResponse = await updateOrderShipment(orderData.vendor_id, orderData.vendor_order_id, { packer: user?.email || 'UNKNOWN' })
+  //updateOrderShipment by adding the packer email to the packer
+  if (!updateResponse?.success) {
+    return { success: false, error: 'Error while creating order or updating order shipment' }
+  }
+
+  const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
+  const orderShipment = orderShipmentData?.data || null
+
+  if (!orderShipment || !orderShipmentData?.success) {
+    return { success: false, error: orderShipmentData.error || 'Error in getting Order Shipment Details' }
+  }
+
+  const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
+  const courierData = courierDetailsData?.data || null
+  if (!courierData || !courierDetailsData?.success) {
+    return { success: false, error: courierDetailsData.error || 'Error in getting Courier Details' }
+  }
+  orderData.shipment = cleanResponseData(orderShipment)
+  order.shipment.courier = courierData
+
+  return {
+    success: true,
+    data: orderData,
+
+  }
+
+}
+
+export const getNextUnPickedOrderShipment = async () => {
+  const user = await getLoggedInUser();
+  if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
+    return { success: false, error: 'Not Authorized' }
+  }
+  const query1 = `
+  SELECT pk,sk
+  FROM order_shipments
+  WHERE status = 'processing' AND (error IS NULL OR error != 1) AND picker = '${user.email}'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;
+  const existingData = await executeDataQuery({ query: query1 });
+  const existingKeys = existingData?.data[0] || null
+  if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
+    const vendorId = existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+
+    const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
+    const orderData = orderDetailsData?.data || null
+    if (!orderData) {
+      return {
+        success: false,
+        error: `Order not found for vendor ${vendorId} and order ${orderId}`,
+      }
+    }
+    orderData.picker = user.email
+    return {
+      success: true,
+      data: orderData,
+
+    }
+  }
 
 
+  const query2 = `
+  SELECT vendor_order_id,vendor_id
+  FROM orders
+  WHERE status = 'accepted'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;// get the order with accepted status..
+  const data = await executeDataQuery({ query: query2 });
+  const nextOrderKeys = data?.data[0] || null
+  if (!nextOrderKeys) {
+    return { success: true, data: [] }
+  }
+
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+  console.log('orderDetailsData', orderDetailsData)
+  if (!orderDetailsData || !orderDetailsData?.success) {
+    return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
+  }
+  const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+
+  if (!updateResponse?.success) {
+    return { success: false, error: 'Error while creating order or updating order shipment' }
+  }
+
+  const orderData = orderDetailsData.data
+  orderData.picker = user?.email || 'Unknown'
+
+  return {
+    success: true,
+    data: orderData,
+
+  }
+
+}
+
+
+export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
+  // Get the order shipment and ensure that it exists
+  const orderShipmentResponse = await getOrderShipment(vendorId, orderId);
+  console.log('orderShipmentResponse', orderShipmentResponse);
+
+  const orderShipment = orderShipmentResponse?.data || null;
+  if (!orderShipment) {
+    return { success: false, error: 'Order Shipment not found' };
+  }
+
+  // Perform any necessary validations
+  if (updatedFields.status) {
+    // Example validation: If updating status to 'picked', ensure current status is 'processing'
+    if (updatedFields.status === 'picked' && orderShipment.status !== 'processing') {
+      return { success: false, error: 'Order Shipment must have processing status to be updated to picked' };
+    }
+    // You can add more status transition validations here
+  }
+
+  // Append 'updated_at' to the updatedFields
+  updatedFields.updated_at = new Date().toISOString();
+
+  // Use the updateItem wrapper function to update the item
+  return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
+};

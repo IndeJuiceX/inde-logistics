@@ -105,7 +105,7 @@ export const createOrder = async (vendorId, order) => {
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
                     shipping_code : order.shipping_code,
-                    expected_delivery_date: expectedDeliveryDate, //order.expected_delivery_date,
+                    expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
                     //shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
@@ -394,75 +394,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     return { success: true, data: orderDetails };
 }
 
-export const getNextUnPickedOrder = async () => {
-    const user = await getLoggedInUser();
-    if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
-        return { success: false, error: 'Not Authorized' }
-    }
-    const query1 = `
-    SELECT pk,sk
-    FROM order_shipments
-    WHERE status = 'processing' AND (error IS NULL OR error != 1) AND picker = '${user.email}'
-    ORDER BY created_at ASC
-    LIMIT 1;
-  `;
-    const existingData = await executeDataQuery({ query: query1 });
-    const existingKeys = existingData?.data[0] || null
-    if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
-        const vendorId = existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
-        const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
 
-        const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
-        const orderData = orderDetailsData?.data || null
-        if (!orderData) {
-            return {
-                success: false,
-                error: `Order not found for vendor ${vendorId} and order ${orderId}`,
-            }
-        }
-        orderData.picker = user.email
-        return {
-            success: true,
-            data: orderData,
-
-        }
-    }
-
-
-    const query2 = `
-    SELECT vendor_order_id,vendor_id
-    FROM orders
-    WHERE status = 'accepted'
-    ORDER BY created_at ASC
-    LIMIT 1;
-  `;// get the order with accepted status..
-    const data = await executeDataQuery({ query: query2 });
-    const nextOrderKeys = data?.data[0] || null
-    if (!nextOrderKeys) {
-        return { success: true, data: [] }
-    }
-
-    const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-    console.log('orderDetailsData', orderDetailsData)
-    if (!orderDetailsData || !orderDetailsData?.success) {
-        return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
-    }
-    const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-
-    if (!updateResponse?.success) {
-        return { success: false, error: 'Error while creating order or updating order shipment' }
-    }
-
-    const orderData = orderDetailsData.data
-    orderData.picker = user?.email || 'Unknown'
-
-    return {
-        success: true,
-        data: orderData,
-
-    }
-
-}
 
 export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
     const orderData = await getOrder(vendorId, orderId);
