@@ -111,3 +111,18 @@ export const extractNameFromEmail = (email) => {
   }
   return null;
 }
+
+export const getExpectedDeliveryDate = async (shippingId) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/get-next-available-delivery_date?shipping_id=${encodeURIComponent(
+        shippingId
+      )}`
+    );
+    return { success: true, data: response.data }
+  } catch (error) {
+    // ... error handling
+    return { success: false, error: error }
+  }
+
+}

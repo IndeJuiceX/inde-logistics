@@ -6,11 +6,16 @@ import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
 import { getLoggedInUser } from '@/app/actions';
 import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-
+import { validateOrderShippingCode } from '@/services/data/courier';
+import { getExpectedDeliveryDate } from '@/services/utils';
 export const createOrder = async (vendorId, order) => {
     try {
         const errors = [];
         const transactionItems = [];
+        const validShippingCode = await validateOrderShippingCode(vendorId,order.shipping_code)
+        if(!validShippingCode.success) {
+            return {success:false , error : validShippingCode?.error || 'Could not validate order shipping code' , details: validShippingCode?.details || 'Order Shipping code validation failed'}
+        }
 
         // Get the current timestamp
         const timestamp = new Date().toISOString();
@@ -128,15 +133,18 @@ export const createOrder = async (vendorId, order) => {
                 };
             }
         }
-
+ 
         // Return success and the created order
+        const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
+        const expectedDelivery = expectedDeliveryData?.data  || null
         return {
             success: true,
             createdOrder: {
-                ...order,
                 order_id: uniqueOrderId,
+                vendor_order_id : order.vendor_order_id,
+                expected_delivery : expectedDelivery?.data?.expected_delivery_date,
                 created_at: timestamp,
-                updated_at: timestamp,
+               
             },
         };
     } catch (error) {
@@ -359,15 +367,15 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 
     const pkVal = `VENDORORDERITEM#${vendorId}`
     const skPrefix = `ORDER#${vendorOrderId}#ITEM#`;
-    const params = {
-        KeyConditionExpression: 'pk = :pkVal AND begins_with(sk, :skPrefix)',
-        ExpressionAttributeValues: {
-            ':pkVal': pkVal,
-            ':skPrefix': skPrefix,
-        },
+    // const params = {
+    //     KeyConditionExpression: 'pk = :pkVal AND begins_with(sk, :skPrefix)',
+    //     ExpressionAttributeValues: {
+    //         ':pkVal': pkVal,
+    //         ':skPrefix': skPrefix,
+    //     },
 
-    };
-    const orderItemsData = await queryItems(params)
+    // };
+    const orderItemsData = await queryItemsWithPkAndSk(pkVal,skPrefix)
     if (!orderItemsData.success) {
         return { success: false, error: 'Failed to retrieve order items' };
     }
