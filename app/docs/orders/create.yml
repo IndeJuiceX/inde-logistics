@@ -31,6 +31,10 @@ paths:
                     type: string
                     description: The vendor's order ID of the created order.
                     example: "ORDER12345"
+                  excepted_delivery_date:
+                    type: string
+                    description: The expected delivery date of the order.
+                    example: "31/12/2023"
         "400":
           description: Bad Request - Invalid order data or request parameters.
         "403":

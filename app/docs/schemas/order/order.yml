@@ -4,10 +4,12 @@ Order:
       properties:
         vendor_order_id:
           type: string
-        expected_delivery_date:
+        # expected_delivery_date:
+        #   type: string
+        #   pattern: '^([0-2][0-9]|(3)[0-1])\\/(0[1-9]|1[0-2])\\/\\d{4}$'
+        #   example: '31/12/2023'
+        shipping_code:
           type: string
-          pattern: '^([0-2][0-9]|(3)[0-1])\\/(0[1-9]|1[0-2])\\/\\d{4}$'
-          example: '31/12/2023'
         buyer:
           $ref: '#/components/schemas/Buyer'
         items:
@@ -17,6 +19,6 @@ Order:
             $ref: '#/components/schemas/OrderItem'
       required:
         - vendor_order_id
-        - expected_delivery_date
         - buyer
         - items
+        - shipping_code
