@@ -79,7 +79,9 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
         // Prepare the response payload
         const responsePayload = {
             created: true,
-            vendor_order_id: createResult.createdOrder.vendor_order_id
+            vendor_order_id: createResult.createdOrder.vendor_order_id,
+            order_ref : createResult.createdOrder.order_id,
+            expected_delivery_date : createResult.createdOrder.expected_delivery_date
         };
 
         return NextResponse.json(responsePayload, { status: 201 });
