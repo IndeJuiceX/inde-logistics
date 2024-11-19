@@ -14,8 +14,9 @@ export default function NoOrders() {
     const [statusHeading, setStatusHeading] = useState('No Orders Found');
 
     const checkingNewOrders = async () => {
-        console.log('checkingNewOrders');
-        const response = await fetch('/api/v1/admin/orders/get-next-unpicked');
+        // console.log('checkingNewOrders');
+        // app/api/v1/admin/order-shipments/get-next-unpicked/route.js
+        const response = await fetch('/api/v1/admin/order-shipments/get-next-unpicked');
         const data = await response.json();
         console.log('data', data);
 
