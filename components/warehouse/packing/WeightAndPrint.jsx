@@ -28,6 +28,10 @@ export default function WeightAndPrint() {
         setIsOpenModal(true);
     }
 
+    const handleComplete = () => {
+        console.log('handleComplete');
+        
+    }
     return (
         <div className={styles.parcelDetails}>
             <div className={styles.detailItem} onClick={handleWeightChange}>
