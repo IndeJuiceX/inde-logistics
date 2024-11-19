@@ -3,6 +3,7 @@ import styles from '@/styles/warehouse/packing/PackingApp.module.scss';
 import PackingHeader from "@/components/warehouse/packing/PackingHeader";
 import PackingItems from "@/components/warehouse/packing/PackingItems";
 import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
+import ParcelDetails from "@/components/warehouse/packing/ParcelDetails";
 
 export default function PackingApp() {
     return (
@@ -17,7 +18,8 @@ export default function PackingApp() {
                 <PackingItems />
 
                 {/* Parcel Options */}
-                <ParcelOptions />
+                {/* <ParcelOptions /> */}
+                <ParcelDetails />
             </div>
 
             {/* Footer */}
