@@ -181,7 +181,7 @@ export const getNextUnPackedOrderShipment = async () => {
       return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
   }
 
-  const updateResponse = await updateOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
+  const updateResponse = await updateOrderShipment(orderData.vendor_id, orderData.vendor_order_id,{packer:user?.email || 'UNKNOWN'})
   //updateOrderShipment by adding the packer email to the packer
   if (!updateResponse?.success) {
       return { success: false, error: 'Error while creating order or updating order shipment' }
