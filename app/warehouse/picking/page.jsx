@@ -2,7 +2,7 @@
 
 import Picking from "@/components/warehouse/picking/Picking";
 import PickingApp from "@/components/warehouse/picking/PickingApp";
-import { getNextUnPickedOrder } from '@/services/data/order';
+import { getNextUnPickedOrderShipment } from '@/services/data/order-shipment';
 import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 
 export default async function PickingPage() {
@@ -63,7 +63,7 @@ export default async function PickingPage() {
         barcodeText: `BAR-${1000 + i}`,
     }));
     */
-    const unPickedResult = await getNextUnPickedOrder();
+    const unPickedResult = await getNextUnPickedOrderShipment();
 
     if (!unPickedResult.success) {
         console.log('Failed to get unpicked order items', unPickedResult.error);
