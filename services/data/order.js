@@ -88,6 +88,14 @@ export const createOrder = async (vendorId, order) => {
         // Generate a unique ID for the order if not already provided
         const uniqueOrderId = generateOrderId(vendorId, order.vendor_order_id); // You need to implement generateUniqueId()
 
+         // Return success and the created order
+         const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
+         const expectedDelivery = expectedDeliveryData?.data  || null
+         let expectedDeliveryDate = null
+         if(expectedDelivery) {
+            const [day, month, year] = expectedDelivery.expected_delivery_to_date.split('-');
+            expectedDeliveryDate = new Date(`${year}-${month}-${day}`).toISOString();
+         }
         // Prepare Put operation for the order itself with 'created_at' and 'updated_at'
         const orderPutOperation = {
             Put: {
@@ -96,7 +104,8 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    expected_delivery_date: order.expected_delivery_date,
+                    shipping_code : order.shipping_code,
+                    expected_delivery_date: expectedDeliveryDate, //order.expected_delivery_date,
                     //shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
@@ -134,17 +143,15 @@ export const createOrder = async (vendorId, order) => {
             }
         }
  
-        // Return success and the created order
-        const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
-        const expectedDelivery = expectedDeliveryData?.data  || null
+        // // Return success and the created order
+        // const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
+        // const expectedDelivery = expectedDeliveryData?.data  || null
         return {
             success: true,
             createdOrder: {
                 order_id: uniqueOrderId,
                 vendor_order_id : order.vendor_order_id,
-                expected_delivery : expectedDelivery?.data?.expected_delivery_date,
-                created_at: timestamp,
-               
+                expected_delivery_date : expectedDeliveryDate
             },
         };
     } catch (error) {

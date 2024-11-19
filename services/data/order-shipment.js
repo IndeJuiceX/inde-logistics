@@ -2,6 +2,7 @@
 
 import { transactWriteItems, getItem, updateItem } from "../external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
+import { getOrder } from "./order";
 /**
  * Function to create a new VendorOrderShipment and update an existing Order
  *
@@ -14,7 +15,13 @@ export const createShipmentAndUpdateOrder = async (vendorId, orderId) => {
   // Current timestamp
   const timestamp = new Date().toISOString();
   const user = await getLoggedInUser()
+  
+  const orderData = await getOrder(vendorId, orderId)
+  const order = orderData?.data || null 
 
+  if(!order) {
+    return {success:false, error : 'Order not found'}
+  }
   // Define the Put operation for VendorOrderShipment
   const putVendorOrderShipment = {
     Put: {
@@ -25,7 +32,9 @@ export const createShipmentAndUpdateOrder = async (vendorId, orderId) => {
         updated_at: timestamp,
         entity_type: 'OrderShipment',
         status: 'processing',
-        picker: user?.email || 'unknown'
+        picker: user?.email || 'unknown',
+        shipping_code : order.shipping_code,
+        expected_delivery_date : order.expected_delivery_date
         // Add any additional fields as necessary
       },
       ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
