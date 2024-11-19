@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useContext } from 'react';
-import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
+import DialPad from '@/components/warehouse/keypad/DialPad';
 import { useParams } from 'next/navigation';
 import AlphabetPad from '@/components/warehouse/keypad/AlphabetPad';
 import ColorPad from '@/components/warehouse/keypad/ColorPad';
