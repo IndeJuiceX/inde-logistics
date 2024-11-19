@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useContext } from 'react';
-import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
+import DialPad from '@/components/warehouse/keypad/DialPad';
 import { useParams } from 'next/navigation';
 import { getStockShipmentDetails } from "@/services/data/stock-shipment";
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
