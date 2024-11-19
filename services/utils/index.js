@@ -119,7 +119,7 @@ export const getExpectedDeliveryDate = async (shippingId) => {
         shippingId
       )}`
     );
-    return { success: true, data: response.data }
+    return response;//{ success: true, data: response.data }
   } catch (error) {
     // ... error handling
     return { success: false, error: error }
