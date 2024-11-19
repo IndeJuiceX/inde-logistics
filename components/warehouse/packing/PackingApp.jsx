@@ -18,8 +18,8 @@ export default function PackingApp() {
                 <PackingItems />
 
                 {/* Parcel Options */}
-                {/* <ParcelOptions /> */}
-                <ParcelDetails />
+                <ParcelOptions />
+                {/* <ParcelDetails /> */}
             </div>
 
             {/* Footer */}

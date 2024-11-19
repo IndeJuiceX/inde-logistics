@@ -1,13 +1,27 @@
 .parcelOptions {
-  flex: 1; // Adjust based on how much space you want
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: center;
   padding: 10px;
   background-color: #b2f4d3;
-  overflow-y: auto;
+  // overflow-y: auto;
 
+  .upperSection {
+    // display: flex;
+    // flex-wrap: wrap;
+    // gap: 15px;
+    // justify-content: center;
+    width: 100%;
+  }
+
+  .lowerSection {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 15px;
+  }
 
   .parcel {
     display: flex;
@@ -21,10 +35,13 @@
     cursor: pointer;
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s;
-    width: 100%;
-
+    flex: 1;
+    max-width: 100%; // Adjust to fit in the layout
+    height: 130px;
+    margin-bottom: 20px;
+    // gap: 45px;
     img {
-      max-width: 189px;
+      max-width: 80px;
       height: auto;
     }
 
@@ -33,25 +50,34 @@
       box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
     }
 
-    &.small {
-      background: #fff;
-      // margin: 0px;
-      height: 290px;
-      justify-content: center;
-
+    &.letter {
+      background: #e0f7fa;
     }
 
-    &.large {
+    &.parcel {
       background: #fff;
-      // margin: 20px;
-      height: 290px;
-      justify-content: center;
-      margin-top: 0;
-      margin-bottom: 0;
+
+      img {
+        margin-bottom: 9px;
+      }
     }
 
-    &.attention {
-      background-color: #ffccbc;
+    &.extraLarge {
+      background: #fff;
+
+      img {
+        margin-bottom: 9px;
+      }
+    }
+
+    
+
+    &.customSize {
+      background: #fff;
+    }
+
+    &.reportError {
+      background: #ffccbc;
       color: red;
     }
   }
