@@ -115,9 +115,13 @@ export const extractNameFromEmail = (email) => {
 export const getExpectedDeliveryDate = async (shippingId) => {
   try {
     const response = await fetch(
-      `https://prod-api.indejuice.com/api/v1/get-next-available-delivery_date?shipping_id=${shippingId}`
+      `https://prod-api.indejuice.com/api/v1/get-next-available-delivery-date?shipping_id=${shippingId}`
     );
-    return response;//{ success: true, data: response.data }
+    const data = await response.json();
+    
+    return data;//{ success: true, data: response.data }
+    
+    
   } catch (error) {
     // ... error handling
     return { success: false, error: error }

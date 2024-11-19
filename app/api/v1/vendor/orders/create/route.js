@@ -70,7 +70,8 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
         if (!createResult.success) {
             return NextResponse.json({
-                error: 'Failed to create order', vendor_order_id: order?.vendor_order_id || 'UNKNOWN',
+                // error: 'Failed to create order', vendor_order_id: order?.vendor_order_id || 'UNKNOWN',
+                error: createResult?.error || 'Failed to create order', vendor_order_id: order?.vendor_order_id || 'UNKNOWN',
                 details: createResult.errors
             }, { status: 400 });
         }

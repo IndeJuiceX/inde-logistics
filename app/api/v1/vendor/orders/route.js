@@ -7,7 +7,7 @@ const handler = async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
         const vendorOrderId = searchParams.get('vendor_order_id');
-        console.log('vender');
+        // console.log('vender');
         
         const pageSize = parseInt(searchParams.get('page_size')) || 25;
         const lastEvaluatedKeyParam = searchParams.get('last_evaluated_key');

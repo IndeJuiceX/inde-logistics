@@ -1,5 +1,4 @@
 import { getItem, transactWriteItems, queryItems, updateItem, queryItemsWithPkAndSk, } from '@/services/external/dynamo/wrapper';
-import { coreKnownTags } from 'yaml/dist/schema/tags';
 
 
 export const validateOrderShippingCode = async (vendorId, code) => {
@@ -10,7 +9,7 @@ export const validateOrderShippingCode = async (vendorId, code) => {
         if(!vendor) {
             return {success:false, error : 'Vendor not found' , details:"Invalid vendor id"}
         }
-        const vendorCourier = vendor?.courier_name || null
+        const vendorCourier = vendor?.courier || null
         if(!vendorCourier) {
             return {success:false, error : 'Vendor Courier is not set' , details:"Please set the vendor courier and try again"}
         }
