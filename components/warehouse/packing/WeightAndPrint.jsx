@@ -56,6 +56,15 @@ export default function WeightAndPrint() {
                 LABEL
             </div>
 
+            <div className={styles.complete} onClick={handleComplete}>
+                {/* eslint-disable-next-line */}
+                <img
+                    src="https://dev.indejuice.com/img/wh/label_added.png"
+                    alt="Letter"
+                />
+                <span>PACKED & LABELLED</span>
+            </div>
+
 
         </div>
     )
