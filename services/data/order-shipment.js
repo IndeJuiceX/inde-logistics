@@ -165,7 +165,7 @@ export const getNextUnPackedOrderShipment = async () => {
   const query2 = `
   SELECT pk,sk
   FROM order_shipments
-  WHERE status = 'picked' AND (error IS NULL OR error != 1)'
+  WHERE status = 'picked' AND (error IS NULL OR error != 1)
   ORDER BY created_at ASC
   LIMIT 1;
 `;// get the order with accepted status..
