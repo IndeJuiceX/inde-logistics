@@ -118,13 +118,20 @@ export const getExpectedDeliveryDate = async (shippingId) => {
       `https://prod-api.indejuice.com/api/v1/get-next-available-delivery-date?shipping_id=${shippingId}`
     );
     const data = await response.json();
-    
+
     return data;//{ success: true, data: response.data }
-    
-    
+
+
   } catch (error) {
     // ... error handling
     return { success: false, error: error }
   }
 
+}
+
+export const getIdFromDynamoKey = (key = null) => {
+  if (key) {
+    return key.substring(key.indexOf('#') + 1)
+  }
+  return key;
 }

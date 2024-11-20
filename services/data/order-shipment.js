@@ -6,6 +6,7 @@ import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
 import { getCourierDetails } from "@/services/data/courier";
 import { cleanResponseData } from "@/services/utils";
 import { executeDataQuery } from "@/services/external/athena";
+import { getIdFromDynamoKey } from "@/services/utils";
 /**
  * Function to create a new VendorOrderShipment and update an existing Order
  *
@@ -141,8 +142,8 @@ export const getNextUnPackedOrderShipment = async () => {
   const existingData = await executeDataQuery({ query: query1 });
   const existingKeys = existingData?.data[0] || null
   if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
-    const vendorId = existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
-    const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+    const vendorId = getIdFromDynamoKey(existingKeys.pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = getIdFromDynamoKey(existingKeys.sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
 
     const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
     const orderData = orderDetailsData?.data || null
@@ -175,7 +176,9 @@ export const getNextUnPackedOrderShipment = async () => {
     return { success: true, data: [] }
   }
 
-  const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
+  const nextOrderVendorId = getIdFromDynamoKey(nextOrderKeys.pk)
+  const nextOrderId = getIdFromDynamoKey(nextOrderKeys.sk)
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderVendorId,nextOrderId )
   const orderData = orderDetailsData?.data || null
 
   if (!orderData || !orderDetailsData?.success) {
@@ -226,8 +229,8 @@ export const getNextUnPickedOrderShipment = async () => {
   const existingData = await executeDataQuery({ query: query1 });
   const existingKeys = existingData?.data[0] || null
   if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
-    const vendorId = existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
-    const orderId = existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+    const vendorId = getIdFromDynamoKey(existingKeys.pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = getIdFromDynamoKey(existingKeys.sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
 
     const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
     const orderData = orderDetailsData?.data || null
