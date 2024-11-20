@@ -1,23 +1,22 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import styles from '@/styles/warehouse/packing/ParcelOptions.module.scss';
 import ParcelDetails from '@/components/warehouse/packing/ParcelDetails';
 import WeightAndPrint from '@/components/warehouse/packing/WeightAndPrint';
+import { usePackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function ParcelOptions() {
-
-  const [selectedParcelOption, setSelectedParcelOption] = useState('');
+  const { order, packedData, setPackedData } = usePackingAppContext();
 
   const handleParcelOptionClick = (parcelOption) => {
-    console.log('handleParcelOptionClick', parcelOption);
-    const selectedOption = parcelOption === selectedParcelOption ? '' : parcelOption;
-    setSelectedParcelOption(selectedOption);
+    const selectedOption = parcelOption === packedData.parcelOption ? '' : parcelOption;
+    setPackedData({ ...packedData, parcelOption: selectedOption });
   }
   return (
     <div className={styles.parcelOptions}>
-      {/* {selectedParcelOption === '' && ( */}
+
       <div className={styles.upperSection}>
-        {(selectedParcelOption === '' || selectedParcelOption === 'letter') && (
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'letter') && (
           <div className={`${styles.parcel} ${styles.letter}`} onClick={() => handleParcelOptionClick('letter')}>
             {/* eslint-disable-next-line */}
             <img
@@ -27,7 +26,7 @@ export default function ParcelOptions() {
             LETTER
           </div>
         )}
-        {(selectedParcelOption === '' || selectedParcelOption === 'large') && (
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'large') && (
           <div className={`${styles.parcel} ${styles.parcel}`} onClick={() => handleParcelOptionClick('large')}>
             {/* eslint-disable-next-line */}
             <img
@@ -37,7 +36,7 @@ export default function ParcelOptions() {
             PARCEL
           </div>
         )}
-        {(selectedParcelOption === '' || selectedParcelOption === 'extra') && (
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'extra') && (
           <div className={`${styles.parcel} ${styles.extraLarge}`} onClick={() => handleParcelOptionClick('extra')}>
             {/* eslint-disable-next-line */}
             <img
@@ -47,7 +46,7 @@ export default function ParcelOptions() {
             EXTRA LARGE PARCEL
           </div>
         )}
-        {(selectedParcelOption === '' || selectedParcelOption === 'custom') && (
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'custom') && (
 
           <div className={`${styles.parcel} ${styles.customSize}`} onClick={() => handleParcelOptionClick('custom')}>
             {/* eslint-disable-next-line */}
@@ -63,21 +62,21 @@ export default function ParcelOptions() {
 
 
       </div>
-      
-        {selectedParcelOption !== '' && (selectedParcelOption.includes('letter') || selectedParcelOption.includes('large') || selectedParcelOption.includes('extra')) ? (
-          <WeightAndPrint />
-        ) : selectedParcelOption === 'custom' && (
-          <ParcelDetails />
-        )}
-      {/* {selectedParcelOption === '' && ( */}
-        <div className={`${styles.parcel} ${styles.customSize}`}>
-          {/* eslint-disable-next-line */}
-          <img
-            src="https://dev.indejuice.com/img/wh/warning.png"
-            alt="Extra Large Parcel"
-          />
-          REPORT
-        </div>
+
+      {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('large') || packedData.parcelOption.includes('extra')) ? (
+        <WeightAndPrint />
+      ) : packedData.parcelOption === 'custom' && (
+        <ParcelDetails />
+      )}
+      {/* {packedData.parcelOption === '' && ( */}
+      <div className={`${styles.parcel} ${styles.customSize}`}>
+        {/* eslint-disable-next-line */}
+        <img
+          src="https://dev.indejuice.com/img/wh/warning.png"
+          alt="Extra Large Parcel"
+        />
+        REPORT
+      </div>
       {/* )} */}
     </div>
   );

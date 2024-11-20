@@ -7,6 +7,9 @@ export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
     const [order, setOrder] = useState(orderData);
+    const [packedData, setPackedData] = useState({
+        parcelOption: '',
+    });
 
     const handleSignOut = async () => {
         await doLogOut();
@@ -14,7 +17,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order }}>
+            value={{ handleSignOut, order, packedData, setPackedData }}>
             {children}
         </PackingAppContext.Provider>
     );

@@ -5,18 +5,20 @@ import { useRouter } from 'next/navigation';
 
 export default function ErrorModal() {
     const router = useRouter();
-    const { setError, error, errorRedirect, errorMessage } = useGlobalContext();
+    const { setError, error, errorRedirect, errorMessage, isErrorReload } = useGlobalContext();
 
     const handleRedirect = () => {
         setError(false);
-        if (errorRedirect) {
+        if (isErrorReload) {
+            if (errorRedirect) {
 
-            // window.location = errorRedirect;
-            router.push(errorRedirect);
-        } else {
-            // window.location.reload();
-            router.reload();
-            setError(false);
+                // window.location = errorRedirect;
+                router.push(errorRedirect);
+            } else {
+                // window.location.reload();
+                router.reload();
+                setError(false);
+            }
         }
     };
 

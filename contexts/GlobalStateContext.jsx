@@ -13,6 +13,7 @@ export const GlobalStateProvider = ({ children }) => {
     const [error, setError] = useState(false);
     const [errorRedirect, setErrorRedirect] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const [isErrorReload, setIsErrorReload] = useState(true);
 
 
     // Globally assign the selected vender products
@@ -32,7 +33,7 @@ export const GlobalStateProvider = ({ children }) => {
     return (
         <GlobalStateContext.Provider
             value={
-                { loading, loaded, setLoading, setLoaded, error, setError, errorMessage, setErrorMessage, errorRedirect, setErrorRedirect, globalProducts, setGlobalProducts }
+                { loading, loaded, setLoading, setLoaded, error, setError, errorMessage, setErrorMessage, errorRedirect, setErrorRedirect, globalProducts, setGlobalProducts, isErrorReload, setIsErrorReload }
             }>
             {children}
         </GlobalStateContext.Provider>

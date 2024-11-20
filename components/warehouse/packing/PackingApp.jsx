@@ -5,29 +5,34 @@ import PackingItems from "@/components/warehouse/packing/PackingItems";
 import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
 import ParcelDetails from "@/components/warehouse/packing/ParcelDetails";
 import { PackingAppProvider } from "@/contexts/PackingAppContext";
+import { GlobalStateProvider } from "@/contexts/GlobalStateContext";
 import PackingFooter from "@/components/warehouse/packing/PackingFooter";
+import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
 
 export default function PackingApp({ orderData }) {
     return (
         <div className={styles.layout}>
-            <PackingAppProvider orderData={orderData}>
+            <GlobalStateProvider>
+                <ErrorModal />
+                <PackingAppProvider orderData={orderData}>
 
-                <PackingHeader />
+                    <PackingHeader />
 
-                {/* Main Section */}
-                <div className={styles.main}>
-                    {/* Product List */}
+                    {/* Main Section */}
+                    <div className={styles.main}>
+                        {/* Product List */}
 
-                    <PackingItems />
+                        <PackingItems />
 
-                    {/* Parcel Options */}
-                    <ParcelOptions />
-                    {/* <ParcelDetails /> */}
-                </div>
+                        {/* Parcel Options */}
+                        <ParcelOptions />
+                        {/* <ParcelDetails /> */}
+                    </div>
 
-                <PackingFooter />
+                    <PackingFooter />
 
-            </PackingAppProvider>
+                </PackingAppProvider>
+            </GlobalStateProvider>
         </div>
     );
 }
