@@ -31,6 +31,7 @@ export default function WeightAndPrint() {
     };
 
     const handleWeightChange = () => {
+        setEnteredValue(0);
         setIsOpenModal(true);
     }
 
