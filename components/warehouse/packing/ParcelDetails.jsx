@@ -22,9 +22,8 @@ export default function ParcelDetails() {
             </div>
 
             {/* Actions */}
-            <div className={styles.actions}>
+            {/* <div className={styles.actions}>
                 <div className={`${styles.parcel} ${styles.small}`}>
-                    {/* eslint-disable-next-line */}
                     <img
                         src="https://dev.indejuice.com/img/wh/parcel_small.png?v=2"
                         alt="Small Parcel"
@@ -34,7 +33,7 @@ export default function ParcelDetails() {
                 <button className={`${styles.actionBtn} ${styles.confirm}`}>
                     <span>&#10003;</span>
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 }
