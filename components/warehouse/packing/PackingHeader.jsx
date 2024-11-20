@@ -16,6 +16,21 @@ export default function PackingHeader() {
                 <span>#FT ORDER</span>
             </div>
         </header>
+        // <div className={styles.headerSection}>
+        //     <div className={styles.orderCode}>X10</div>
+        //     <div className={styles.infoSection}>
+        //         <p className={styles.label}>Customer</p>
+        //         <p className={styles.value}>G M</p>
+        //     </div>
+        //     <div className={styles.infoSection}>
+        //         <p className={styles.label}>Delivery</p>
+        //         <p className={styles.value}>24</p>
+        //     </div>
+        //     <div className={styles.infoSection}>
+        //         <p className={styles.label}>Order</p>
+        //         <p className={styles.value}>#1234</p>
+        //     </div>
+        // </div>
     );
 
 }
