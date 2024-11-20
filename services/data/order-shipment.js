@@ -153,7 +153,20 @@ export const getNextUnPackedOrderShipment = async () => {
         error: `Order not found for vendor ${vendorId} and order ${orderId}`,
       }
     }
-    orderData.picker = user.email
+    const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
+    const orderShipment = orderShipmentData?.data || null
+
+    if (!orderShipment || !orderShipmentData?.success) {
+      return { success: false, error: orderShipmentData.error || 'Error in getting Order Shipment Details' }
+    }
+
+    const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
+    const courierData = courierDetailsData?.data || null
+    if (!courierData || !courierDetailsData?.success) {
+      return { success: false, error: courierDetailsData.error || 'Error in getting Courier Details' }
+    }
+    orderData.shipment = cleanResponseData(orderShipment)
+    orderData.shipment.courier = courierData
     return {
       success: true,
       data: orderData,
@@ -178,7 +191,7 @@ export const getNextUnPackedOrderShipment = async () => {
 
   const nextOrderVendorId = getIdFromDynamoKey(nextOrderKeys.pk)
   const nextOrderId = getIdFromDynamoKey(nextOrderKeys.sk)
-  const orderDetailsData = await getOrderWithItemDetails(nextOrderVendorId,nextOrderId )
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderVendorId, nextOrderId)
   const orderData = orderDetailsData?.data || null
 
   if (!orderData || !orderDetailsData?.success) {
@@ -204,7 +217,7 @@ export const getNextUnPackedOrderShipment = async () => {
     return { success: false, error: courierDetailsData.error || 'Error in getting Courier Details' }
   }
   orderData.shipment = cleanResponseData(orderShipment)
-  order.shipment.courier = courierData
+  orderData.shipment.courier = courierData
 
   return {
     success: true,
