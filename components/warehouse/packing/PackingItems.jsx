@@ -17,6 +17,7 @@ export default function PackingItems() {
                 {order.items.map((item, index) => (
                     <div key={index} className={styles.productItem}>
                         <div className={styles.imageContainer}>
+                            {/* eslint-disable-next-line */}
                             <img
                                 src={item.image}
                                 alt={item.name}
