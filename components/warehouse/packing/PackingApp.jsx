@@ -5,6 +5,7 @@ import PackingItems from "@/components/warehouse/packing/PackingItems";
 import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
 import ParcelDetails from "@/components/warehouse/packing/ParcelDetails";
 import { PackingAppProvider } from "@/contexts/PackingAppContext";
+import PackingFooter from "@/components/warehouse/packing/PackingFooter";
 
 export default function PackingApp({ orderData }) {
     return (
@@ -24,11 +25,7 @@ export default function PackingApp({ orderData }) {
                     {/* <ParcelDetails /> */}
                 </div>
 
-                {/* Footer */}
-                <footer className={styles.footer}>
-                    <div>Ali B.</div>
-                    <div>Container 1</div>
-                </footer>
+                <PackingFooter />
 
             </PackingAppProvider>
         </div>
