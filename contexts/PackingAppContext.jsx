@@ -10,6 +10,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [packedData, setPackedData] = useState({
         parcelOption: '',
         weight: 0,
+        customSize: { width: 0, height: 0, length: 0 },
     });
 
     const handleSignOut = async () => {
