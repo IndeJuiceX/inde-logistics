@@ -2,50 +2,37 @@
 
 import React, { useState, useContext } from 'react';
 import styles from '@/styles/warehouse/packing/WeightAndPrint.module.scss';
-import DialPad from '@/components/warehouse/keypad/DialPad';
-import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
+
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
+import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 
 export default function WeightAndPrint() {
     const { order, packedData, setPackedData } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
-
-    const [isOpenModal, setIsOpenModal] = useState(false);
-    const [status, setStatus] = useState('newOrder');
     const [enteredValue, setEnteredValue] = useState(0);
-
-    const handleNumberEntered = (input) => {
-        if (input === 'backspace') {
-            const newInput = enteredValue.length > 0 ? enteredValue.slice(0, -1) : '';
-            setEnteredValue(newInput);
-        } else if (input === 'ok') {
-            checkAllowedWeight();
-            setIsOpenModal(false);
-        } else {
-            const newNumberInput = enteredValue + input;
-            const parsedValue = parseInt(newNumberInput, 10);
-            setEnteredValue(newNumberInput);
-        }
-    };
+    const [isOpenModal, setIsOpenModal] = useState(false);
 
     const handleWeightChange = () => {
-        setEnteredValue(0);
+        setPackedData({ ...packedData, weight: 0 });
         setIsOpenModal(true);
     }
 
     const handleComplete = () => {
         console.log('handleComplete');
     }
+    const handleLabelPrint = () => {
+        console.log('handleLabelPrint');
+        checkAllowedWeight();
+    }
     const checkAllowedWeight = () => {
-        console.log('order checkAllowedWeight', order);
         const couriers = order.shipment.courier;
         let parcelType = '';
         if (packedData.parcelOption === 'letter') {
             parcelType = couriers.find(type => type.package_type === "large letter");
         }
-        if(packedData.parcelOption === 'large' || packedData.parcelOption === 'extra') {
+        if (packedData.parcelOption === 'large' || packedData.parcelOption === 'extra') {
             parcelType = couriers.find(type => type.package_type === "parcel");
         }
         if (parcelType) {
@@ -68,17 +55,10 @@ export default function WeightAndPrint() {
 
             {/* Actions */}
             <div className={styles.actions}>
-                <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={status} >
-                    <div className={styles.container}>
-                        <div className={styles.calculator}>
-                            <div className={styles.display}>{enteredValue}</div>
-                            <DialPad onNumberEntered={handleNumberEntered} />
-                        </div>
-                    </div>
-                </PickingAppModal>
+                <PackingKeyPad enteredValue={enteredValue} setEnteredValue={setEnteredValue} setIsOpenModal={setIsOpenModal} isOpenModal={isOpenModal} />
             </div>
 
-            <div className={styles.detailItem} >
+            <div className={styles.detailItem} onClick={handleLabelPrint}>
                 {/* eslint-disable-next-line */}
                 <img
                     src="https://dev.indejuice.com/img/wh/print.png"

@@ -9,6 +9,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [order, setOrder] = useState(orderData);
     const [packedData, setPackedData] = useState({
         parcelOption: '',
+        weight: 0,
     });
 
     const handleSignOut = async () => {
