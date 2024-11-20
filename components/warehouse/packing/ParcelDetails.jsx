@@ -20,6 +20,15 @@ export default function ParcelDetails() {
                 <div className={styles.detailValue}>290g</div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
+            <div className={styles.detailItem}>
+                <div className={styles.detailValue}>
+                    <img
+                    src="https://dev.indejuice.com/img/wh/print.png"
+                    alt="Letter"
+                />
+                </div>
+                <div className={styles.detailLabel}>LABEL</div>
+            </div>
 
             {/* Actions */}
             {/* <div className={styles.actions}>

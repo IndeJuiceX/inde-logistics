@@ -4,6 +4,7 @@ import styles from '@/styles/warehouse/packing/ParcelOptions.module.scss';
 import ParcelDetails from '@/components/warehouse/packing/ParcelDetails';
 import WeightAndPrint from '@/components/warehouse/packing/WeightAndPrint';
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
+import { FaCog } from 'react-icons/fa';
 
 export default function ParcelOptions() {
   const { order, packedData, setPackedData } = usePackingAppContext();
@@ -17,7 +18,7 @@ export default function ParcelOptions() {
 
       <div className={styles.upperSection}>
         {(packedData.parcelOption === '' || packedData.parcelOption === 'letter') && (
-          <div className={`${styles.parcel} ${styles.letter}`} onClick={() => handleParcelOptionClick('letter')}>
+          <div className={`${styles.parcel} ${styles.letter} ${packedData.parcelOption === 'letter' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('letter')}>
             {/* eslint-disable-next-line */}
             <img
               src="https://dev.indejuice.com/img/wh/parcel_small.png?v=2"
@@ -27,7 +28,7 @@ export default function ParcelOptions() {
           </div>
         )}
         {(packedData.parcelOption === '' || packedData.parcelOption === 'large') && (
-          <div className={`${styles.parcel} ${styles.parcel}`} onClick={() => handleParcelOptionClick('large')}>
+          <div className={`${styles.parcel} ${styles.parcel} ${packedData.parcelOption === 'large' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('large')}>
             {/* eslint-disable-next-line */}
             <img
               src="https://dev.indejuice.com/img/wh/parcel_large.png"
@@ -37,7 +38,7 @@ export default function ParcelOptions() {
           </div>
         )}
         {(packedData.parcelOption === '' || packedData.parcelOption === 'extra') && (
-          <div className={`${styles.parcel} ${styles.extraLarge}`} onClick={() => handleParcelOptionClick('extra')}>
+          <div className={`${styles.parcel} ${styles.extraLarge} ${packedData.parcelOption === 'extra' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('extra')}>
             {/* eslint-disable-next-line */}
             <img
               src="https://dev.indejuice.com/img/wh/parcel_large.png"
@@ -46,21 +47,14 @@ export default function ParcelOptions() {
             EXTRA LARGE PARCEL
           </div>
         )}
-        {(packedData.parcelOption === '' || packedData.parcelOption === 'custom') && (
+        {packedData.parcelOption === 'custom' && (
 
-          <div className={`${styles.parcel} ${styles.customSize}`} onClick={() => handleParcelOptionClick('custom')}>
-            {/* eslint-disable-next-line */}
-            <img
-              src="https://dev.indejuice.com/img/wh/parcel_large.png"
-              alt="Extra Large Parcel"
-            />
+          <div className={`${styles.parcel} ${styles.customSize} ${packedData.parcelOption === 'custom' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('custom')}>
+            <FaCog alt="Settings" />
             CUSTOM SIZE
           </div>
 
         )}
-
-
-
       </div>
 
       {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('large') || packedData.parcelOption.includes('extra')) ? (
@@ -69,15 +63,23 @@ export default function ParcelOptions() {
         <ParcelDetails />
       )}
       {/* {packedData.parcelOption === '' && ( */}
-      <div className={`${styles.parcel} ${styles.customSize}`}>
-        {/* eslint-disable-next-line */}
-        <img
-          src="https://dev.indejuice.com/img/wh/warning.png"
-          alt="Extra Large Parcel"
-        />
-        REPORT
+      <div className={` ${styles.action}`}>
+        <div className={`${styles.action} ${styles.customSize} `} onClick={() => handleParcelOptionClick('custom')}>
+          <FaCog alt="Settings" />
+          CUSTOM
+        </div>
+        <div className={`${styles.action} ${styles.customSize} `}>
+
+          {/* eslint-disable-next-line */}
+          <img
+            src="https://dev.indejuice.com/img/wh/warning.png"
+            alt="Extra Large Parcel"
+          />
+          REPORT
+        </div>
+
       </div>
-      {/* )} */}
+
     </div>
   );
 }
