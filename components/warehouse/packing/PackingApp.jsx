@@ -4,29 +4,33 @@ import PackingHeader from "@/components/warehouse/packing/PackingHeader";
 import PackingItems from "@/components/warehouse/packing/PackingItems";
 import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
 import ParcelDetails from "@/components/warehouse/packing/ParcelDetails";
+import { PackingAppProvider } from "@/contexts/PackingAppContext";
 
-export default function PackingApp() {
+export default function PackingApp({ orderData }) {
     return (
         <div className={styles.layout}>
-            {/* Header */}
-            <PackingHeader />
+            <PackingAppProvider orderData={orderData}>
 
-            {/* Main Section */}
-            <div className={styles.main}>
-                {/* Product List */}
+                <PackingHeader />
 
-                <PackingItems />
+                {/* Main Section */}
+                <div className={styles.main}>
+                    {/* Product List */}
 
-                {/* Parcel Options */}
-                <ParcelOptions />
-                {/* <ParcelDetails /> */}
-            </div>
+                    <PackingItems />
 
-            {/* Footer */}
-            <footer className={styles.footer}>
-                <div>Ali B.</div>
-                <div>Container 1</div>
-            </footer>
+                    {/* Parcel Options */}
+                    <ParcelOptions />
+                    {/* <ParcelDetails /> */}
+                </div>
+
+                {/* Footer */}
+                <footer className={styles.footer}>
+                    <div>Ali B.</div>
+                    <div>Container 1</div>
+                </footer>
+
+            </PackingAppProvider>
         </div>
     );
 }
