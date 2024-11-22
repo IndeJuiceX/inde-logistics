@@ -7,7 +7,7 @@ import { PackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function PackingItems() {
     const { order } = useContext(PackingAppContext);
-    console.log('order', order);
+    // console.log('order', order);
 
     return (
         <div className={styles.content}>

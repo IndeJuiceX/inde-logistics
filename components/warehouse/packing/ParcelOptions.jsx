@@ -27,8 +27,8 @@ export default function ParcelOptions() {
             LETTER
           </div>
         )}
-        {(packedData.parcelOption === '' || packedData.parcelOption === 'large') && (
-          <div className={`${styles.parcel} ${styles.parcel} ${packedData.parcelOption === 'large' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('large')}>
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'parcel') && (
+          <div className={`${styles.parcel} ${styles.parcel} ${packedData.parcelOption === 'parcel' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('parcel')}>
             {/* eslint-disable-next-line */}
             <img
               src="https://dev.indejuice.com/img/wh/parcel_large.png"
@@ -37,8 +37,8 @@ export default function ParcelOptions() {
             PARCEL
           </div>
         )}
-        {(packedData.parcelOption === '' || packedData.parcelOption === 'extra') && (
-          <div className={`${styles.parcel} ${styles.extraLarge} ${packedData.parcelOption === 'extra' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('extra')}>
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'extra_parcel') && (
+          <div className={`${styles.parcel} ${styles.extraLarge} ${packedData.parcelOption === 'extra_parcel' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('extra_parcel')}>
             {/* eslint-disable-next-line */}
             <img
               src="https://dev.indejuice.com/img/wh/parcel_large.png"
@@ -57,7 +57,7 @@ export default function ParcelOptions() {
         )}
       </div>
 
-      {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('large') || packedData.parcelOption.includes('extra')) ? (
+      {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('parcel') || packedData.parcelOption.includes('extra_parcel')) ? (
         <WeightAndPrint />
       ) : packedData.parcelOption === 'custom' && (
         <ParcelDetails />

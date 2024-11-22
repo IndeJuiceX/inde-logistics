@@ -8,7 +8,7 @@ import { usePackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function PackingKeyPad({ enteredValue, setEnteredValue, isOpenModal, setIsOpenModal }) {
     const { order, packedData, setPackedData } = usePackingAppContext();
-   
+
     const [status, setStatus] = useState('newOrder');
     // const [enteredValue, setEnteredValue] = useState(0);
 
@@ -17,7 +17,7 @@ export default function PackingKeyPad({ enteredValue, setEnteredValue, isOpenMod
             const newInput = enteredValue.length > 0 ? enteredValue.slice(0, -1) : '';
             setEnteredValue(newInput);
         } else if (input === 'ok') {
-            // checkAllowedWeight();
+            // setPackedData({ ...packedData, weight: enteredValue }); // This is the line that is causing the error
             setIsOpenModal(false);
         } else {
             const newNumberInput = enteredValue + input;

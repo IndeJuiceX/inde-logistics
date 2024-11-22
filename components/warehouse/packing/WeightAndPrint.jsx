@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from '@/styles/warehouse/packing/WeightAndPrint.module.scss';
 
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
@@ -8,7 +8,7 @@ import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 
 export default function WeightAndPrint() {
-    const { order, packedData, setPackedData } = usePackingAppContext();
+    const { order, packedData, setPackedData, handleLabelPrint } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
     const [enteredValue, setEnteredValue] = useState(0);
@@ -19,37 +19,20 @@ export default function WeightAndPrint() {
         setIsOpenModal(true);
     }
 
-    const handleComplete = () => {
+    const handleComplete = async () => {
         console.log('handleComplete');
+
+
     }
-    const handleLabelPrint = () => {
-        console.log('handleLabelPrint');
-        checkAllowedWeight();
-    }
-    const checkAllowedWeight = () => {
-        const couriers = order.shipment.courier;
-        let parcelType = '';
-        if (packedData.parcelOption === 'letter') {
-            parcelType = couriers.find(type => type.package_type === "large letter");
-        }
-        if (packedData.parcelOption === 'large' || packedData.parcelOption === 'extra') {
-            parcelType = couriers.find(type => type.package_type === "parcel");
-        }
-        if (parcelType) {
-            const maxWeight = parcelType.max_weight_g;
-            if (enteredValue > maxWeight) {
-                setPackedData({ ...packedData, parcelOption: '' });
-                setEnteredValue(0);
-                setIsErrorReload(false);
-                setError(true);
-                setErrorMessage(`Weight exceeds the limit of ${maxWeight}g. Please select the correct parcel type`);
-            }
-        }
-    }
+    useEffect(() => {
+        console.log('enteredValue', enteredValue);
+        setPackedData({ ...packedData, weight: enteredValue });
+        // eslint-disable-next-line
+    }, [enteredValue]);
     return (
         <div className={styles.parcelDetails}>
             <div className={styles.detailItem} onClick={handleWeightChange}>
-                <div className={styles.detailValue}>{enteredValue}<small>g</small></div>
+                <div className={styles.detailValue}>{packedData.weight}<small>g</small></div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
 
