@@ -60,7 +60,7 @@ export default function ParcelDetails() {
                 <div className={styles.detailValue}>{packedData.weight}g</div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
-            <div className={styles.detailItem}>
+            <div className={styles.detailItem} onClick={handleLabelPrint}>
                 <div className={styles.detailValue}>
                     {/* eslint-disable-next-line */}
                     <img
@@ -68,7 +68,7 @@ export default function ParcelDetails() {
                         alt="Letter"
                     />
                 </div>
-                <div className={styles.detailLabel} onClick={handleLabelPrint}>LABEL</div>
+                <div className={styles.detailLabel} >LABEL</div>
             </div>
 
             <PackingKeyPad enteredValue={enteredValue} setEnteredValue={setEnteredValue} setIsOpenModal={setIsOpenModal} isOpenModal={isOpenModal} />

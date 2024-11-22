@@ -11,7 +11,7 @@ export default function WeightAndPrint() {
     const { order, packedData, setPackedData, handleLabelPrint } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
-    const [enteredValue, setEnteredValue] = useState(0);
+    const [enteredValue, setEnteredValue] = useState('');
     const [isOpenModal, setIsOpenModal] = useState(false);
 
     const handleWeightChange = () => {
@@ -32,7 +32,7 @@ export default function WeightAndPrint() {
     return (
         <div className={styles.parcelDetails}>
             <div className={styles.detailItem} onClick={handleWeightChange}>
-                <div className={styles.detailValue}>{packedData.weight}<small>g</small></div>
+                <div className={styles.detailValue}>{packedData.weight ? packedData.weight : 0}<small>g</small></div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
 
