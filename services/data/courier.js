@@ -33,7 +33,7 @@ export const validateOrderShippingCode = async (vendorId, code) => {
         };
     }
 };
-
+// I am starting do this to check the courier details form my static store dimension
 export const getCourierDetails = async (vendorId,code='RM-24') => {
     const vendorData = await getItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`)
     const vendor = vendorData?.data || null
@@ -45,6 +45,8 @@ export const getCourierDetails = async (vendorId,code='RM-24') => {
         return { success: false, error: 'Vendor Courier is not set', details: "Please set the vendor courier and try again" }
     }
     const courierNameKey = vendorCourier.toLowerCase().replace(/\s+/g, '');
+    console.log('courierNameKey',courierNameKey);
+    
     const courierData = await queryItemsWithPkAndSk(`COURIER#${courierNameKey}`, `CODE#${code}#`)
     const courierCodes = courierData?.data || null
     if (!courierCodes || courierCodes.length === 0) {

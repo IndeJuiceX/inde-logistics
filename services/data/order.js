@@ -12,9 +12,9 @@ export const createOrder = async (vendorId, order) => {
     try {
         const errors = [];
         const transactionItems = [];
-        const validShippingCode = await validateOrderShippingCode(vendorId,order.shipping_code)
-        if(!validShippingCode.success) {
-            return {success:false , error : validShippingCode?.error || 'Could not validate order shipping code' , details: validShippingCode?.details || 'Order Shipping code validation failed'}
+        const validShippingCode = await validateOrderShippingCode(vendorId, order.shipping_code)
+        if (!validShippingCode.success) {
+            return { success: false, error: validShippingCode?.error || 'Could not validate order shipping code', details: validShippingCode?.details || 'Order Shipping code validation failed' }
         }
 
         // Get the current timestamp
@@ -88,14 +88,14 @@ export const createOrder = async (vendorId, order) => {
         // Generate a unique ID for the order if not already provided
         const uniqueOrderId = generateOrderId(vendorId, order.vendor_order_id); // You need to implement generateUniqueId()
 
-         // Return success and the created order
-         const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
-         const expectedDelivery = expectedDeliveryData?.data  || null
-         let expectedDeliveryDate = null
-         if(expectedDelivery) {
+        // Return success and the created order
+        const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
+        const expectedDelivery = expectedDeliveryData?.data || null
+        let expectedDeliveryDate = null
+        if (expectedDelivery) {
             const [day, month, year] = expectedDelivery.expected_delivery_to_date.split('-');
             expectedDeliveryDate = new Date(`${year}-${month}-${day}`).toISOString();
-         }
+        }
         // Prepare Put operation for the order itself with 'created_at' and 'updated_at'
         const orderPutOperation = {
             Put: {
@@ -104,7 +104,7 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    shipping_code : order.shipping_code,
+                    shipping_code: order.shipping_code,
                     expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
                     //shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
@@ -142,7 +142,7 @@ export const createOrder = async (vendorId, order) => {
                 };
             }
         }
- 
+
         // // Return success and the created order
         // const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
         // const expectedDelivery = expectedDeliveryData?.data  || null
@@ -150,8 +150,8 @@ export const createOrder = async (vendorId, order) => {
             success: true,
             createdOrder: {
                 order_id: uniqueOrderId,
-                vendor_order_id : order.vendor_order_id,
-                expected_delivery_date : expectedDeliveryDate
+                vendor_order_id: order.vendor_order_id,
+                expected_delivery_date: expectedDeliveryDate
             },
         };
     } catch (error) {
@@ -382,7 +382,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     //     },
 
     // };
-    const orderItemsData = await queryItemsWithPkAndSk(pkVal,skPrefix)
+    const orderItemsData = await queryItemsWithPkAndSk(pkVal, skPrefix)
     if (!orderItemsData.success) {
         return { success: false, error: 'Failed to retrieve order items' };
     }
@@ -398,6 +398,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 
 export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
     const orderData = await getOrder(vendorId, orderId);
+    // console.log('orderData', orderData);
     if (!orderData.success) {
         return { success: false, error: orderData?.error || 'Order not found ' };
     }
@@ -415,6 +416,7 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
     const cleanOrderItems = await Promise.all(orderItems.map(async (orderItem) => {
         const productData = await getProductById(vendorId, orderItem.vendor_sku);
         const product = productData?.data;
+        // console.log('product', product);
         if (product) {
             return {
                 vendor_sku: orderItem.vendor_sku,
@@ -424,7 +426,8 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
                 attributes: product.attributes,
                 image: product.image,
                 warehouse: product?.warehouse || null,
-                barcodes : product?.barcodes || null
+                barcodes: product?.barcodes || null,
+                cost_price: product?.cost_price || 0
             };
         }
         return null;

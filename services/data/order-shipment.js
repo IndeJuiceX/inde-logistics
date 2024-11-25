@@ -7,6 +7,7 @@ import { getCourierDetails } from "@/services/data/courier";
 import { cleanResponseData } from "@/services/utils";
 import { executeDataQuery } from "@/services/external/athena";
 import { getIdFromDynamoKey } from "@/services/utils";
+import { getParcelDimensions, getShippingCost } from "@/services/utils/indePackageDimensions";
 /**
  * Function to create a new VendorOrderShipment and update an existing Order
  *
@@ -84,7 +85,7 @@ export const getOrderShipment = async (vendorId, orderId) => {
 }
 
 export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = 'picked') => {
-  // get the ordershipment and ensure that it exists... and has the status of processing before it can be set to picked..
+  // get the order shipment and ensure that it exists... and has the status of processing before it can be set to picked..
   const orderShipmentResponse = await getOrderShipment(vendorId, orderId)
   console.log('orderShipmentResponse', orderShipmentResponse);
 
@@ -103,6 +104,125 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
   return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
 
 }
+export const updateOrderShipmentStatusToDispatched = async (vendorId, orderId, newStatus = 'dispatched', weight, parcel_type, custom_dimensions) => {
+
+  const orderShipmentResponse = await getOrderShipment(vendorId, orderId)
+  console.log('orderShipmentResponse', orderShipmentResponse);
+
+  const orderShipment = orderShipmentResponse?.data || null
+  if (!orderShipment) {
+    return { success: false, error: 'Order Shipment not found' }
+  }
+  if (newStatus === 'dispatched' && orderShipment.status != 'picked') {
+    return { success: false, error: 'Order Shipment must have processing status to be updated to dispatched' }
+  }
+  const updatedFields = {
+    status: newStatus,
+    updated_at: new Date().toISOString()
+  };
+  await generateLabelData(vendorId, orderId, weight, parcel_type, custom_dimensions);
+  // Use the updateItem wrapper function to update the item
+  // return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
+  return { success: true, data: updatedFields }
+}
+export const getParcelDimensionsAndCourier = async (vendorId, order, parcel_type, custom_dimensions) => {
+  let dimensions;
+  console.log('dimensions', dimensions);
+  if (parcel_type === 'custom') {
+    dimensions = { heightInMms: custom_dimensions.height, widthInMms: custom_dimensions.width, depthInMms: custom_dimensions.depth }
+  }
+  else {
+    dimensions = await getParcelDimensions(parcel_type)
+  }
+  const courierDetails = await getCourierDetails(vendorId, order.shipping_code);
+  const couriers = courierDetails?.data || null
+  if (!couriers) {
+    return { success: false, error: 'Courier not found' }
+  }
+  let parcel_type_courier = parcel_type === 'letter' ? 'large letter' : 'parcel'
+  const courier = couriers.find((c) => c.package_type === parcel_type_courier)
+  console.log('courier sasas', courier);
+  return { dimensions, courier }
+}
+
+export const generateLabelData = async (vendorId, orderId, weight, parcel_type, custom_dimensions) => {
+  const orderData = await getOrderWithItemDetails(vendorId, orderId);
+  const order = orderData?.data || null
+  if (!order) {
+    return { success: false, error: 'Order not found' }
+  }
+  console.log('orderData', JSON.stringify(orderData, null, 2));
+  const { dimensions, courier } = await getParcelDimensionsAndCourier(vendorId, order, parcel_type, custom_dimensions);
+
+  // loop through the items and get the item details
+  const items = order.items || []
+  const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
+  const isInternational = order?.shipping_code === 'OTA' || false;
+  let totalValue = 0; // i just calculating with sales value for now..
+  const shippingCost = await getShippingCost(courier.shipping_code)
+  
+  const itemDetails = items.map((item) => {
+    const description = item.name; // Assuming item.name is the description
+    const value = item?.cost_price || 0; // Assuming item.value is available
+    totalValue += value;
+    const unitWeightInGrams = parseFloat((weight / totalQuantity).toFixed(2)); // Rounds to 2 decimal places
+    // console.log('item', item);
+    
+    return {
+      name: description,
+      SKU: `SKU-${item.vendor_sku}-${Math.floor(Math.random() * 100) + 1}`,
+      quantity: item.quantity,
+      unitValue: item.cost_price,
+      unitWeightInGrams: unitWeightInGrams,
+      customsDescription: description,
+      originCountryCode: "GB",
+      customsCode: isInternational ? "33074900" : '',
+      customsDeclarationCategory: isInternational ? "saleOfGoods" : '',
+      unitValue: item.cost_price,
+      originCountryCode: "GB",
+      customValue: isInternational ? "33074900" : '',
+    }
+  })
+
+  const labelPayload = {
+    orderReference: order.order_id,
+    recipient: {
+      fullName: order.buyer.name,
+      companyName: '',
+      addressLine1: order.buyer?.address_line_1 || '',
+      addressLine2: order.buyer?.address_line_2 || '',
+      addressLine3: '',
+      city: order.buyer?.city || '',
+      county: order.buyer?.state || '',
+      postcode: order.buyer?.postcode || '',
+      countryCode: order.buyer?.country_code || '',
+      phoneNumber: "1212851033",
+      emailAddress: order.buyer?.email || 'user@example.com',
+    },
+    billingAddressSameAsShipping: true,
+    weightInGrams: weight,
+    packageFormatIdentifier: parcel_type === 'letter' ? 'Large Letter' : 'Parcel',
+    dimensions: {
+      ...dimensions
+    },
+    contents: itemDetails,
+    orderDate: order.created_at.slice(0, 10),
+    total: totalValue,
+    shipping_cost: shippingCost, //need to change
+    serviceCode: courier.service_code,
+    serviceRegisterCode: '01',
+    includeReturnsLabel: false,
+    containsDangerousGoods: false,
+    includeLabelInResponse: true,
+    includeCN: isInternational ? true : false
+  }
+  console.log('labelPayload', labelPayload);  
+  return labelPayload
+}
+
+
+
+
 
 export const updateOrderShipmentError = async (vendorId, orderId, errorReason = '') => {
   // Fetch the order shipment to ensure it exists
