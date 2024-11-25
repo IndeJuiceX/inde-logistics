@@ -14,7 +14,7 @@ import styles from '@/styles/warehouse/stock-app/shipmentItems.module.scss';
 export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const params = useParams();
     const { setLoading, setLoaded } = useContext(GlobalStateContext);
-    console.log('shipmentDetailsData', shipmentDetailsData.items);
+    // console.log('shipmentDetailsData', shipmentDetailsData.items);
 
     // const [shipmentDetails, setShipmentDetails] = useState({
     //     ...shipmentDetailsData,
@@ -83,9 +83,9 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
             setExpandedRowIndex(rowIndex);
         }
     };
-    const sortedItems = shipmentDetails.items.sort((a, b) =>
+    const sortedItems = shipmentDetails?.items?.sort((a, b) =>
         new Date(a.updated_at) - new Date(b.updated_at)
-    );
+    ) || [];
     return (
         <>
             <ShipmentHeader vendor={vendor} shipmentDetails={shipmentDetails} />
@@ -105,9 +105,8 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {shipmentDetails.items &&
-                            shipmentDetails.items.length > 0 &&
-                            shipmentDetails.items.map((item, index) => (
+                        {sortedItems.length > 0 &&
+                            sortedItems.map((item, index) => (
                                 <React.Fragment key={index}>
                                     <tr className={styles.tableRow} onClick={() => handleShowItem(item)}>
                                         <td>

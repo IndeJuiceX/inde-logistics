@@ -3,10 +3,11 @@
 import { useState, useEffect, useContext } from 'react';
 import DialPad from '@/components/warehouse/shipments/shipment/DialPad';
 import { useParams } from 'next/navigation';
-import { getStockShipmentDetails } from "@/services/data/stock-shipment";
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
-import styles from '@/styles/warehouse/modals/itemModal.module.scss';
 import { AiOutlineLeft, AiOutlineRight, AiOutlineClose } from 'react-icons/ai';
+import { updateStockShipmentItemReceived } from '@/services/data/stock-shipment-item';
+import { getStockShipmentDetails } from '@/services/data/stock-shipment';
+import { getLoggedInUser } from '@/app/actions';
 
 
 export default function ItemModal({ setIsModalOpen, itemData = null, items = null, setShipmentDetails = null }) {
@@ -95,31 +96,27 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
     };
 
     const updateShipmentItem = async () => {
-        setLoading(true);
-        console.log('Quantities:', quantities);
-        const updatePayload = {
-            vendor_id: params.vendor_id,
-            stock_shipment_id: params.shipment_id,
-            item: {
+        // const allowedFields = ['received', 'faulty', 'vendor_sku']
+        const user = await getLoggedInUser()
+        try {
+            setLoading(true);
+            const submit = await updateStockShipmentItemReceived(params.vendor_id, params.shipment_id, {
                 received: quantities.accepted,
                 faulty: quantities.faulty,
-                vendor_sku: item.vendor_sku,
-            },
-        };
-        const response = await fetch('/api/v1/admin/stock-shipments/update-item-received', {
-            method: 'PATCH',
-            body: JSON.stringify(updatePayload),
-        });
-        if (!response.ok) {
-            console.log('Error in update stock shipment');
-            return;
+                vendor_sku: item.vendor_sku
+            }, user);
+
+            const updatedDetails = await getStockShipmentDetails(params.vendor_id, params.shipment_id);
+            console.log('updatedDetails', updatedDetails)
+            setShipmentDetails(updatedDetails.data);
+            handleNext();
+
+        } catch (error) {
+            console.error('Error updating shipment:', error);
+        } finally {
+            setLoading(false);
+            setLoaded(true);
         }
-        const data = await response.json();
-        getUpdateShipmentDetails();
-        console.log('Response:', data);
-        handleNext();
-        setLoading(false);
-        setLoaded(true);
     };
 
     useEffect(() => {
@@ -162,13 +159,6 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
         }
     };
 
-    const getUpdateShipmentDetails = async () => {
-        const response = await fetch(`/api/v1/vendor/stock-shipments?vendor_id=${params.vendor_id}&stock_shipment_id=${params.shipment_id}`);
-        const updateShipments = await response.json();
-        if (updateShipments.success) {
-            setShipmentDetails(updateShipments.data);
-        }
-    }
     return (
         <div className="flex flex-col h-full p-4 bg-gray-50">
             {/* Header Section */}
@@ -180,6 +170,14 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
                 >
                     <AiOutlineClose size={24} />
                 </button>
+                {/* item 3/55 */}
+                <div className='absolute top-0 left-0'>
+                    {item && item.attributes.length > 0 && (
+                        <p className="text-lg text-gray-600">
+                            {item.attributes.map((attr) => attr.name).join(' • ')}
+                        </p>
+                    )}
+                </div>
 
                 {/* Previous Button */}
                 <button
@@ -244,16 +242,15 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
 
                     {/* Image and Barcode */}
                     <div className="flex flex-col items-center gap-4 mt-4">
-                        <div className="w-full text-center">
-                            <img
-                                src="https://cdn.indejuice.com/images/ZAE_small.jpg"
-                                alt="Product"
-                                className="max-w-full h-auto rounded-lg"
-                            />
-                        </div>
-                        <div className="bg-gray-800 px-4 py-2 rounded-lg">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={item?.image}
+                            alt="Product"
+                            className="max-h-[60%] w-auto rounded-lg"
+                        />
+                        {/* <div className="bg-gray-800 px-4 py-2 rounded-lg">
                             <div className="text-white font-mono text-lg">{item?.barcode}</div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
@@ -270,6 +267,6 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

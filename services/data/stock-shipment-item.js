@@ -1,3 +1,5 @@
+'use server'
+
 import { getProductById } from '@/services/data/product';
 import { transactWriteItems, updateItem, batchWriteItems, updateItemIfExists, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 import { getStockShipmentDetails, getStockShipmentById, checkShipmentExists } from './stock-shipment';
@@ -286,8 +288,7 @@ export async function updateItemsStockInStockShipment(
     }
 }
 
-export async function updateStockShipmentItemReceived(vendorId, stockShipmentId, item = {}) {
-    const user = await getLoggedInUser()
+export async function updateStockShipmentItemReceived(vendorId, stockShipmentId, item = {}, user) {
     const allowedFields = ['received', 'faulty', 'vendor_sku']
     // Validate the fields in the input object
     const invalidFields = Object.keys(item).filter(key => !allowedFields.includes(key));
@@ -377,9 +378,9 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
     const formattedWarehouse = {
         aisle: item.warehouse.aisle.toString(),
         aisle_number: parseInt(item.warehouse.aisle_number),
-        shelf: item.warehouse.shelf.toString() ,
+        shelf: item.warehouse.shelf.toString(),
         shelf_number: parseInt(item.warehouse.shelf_number),
-        location_id: item.warehouse.location_id.toString() 
+        location_id: item.warehouse.location_id.toString()
     };
     // Construct the update object for the product item
     const productUpdateFields = {
@@ -396,11 +397,11 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     sk: `STOCKSHIPMENT#${stockShipmentId}#STOCKSHIPMENTITEM#${vendorSku}`
                 },
                 UpdateExpression: 'SET shelved = :shelved, updated_at = :updatedAt, modified_by = :modifiedBy',
-                
+
                 ExpressionAttributeValues: {
                     ':shelved': updateFields.shelved,
                     ':updatedAt': updateFields.updated_at,
-                    ':modifiedBy' : modifiedBy
+                    ':modifiedBy': modifiedBy
                 }
             }
         },
@@ -411,11 +412,11 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
                     sk: `PRODUCT#${vendorSku}`
                 },
                 UpdateExpression: 'SET updated_at = :updatedAt, warehouse = :warehouse, modified_by = :modifiedBy',
-              
+
                 ExpressionAttributeValues: {
                     ':updatedAt': productUpdateFields.updated_at,
                     ':warehouse': productUpdateFields.warehouse,
-                    ':modifiedBy' : modifiedBy
+                    ':modifiedBy': modifiedBy
                 }
             }
         }
