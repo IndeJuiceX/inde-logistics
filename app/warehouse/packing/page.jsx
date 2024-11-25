@@ -1,4 +1,4 @@
-import PackingApp from '@/components/warehouse/packing/packingApp';
+import PackingApp from "@/components/warehouse/packing/PackingApp";
 
 
 export default function PackingPage() {
