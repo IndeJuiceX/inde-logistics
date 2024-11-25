@@ -11,7 +11,7 @@ export default function PackingHeader() {
     const shippingCode = shipmentCode?.split('-')[1];
     
 
-    console.log('courier', shippingCode);
+    // console.log('courier', shippingCode);
 
     return (
         <div className={styles.headerSection}>
