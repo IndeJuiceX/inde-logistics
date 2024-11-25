@@ -7,7 +7,7 @@ import { usePackingAppContext } from "@/contexts/PackingAppContext";
 export default function ParcelDetails() {
     const { order, packedData, setPackedData, handleLabelPrint } = usePackingAppContext();
 
-    const [enteredValue, setEnteredValue] = useState(null);
+    const [enteredValue, setEnteredValue] = useState('');
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [currentClicked, setCurrentClicked] = useState('');
 
@@ -18,7 +18,7 @@ export default function ParcelDetails() {
         } else {
             setCurrentClicked(currentClick);
         }
-        setEnteredValue(0);
+        setEnteredValue('');
         setIsOpenModal(true);
     }
 
