@@ -12,9 +12,13 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [order, setOrder] = useState(orderData);
     const [packedData, setPackedData] = useState({
         parcelOption: '',
-        weight: 0,
-        courier: { width: 0, height: 0, depth: 0 },
+        courier: { width: 0, height: 0, depth: 0, weight: 0 },
     });
+    const [isOpenModal, setIsOpenModal] = useState(false);
+    const [currentClicked, setCurrentClicked] = useState('');
+    const [enteredValue, setEnteredValue] = useState('');
+
+
 
     const handleSignOut = async () => {
         await doLogOut();
@@ -42,7 +46,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         // payload.weight.courier = packedData.weight;
         payload.courier = {
             ...payload.courier,
-            weight: packedData.weight,
+            weight: packedData.courier.weight,
             service_code: getServiceCode(order, packedData.parcelOption),
         };
         const response = await fetch(`/api/v1/admin/order-shipments/update`, {
@@ -55,22 +59,22 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     const checkAllowedWeight = () => {
         const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
-        if (packedData.weight <= 0) {
+        if (packedData.courier.weight <= 0) {
             setPackedData({ ...packedData, parcelOption: '' });
             setIsErrorReload(false);
             setError(true);
             setErrorMessage(`Weight cannot be less than 0g. Please enter a valid weight`);
             return true;
         }
-      
+
 
         if (isParcelTypeValid) {
 
             const maxWeight = isParcelTypeValid.max_weight_g;
-            if (packedData.weight > maxWeight) {
+            if (packedData.courier.weight > maxWeight) {
                 setPackedData({ ...packedData, parcelOption: '' });
                 // setEnteredValue(0);
-                setPackedData({ ...packedData, weight: 0 });
+                setPackedData({ ...packedData, courier: { ...packedData.courier, weight: 0 } });
                 setIsErrorReload(false);
                 setError(true);
                 setErrorMessage(`Weight exceeds the limit of ${maxWeight}g. Please select the correct parcel type`);
@@ -90,13 +94,28 @@ export const PackingAppProvider = ({ children, orderData }) => {
         }
         return false;
     }
-    
+    const handleNumberEntered = (input) => {
+        if (input === 'backspace') {
+            const newInput = enteredValue.length > 0 ? enteredValue.slice(0, -1) : '';
+            setEnteredValue(newInput);
+        } else if (input === 'ok') {
+            console.log('input', input);
+            console.log('currentClicked', currentClicked);
+            setPackedData({ ...packedData, courier: { ...packedData.courier, [currentClicked]: enteredValue } });
+            setIsOpenModal(false);
+        } else {
+            const newNumberInput = enteredValue + input;
+            const parsedValue = parseInt(newNumberInput, 10);
+            setEnteredValue(newNumberInput);
+        }
+    };
+
     useEffect(() => {
         console.log('order', order);
     }, [order]);
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleLabelPrint }}>
+            value={{ handleSignOut, order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue }}>
             {children}
         </PackingAppContext.Provider>
     );

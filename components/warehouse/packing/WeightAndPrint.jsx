@@ -8,14 +8,19 @@ import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 
 export default function WeightAndPrint() {
-    const { order, packedData, setPackedData, handleLabelPrint } = usePackingAppContext();
+    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
-    const [enteredValue, setEnteredValue] = useState('');
-    const [isOpenModal, setIsOpenModal] = useState(false);
+    // const [enteredValue, setEnteredValue] = useState('');
+    // const [isOpenModal, setIsOpenModal] = useState(false);
 
     const handleWeightChange = () => {
-        setPackedData({ ...packedData, weight: 0 });
+        if (currentClicked === 'weight') {
+            setCurrentClicked('');
+        } else {
+            setCurrentClicked('weight');
+        }
+        setEnteredValue('');
         setIsOpenModal(true);
     }
 
@@ -24,15 +29,15 @@ export default function WeightAndPrint() {
 
 
     }
-    useEffect(() => {
-        console.log('enteredValue', enteredValue);
-        setPackedData({ ...packedData, weight: enteredValue });
-        // eslint-disable-next-line
-    }, [enteredValue]);
+    // useEffect(() => {
+    //     console.log('enteredValue', enteredValue);
+    //     setPackedData({ ...packedData, weight: enteredValue });
+    //     // eslint-disable-next-line
+    // }, [enteredValue]);
     return (
         <div className={styles.parcelDetails}>
             <div className={styles.detailItem} onClick={handleWeightChange}>
-                <div className={styles.detailValue}>{packedData.weight ? packedData.weight : 0}<small>g</small></div>
+                <div className={styles.detailValue}>{packedData.courier.weight ? packedData.courier.weight : 0}<small>g</small></div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
 

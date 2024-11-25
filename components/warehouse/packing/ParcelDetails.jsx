@@ -5,11 +5,11 @@ import PackingKeyPad from "@/components/warehouse/packing/PackingKeyPad";
 import { usePackingAppContext } from "@/contexts/PackingAppContext";
 
 export default function ParcelDetails() {
-    const { order, packedData, setPackedData, handleLabelPrint } = usePackingAppContext();
+    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue } = usePackingAppContext();
 
-    const [enteredValue, setEnteredValue] = useState('');
-    const [isOpenModal, setIsOpenModal] = useState(false);
-    const [currentClicked, setCurrentClicked] = useState('');
+
+    // const [isOpenModal, setIsOpenModal] = useState(false);
+    // const [currentClicked, setCurrentClicked] = useState('');
 
 
     const handleCustomSize = (currentClick) => {
@@ -22,20 +22,20 @@ export default function ParcelDetails() {
         setIsOpenModal(true);
     }
 
-    useEffect(() => {
-        console.log('enteredValue', enteredValue);
-        console.log('currentClicked', currentClicked);
-        if (enteredValue) {
-            if (currentClicked === 'weight') {
-                setPackedData({ ...packedData, weight: enteredValue });
-            }
-            else {
-                setPackedData({ ...packedData, courier: { ...packedData.courier, [currentClicked]: enteredValue } });
-            }
+    // useEffect(() => {
+    //     console.log('enteredValue', enteredValue);
+    //     console.log('currentClicked', currentClicked);
+    //     if (enteredValue) {
+    //         if (currentClicked === 'weight') {
+    //             setPackedData({ ...packedData, weight: enteredValue });
+    //         }
+    //         else {
+    //             setPackedData({ ...packedData, courier: { ...packedData.courier, [currentClicked]: enteredValue } });
+    //         }
 
-        }
-        // eslint-disable-next-line
-    }, [enteredValue]);
+    //     }
+    //     // eslint-disable-next-line
+    // }, [enteredValue]);
 
     useEffect(() => {
         console.log('packedData', packedData);
