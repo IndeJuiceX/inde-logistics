@@ -106,7 +106,7 @@ export const createOrder = async (vendorId, order) => {
                     vendor_order_id: order.vendor_order_id,
                     shipping_code : order.shipping_code,
                     expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
-                    //shipping_cost: order.shipping_cost,
+                    shipping_cost_charged: order.shipping_cost_charged,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
                     entity_type: 'Order',
