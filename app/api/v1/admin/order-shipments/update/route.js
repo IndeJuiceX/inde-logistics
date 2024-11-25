@@ -24,9 +24,9 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         // validate that courier has all the information
-        const{service_code,weight, length, width, height} = courier
+        const{service_code,weight, depth, width, height} = courier
 
-        if (!service_code || !weight || !length || !width || !height) {
+        if (!service_code || !weight || !depth || !width || !height) {
             return NextResponse.json({ error: 'service_code, weight, height, length and width are required in courier' }, { status: 400 });
         }
 
