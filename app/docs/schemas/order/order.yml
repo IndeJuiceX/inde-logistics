@@ -4,10 +4,9 @@ Order:
       properties:
         vendor_order_id:
           type: string
-        # expected_delivery_date:
-        #   type: string
-        #   pattern: '^([0-2][0-9]|(3)[0-1])\\/(0[1-9]|1[0-2])\\/\\d{4}$'
-        #   example: '31/12/2023'
+        shipping_cost:
+          type: number
+          example: Cost of the shipping charged to the customer by vendor.
         shipping_code:
           type: string
         buyer:
@@ -22,3 +21,4 @@ Order:
         - buyer
         - items
         - shipping_code
+        - shipping_cost
