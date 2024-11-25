@@ -4,6 +4,7 @@ import { createContext, useState, useContext, useEffect } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
 import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
+import { getParcelType, getServiceCode } from '@/services/utils/courier';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -36,24 +37,24 @@ export const PackingAppProvider = ({ children, orderData }) => {
         }
         else {
             payload.courier = getParcelDimensions(packedData.parcelOption);
-            
+
         }
         // payload.weight.courier = packedData.weight;
         payload.courier = {
             ...payload.courier,
             weight: packedData.weight,
+            service_code: getServiceCode(order, packedData.parcelOption),
         };
-        console.log('payload', payload);
-
-        // const response = await fetch(`/api/v1/admin/order-shipments/mark-packed`, {
-        //     method: 'PATCH',
-        //     body: JSON.stringify(payload),
-        // });
-        // const data = await response.json();
-        // console.log('data', data);
+        const response = await fetch(`/api/v1/admin/order-shipments/update`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        console.log('data', data);
     }
 
     const checkAllowedWeight = () => {
+        const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
         if (packedData.weight <= 0) {
             setPackedData({ ...packedData, parcelOption: '' });
             setIsErrorReload(false);
@@ -61,19 +62,11 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setErrorMessage(`Weight cannot be less than 0g. Please enter a valid weight`);
             return true;
         }
-        const couriers = order.shipment.courier;
-        console.log('couriers', couriers);
-        let parcelType = '';
-        if (packedData.parcelOption === 'letter') {
-            parcelType = couriers.find(type => type.package_type === "large letter");
-        }
-        if (packedData.parcelOption === 'large' || packedData.parcelOption === 'extra' || packedData.parcelOption === 'custom') {
-            parcelType = couriers.find(type => type.package_type === "parcel");
-        }
-        console.log('parcelType', parcelType);
-        if (parcelType) {
+      
 
-            const maxWeight = parcelType.max_weight_g;
+        if (isParcelTypeValid) {
+
+            const maxWeight = isParcelTypeValid.max_weight_g;
             if (packedData.weight > maxWeight) {
                 setPackedData({ ...packedData, parcelOption: '' });
                 // setEnteredValue(0);
@@ -84,19 +77,23 @@ export const PackingAppProvider = ({ children, orderData }) => {
                 return true;
             }
             if (packedData.parcelOption === 'custom') {
-                if (packedData.courier.width > parcelType.max_width_cm
-                    || packedData.courier.height > parcelType.max_length_cm
-                    || packedData.courier.depth > parcelType.max_depth_cm) {
+                if (packedData.courier.width > isParcelTypeValid.max_width_cm
+                    || packedData.courier.height > isParcelTypeValid.max_length_cm
+                    || packedData.courier.depth > isParcelTypeValid.max_depth_cm) {
                     setPackedData({ ...packedData, parcelOption: '' });
                     setIsErrorReload(false);
                     setError(true);
-                    setErrorMessage(`Dimensions exceed the limit of ${parcelType.max_width_cm}x${parcelType.max_length_cm}x${parcelType.max_depth_cm}cm. Please select the correct parcel type`);
+                    setErrorMessage(`Dimensions exceed the limit of ${isParcelTypeValid.max_width_cm}x${isParcelTypeValid.max_length_cm}x${isParcelTypeValid.max_depth_cm}cm. Please select the correct parcel type`);
                     return true;
                 }
             }
         }
         return false;
     }
+    
+    useEffect(() => {
+        console.log('order', order);
+    }, [order]);
     return (
         <PackingAppContext.Provider
             value={{ handleSignOut, order, packedData, setPackedData, handleLabelPrint }}>
