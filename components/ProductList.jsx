@@ -1,71 +1,108 @@
 import { useState, useEffect } from 'react';
-import ProductCard from './ProductCard';
+import ProductCardSlim from './ProductCardSlim';
 
-export default function ProductList({
-  products,
-  selectedItems,
-  handleSelectProduct,
-}) {
-  // Local state to manage per-product quantities
-  const [localQuantities, setLocalQuantities] = useState({});
+export default function ProductList({ products, onSelectionChange }) {
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [quantities, setQuantities] = useState({});
 
-  // Initialize local quantities based on selectedItems
-  useEffect(() => {
-    const initialQuantities = {};
-    selectedItems.forEach((item) => {
-      initialQuantities[item.vendor_sku] = item.quantity;
-    });
-    setLocalQuantities((prev) => ({ ...prev, ...initialQuantities }));
-  }, [selectedItems]);
+  // Handle individual product selection
+  const handleSelectProduct = (product) => {
+    const isSelected = selectedItems.some(
+      (item) => item.vendor_sku === product.vendor_sku
+    );
+
+    let newSelectedItems;
+    if (isSelected) {
+      // Deselect product
+      newSelectedItems = selectedItems.filter(
+        (item) => item.vendor_sku !== product.vendor_sku
+      );
+    } else {
+      // Select product
+      newSelectedItems = [
+        ...selectedItems,
+        { ...product, quantity: quantities[product.vendor_sku] || 1 },
+      ];
+    }
+    setSelectedItems(newSelectedItems);
+    onSelectionChange(newSelectedItems);
+  };
+
+  // Handle quantity change for a product
+  const handleQuantityChange = (product, value) => {
+    const quantity = Math.max(1, Number(value));
+    setQuantities((prev) => ({
+      ...prev,
+      [product.vendor_sku]: quantity,
+    }));
+
+    // Update quantity in selectedItems if product is selected
+    if (
+      selectedItems.some((item) => item.vendor_sku === product.vendor_sku)
+    ) {
+      const updatedItems = selectedItems.map((item) =>
+        item.vendor_sku === product.vendor_sku
+          ? { ...item, quantity }
+          : item
+      );
+      setSelectedItems(updatedItems);
+      onSelectionChange(updatedItems);
+    }
+  };
+
+  // Handle select all functionality
+  const handleSelectAll = () => {
+    if (selectAll) {
+      // Deselect all
+      setSelectedItems([]);
+      onSelectionChange([]);
+    } else {
+      // Select all
+      const allSelected = products.map((product) => ({
+        ...product,
+        quantity: quantities[product.vendor_sku] || 1,
+      }));
+      setSelectedItems(allSelected);
+      onSelectionChange(allSelected);
+    }
+    setSelectAll(!selectAll);
+  };
 
   return (
-    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => {
-        // Determine if the product is already in selectedItems
-        const isSelected = selectedItems.some(
-          (item) => item.vendor_sku === product.vendor_sku
-        );
+    <div>
+      {/* Select All Checkbox */}
+      <div className="flex items-center mb-4">
+        <input
+          type="checkbox"
+          checked={selectAll}
+          onChange={handleSelectAll}
+          className="mr-2"
+        />
+        <label className="text-gray-700 font-semibold">Select All</label>
+      </div>
 
-        // Get the local quantity or default to 1
-        const quantity = localQuantities[product.vendor_sku] || 1;
+      {/* Product List */}
+      <ul className="divide-y divide-gray-200">
+        {products.map((product) => {
+          const isSelected = selectedItems.some(
+            (item) => item.vendor_sku === product.vendor_sku
+          );
 
-        const handleQuantityChange = (e) => {
-          const value = Math.max(1, Number(e.target.value));
-          setLocalQuantities((prev) => ({
-            ...prev,
-            [product.vendor_sku]: value,
-          }));
-        };
+          const quantity = quantities[product.vendor_sku] || 1;
 
-        const handleButtonClick = () => {
-          handleSelectProduct(product, quantity);
-        };
-
-        return (
-          <ProductCard key={product.vendor_sku} product={product}>
-            <div className="flex items-center space-x-2 mt-2">
-              <input
-                type="number"
-                min="1"
-                className="w-20 px-2 py-1 border border-gray-300 rounded-md"
-                placeholder="Qty"
-                value={quantity}
-                onChange={handleQuantityChange}
-              />
-              <button
-                onClick={handleButtonClick}
-                className={`px-3 py-1 rounded-md text-white ${
-                  isSelected
-                    ? 'bg-blue-500 hover:bg-blue-600'
-                    : 'bg-green-500 hover:bg-green-600'
-                }`}
-              >
-                {isSelected ? 'Update' : 'Add'}
-              </button>
-            </div>
-          </ProductCard>
-        );
-      })}
-    </ul>
+          return (
+            <ProductCardSlim
+              key={product.vendor_sku}
+              product={product}
+              isSelected={isSelected}
+              onSelect={handleSelectProduct}
+              quantity={quantity}
+              onQuantityChange={handleQuantityChange}
+            />
+          );
+        })}
+      </ul>
+    </div>
   );
 }
