@@ -23,17 +23,47 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
             return NextResponse.json({ error: 'vendor_id, vendor_order_id and courier are required' }, { status: 400 });
         }
 
-        // validate that courier has all the information
-        const{service_code,weight, depth, width, height} = courier
+        // Format and validate the 'courier' object
+        let {
+            service_code,
+            weight,
+            depth,
+            width,
+            height
+        } = courier;
 
-        if (!service_code || !weight || !depth || !width || !height) {
+        // Trim strings and remove unnecessary whitespace
+        service_code = service_code ? service_code.trim() : null;
+
+        // Convert string numbers to actual numbers
+        weight = Number(weight);
+        depth = Number(depth);
+        width = Number(width);
+        height = Number(height);
+
+
+        if (
+            !service_code ||
+            isNaN(weight) ||
+            isNaN(depth) ||
+            isNaN(width) ||
+            isNaN(height)
+        ) {
             return NextResponse.json({ error: 'service_code, weight, height, length and width are required in courier' }, { status: 400 });
         }
 
+        const formattedCourier = {
+            service_code,
+            weight_grams: weight,
+            depth_cm: depth,
+            width_cm: width,
+            height_cm: height,
+        };
+
         // Update the order's buyer information
-        const updateResult = await updateOrderShipment(vendor_id, vendor_order_id, courier);
+        const updateResult = await updateOrderShipment(vendor_id, vendor_order_id, formattedCourier);
         console.log('updateResult', updateResult);
-        
+
         if (!updateResult || !updateResult?.success) {
             return NextResponse.json({ error: 'Order Shipment update failed', details: updateResult?.error || 'Order Shipment update failed' }, { status: 400 });
         }
