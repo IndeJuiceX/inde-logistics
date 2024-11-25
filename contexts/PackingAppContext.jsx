@@ -23,7 +23,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const handleSignOut = async () => {
         await doLogOut();
     };
-    console.log('couriers', order.shipment.courier);
+   
     const handleLabelPrint = async () => {
         const isWeightValid = checkAllowedWeight();
         if (isWeightValid) {
@@ -32,9 +32,6 @@ export const PackingAppProvider = ({ children, orderData }) => {
         const payload = {
             vendor_id: order.vendor_id,
             vendor_order_id: order.vendor_order_id,
-            // weight: packedData.weight,
-            // parcel_type: packedData.parcelOption,
-
         }
         if (packedData.parcelOption === 'custom') {
             payload.courier = packedData.courier;
