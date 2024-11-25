@@ -20,7 +20,7 @@ export const getBuyerSchema = () => Joi.object({
 export const getOrderSchema = () =>
     Joi.object({
         vendor_order_id: Joi.string().required().label('vendor_order_id'),
-        shipping_cost_charged :  Joi.number().required().label('shipping_cost_charged'),
+        shipping_cost :  Joi.number().required().label('shipping_cost'),
 
         shipping_code: Joi.string().required().label('shipping_code'),
 
