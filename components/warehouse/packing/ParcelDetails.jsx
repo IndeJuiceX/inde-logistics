@@ -30,7 +30,7 @@ export default function ParcelDetails() {
                 setPackedData({ ...packedData, weight: enteredValue });
             }
             else {
-                setPackedData({ ...packedData, custom_dimensions: { ...packedData.custom_dimensions, [currentClicked]: enteredValue } });
+                setPackedData({ ...packedData, courier: { ...packedData.courier, [currentClicked]: enteredValue } });
             }
 
         }
@@ -45,15 +45,15 @@ export default function ParcelDetails() {
     return (
         <div className={styles.parcelDetails}>
             <div className={styles.detailItem} onClick={() => handleCustomSize('depth')}>
-                <div className={styles.detailValue}>{packedData.custom_dimensions.depth}cm</div>
+                <div className={styles.detailValue}>{packedData.courier.depth}cm</div>
                 <div className={styles.detailLabel}>LENGTH</div>
             </div>
             <div className={styles.detailItem} onClick={() => handleCustomSize('width')}>
-                <div className={styles.detailValue}>{packedData.custom_dimensions.width}cm</div>
+                <div className={styles.detailValue}>{packedData.courier.width}cm</div>
                 <div className={styles.detailLabel}>WIDTH</div>
             </div>
             <div className={styles.detailItem} onClick={() => handleCustomSize('height')}>
-                <div className={styles.detailValue}>{packedData.custom_dimensions.height}cm</div>
+                <div className={styles.detailValue}>{packedData.courier.height}cm</div>
                 <div className={styles.detailLabel}>HEIGHT</div>
             </div>
             <div className={styles.detailItem} onClick={() => handleCustomSize('weight')}>

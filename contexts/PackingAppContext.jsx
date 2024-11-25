@@ -3,7 +3,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
-
+import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -12,7 +12,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [packedData, setPackedData] = useState({
         parcelOption: '',
         weight: 0,
-        custom_dimensions: { width: 0, height: 0, depth: 0 },
+        courier: { width: 0, height: 0, depth: 0 },
     });
 
     const handleSignOut = async () => {
@@ -27,21 +27,30 @@ export const PackingAppProvider = ({ children, orderData }) => {
         const payload = {
             vendor_id: order.vendor_id,
             vendor_order_id: order.vendor_order_id,
-            weight: packedData.weight,
-            parcel_type: packedData.parcelOption,
+            // weight: packedData.weight,
+            // parcel_type: packedData.parcelOption,
 
         }
         if (packedData.parcelOption === 'custom') {
-            payload.custom_dimensions = packedData.custom_dimensions;
+            payload.courier = packedData.courier;
         }
+        else {
+            payload.courier = getParcelDimensions(packedData.parcelOption);
+            
+        }
+        // payload.weight.courier = packedData.weight;
+        payload.courier = {
+            ...payload.courier,
+            weight: packedData.weight,
+        };
         console.log('payload', payload);
 
-        const response = await fetch(`/api/v1/admin/order-shipments/mark-packed`, {
-            method: 'PATCH',
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        console.log('data', data);
+        // const response = await fetch(`/api/v1/admin/order-shipments/mark-packed`, {
+        //     method: 'PATCH',
+        //     body: JSON.stringify(payload),
+        // });
+        // const data = await response.json();
+        // console.log('data', data);
     }
 
     const checkAllowedWeight = () => {
@@ -75,9 +84,9 @@ export const PackingAppProvider = ({ children, orderData }) => {
                 return true;
             }
             if (packedData.parcelOption === 'custom') {
-                if (packedData.custom_dimensions.width > parcelType.max_width_cm
-                    || packedData.custom_dimensions.height > parcelType.max_length_cm
-                    || packedData.custom_dimensions.depth > parcelType.max_depth_cm) {
+                if (packedData.courier.width > parcelType.max_width_cm
+                    || packedData.courier.height > parcelType.max_length_cm
+                    || packedData.courier.depth > parcelType.max_depth_cm) {
                     setPackedData({ ...packedData, parcelOption: '' });
                     setIsErrorReload(false);
                     setError(true);

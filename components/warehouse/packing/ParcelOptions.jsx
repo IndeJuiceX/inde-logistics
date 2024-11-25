@@ -37,8 +37,8 @@ export default function ParcelOptions() {
             PARCEL
           </div>
         )}
-        {(packedData.parcelOption === '' || packedData.parcelOption === 'extra_parcel') && (
-          <div className={`${styles.parcel} ${styles.extraLarge} ${packedData.parcelOption === 'extra_parcel' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('extra_parcel')}>
+        {(packedData.parcelOption === '' || packedData.parcelOption === 'extra_large_parcel') && (
+          <div className={`${styles.parcel} ${styles.extraLarge} ${packedData.parcelOption === 'extra_large_parcel' ? styles.selected : ''}`} onClick={() => handleParcelOptionClick('extra_large_parcel')}>
             {/* eslint-disable-next-line */}
             <img
               src="https://dev.indejuice.com/img/wh/parcel_large.png"
@@ -57,7 +57,7 @@ export default function ParcelOptions() {
         )}
       </div>
 
-      {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('parcel') || packedData.parcelOption.includes('extra_parcel')) ? (
+      {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('parcel') || packedData.parcelOption.includes('extra_large_parcel')) ? (
         <WeightAndPrint />
       ) : packedData.parcelOption === 'custom' && (
         <ParcelDetails />
