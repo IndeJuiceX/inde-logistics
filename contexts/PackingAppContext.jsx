@@ -46,11 +46,12 @@ export const PackingAppProvider = ({ children, orderData }) => {
             service_code: getServiceCode(order, packedData.parcelOption),
         };
         const isValidWeight = checkAllowedWeight(order, packedData);
-        if (isValidWeight.error) {
+        const isValidParcelDimensions = checkParcelDimensions(order, payload, packedData);
+        if (isValidWeight.error || isValidParcelDimensions.error) {
             setLoading(false);
             setLoaded(true);
             setError(true);
-            setErrorMessage(isValidWeight.message);
+            setErrorMessage(isValidWeight.message || isValidParcelDimensions.message);
             setIsErrorReload(false);
             setPackedData({
                 ...packedData,
@@ -65,16 +66,6 @@ export const PackingAppProvider = ({ children, orderData }) => {
             });
             return;
         }
-
-        const isValidParcelDimensions = checkParcelDimensions(order, payload);
-        console.log('isValidParcelDimensions', isValidParcelDimensions);
-        return;
-        if (isValidWeight.error || isValidParcelDimensions) {
-            setLoading(false);
-            setLoaded(true);
-            return;
-        }
-        console.log('payload', payload);
 
         let service_code = payload.courier.service_code;
         let weight = payload.courier.weight;
