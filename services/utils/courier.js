@@ -4,7 +4,7 @@ export const getServiceCode = (order, selectedParcelType) => {
 }
 // we can extend this function to get the parcel type from the service provider
 export const getParcelType = (order, selectedParcelType) => {
-    console.log('order', order);
+    
     const shippingCodeSplit = order?.shipping_code?.split('-');
     if (!shippingCodeSplit[0]) {
         return ['error', 'Shipping code is not found'];

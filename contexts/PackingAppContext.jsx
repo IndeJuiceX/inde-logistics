@@ -6,7 +6,7 @@ import { useGlobalContext } from '@/contexts/GlobalStateContext';
 import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
 import { getServiceCode } from '@/services/utils/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
-import { checkAllowedWeight, checkParcelDimensions } from '@/services/utils/packingValidations';
+import { parcelPayloadValidation } from '@/services/utils/packingValidations';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -14,7 +14,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [order, setOrder] = useState(orderData);
     const [packedData, setPackedData] = useState({
         parcelOption: '',
-        courier: { width: '0', height: '0', depth: '0', weight: '0' },
+        courier: { width: '0', length: '0', depth: '0', weight: '0' },
     });
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [currentClicked, setCurrentClicked] = useState('');
@@ -45,13 +45,14 @@ export const PackingAppProvider = ({ children, orderData }) => {
             weight: packedData.courier.weight,
             service_code: getServiceCode(order, packedData.parcelOption),
         };
-        const isValidWeight = checkAllowedWeight(order, packedData);
-        const isValidParcelDimensions = checkParcelDimensions(order, payload, packedData);
-        if (isValidWeight.error || isValidParcelDimensions.error) {
+
+        let service_code = payload.courier.service_code;
+        const validationResult = parcelPayloadValidation(order, payload, packedData);
+        if (validationResult.error) {
             setLoading(false);
             setLoaded(true);
             setError(true);
-            setErrorMessage(isValidWeight.message || isValidParcelDimensions.message);
+            setErrorMessage(validationResult.message);
             setIsErrorReload(false);
             setPackedData({
                 ...packedData,
@@ -67,34 +68,17 @@ export const PackingAppProvider = ({ children, orderData }) => {
             return;
         }
 
-        let service_code = payload.courier.service_code;
-        let weight = payload.courier.weight;
-        let width = payload.courier.width;
-        let height = payload.courier.height;
-        let depth = payload.courier.depth;
-
-        weight = parseFloat(weight);
-        width = parseFloat(width);
-        height = parseFloat(height);
-        depth = parseFloat(depth);
-
-        if (isNaN(weight) || isNaN(width) || isNaN(height) || isNaN(depth)) {
-            setLoading(false);
-            setLoaded(true);
-            setError(true);
-            setErrorMessage('Invalid parcel dimensions');
-            setIsErrorReload(true);
-            return;
-        }
         const formattedCourier = {
-            service_code,
-            weight_grams: weight,
-            depth_cm: depth,
-            width_cm: width,
-            height_cm: height,
+            service_code: service_code,
+            weight_grams: payload.courier.weight,
+            depth_cm: payload.courier.depth,
+            width_cm: payload.courier.width,
+            height_cm: payload.courier.length,
         };
         const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
         if (updateResult.success) {
+            setLoading(false);
+            setLoaded(true);
             setIsValidForPrintLabel(true);
         }
         else {
