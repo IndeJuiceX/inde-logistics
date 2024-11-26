@@ -5,6 +5,7 @@ import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
 import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
 import { getParcelType, getServiceCode } from '@/services/utils/courier';
+import { updateOrderShipment } from '@/services/data/order-shipment';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -52,16 +53,55 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setLoaded(true);
             return;
         }
-        const response = await fetch(`/api/v1/admin/order-shipments/update`, {
-            method: 'PATCH',
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        if (data.success) {
+        console.log('payload', payload);
+
+        let service_code = payload.courier.service_code;
+        let weight = payload.courier.weight;
+        let width = payload.courier.width;
+        let height = payload.courier.height;
+        let depth = payload.courier.depth;
+
+        weight = parseFloat(weight);
+        width = parseFloat(width);
+        height = parseFloat(height);
+        depth = parseFloat(depth);
+
+        if (isNaN(weight) || isNaN(width) || isNaN(height) || isNaN(depth)) {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage('Invalid parcel dimensions');
+            setIsErrorReload(true);
+            return;
+        }
+        const formattedCourier = {
+            service_code,
+            weight_grams: weight,
+            depth_cm: depth,
+            width_cm: width,
+            height_cm: height,
+        };
+        const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
+        if (updateResult.success) {
             setIsValidForPrintLabel(true);
         }
-        setLoading(false);
-        setLoaded(true);
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(updateResult.error);
+            setIsErrorReload(true);
+        }
+        // const response = await fetch(`/api/v1/admin/order-shipments/update`, {
+        //     method: 'PATCH',
+        //     body: JSON.stringify(payload),
+        // });
+        // const data = await response.json();
+        // if (data.success) {
+        //     setIsValidForPrintLabel(true);
+        // }
+        // setLoading(false);
+        // setLoaded(true);
     }
 
     const checkAllowedWeight = () => {
