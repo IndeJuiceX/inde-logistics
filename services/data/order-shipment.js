@@ -1,4 +1,4 @@
-// executeTransaction.js
+'use server';
 
 import { transactWriteItems, getItem, updateItem } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";

@@ -9,11 +9,12 @@ import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail } from '@/services/utils/index';
 import { FaCheckCircle } from 'react-icons/fa';
-
+import { useGlobalContext } from "@/contexts/GlobalStateContext";
+import { updateOrderShipmentError } from '@/services/data/order-shipment';
 
 export default function Picking({ order, order_id }) {
     // console.log('test order ', order);
-
+    const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
     const router = useRouter();
     const [windowHeight, setWindowHeight] = useState(0);
@@ -131,28 +132,45 @@ export default function Picking({ order, order_id }) {
         const errorItem = order.items[currentIndex];
         console.log('order current', errorItem);
 
-        const payload = {
-            vendor_id: order.vendor_id,
-            vendor_order_id: order.vendor_order_id,
-            error_reason: {
-                reason: 'Missing Item',
-                details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
-            }
+        // const payload = {
+        //     vendor_id: order.vendor_id,
+        //     vendor_order_id: order.vendor_order_id,
+        //     error_reason: {
+        //         reason: 'Missing Item',
+        //         details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
+        //     }
+        // }
+
+        const vendor_id = order.vendor_id;
+        const vendor_order_id = order.vendor_order_id;
+        const error_reason = {
+            reason: 'Missing Item',
+            details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
         }
-        // app/api/v1/admin/order-shipments/flag-error/route.js
-        const response = await fetch('/api/v1/admin/order-shipments/flag-error', {
-            method: 'PATCH',
-            body: JSON.stringify(payload),
-        });
-        if (!response.ok) {
-            console.log('Error in marking order as error');
+        // Validate that vendor_id, stock_shipment_id, and item are present
+        if (!vendor_id || !vendor_order_id) {
+            // return NextResponse.json({ error: 'vendor_id, vendor_order_id, and item are required' }, { status: 400 });
+            setError(true);
+            setErrorMessage('Something went wrong, Please reload the page');
+            setIsErrorReload(true);
         }
-        const data = await response.json();
-        console.log('data', data.success);
+
+        // Prepare the arguments array
+        const args = [vendor_id, vendor_order_id];
+        if (error_reason && error_reason != '' && error_reason !== undefined) {
+            args.push(error_reason);
+        }
+        const data = await updateOrderShipmentError(...args);
+        console.log('data', data);
         if (data.success) {
             window.location.reload();
-
         }
+        else {
+            setError(true);
+            setErrorMessage(data.error);
+            setIsErrorReload(true);
+        }
+
     }
 
 
