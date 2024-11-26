@@ -3,44 +3,31 @@ import React, { useEffect, useState } from "react";
 import styles from "@/styles/warehouse/packing/ParcelDetails.module.scss";
 import PackingKeyPad from "@/components/warehouse/packing/PackingKeyPad";
 import { usePackingAppContext } from "@/contexts/PackingAppContext";
-
+import LabelPrintButton from "@/components/warehouse/packing/LabelPrintButton";
 export default function ParcelDetails() {
-    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue } = usePackingAppContext();
+    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel } = usePackingAppContext();
 
 
-    // const [isOpenModal, setIsOpenModal] = useState(false);
-    // const [currentClicked, setCurrentClicked] = useState('');
 
 
     const handleCustomSize = (currentClick) => {
+        setIsValidForPrintLabel(false);
+        setPackedData(prevState => ({
+            ...prevState,
+            courier: {
+                ...prevState.courier,
+                [currentClick]: 0
+            }
+        }));
         if (currentClicked === currentClick) {
             setCurrentClicked('');
         } else {
             setCurrentClicked(currentClick);
         }
         setEnteredValue('');
+
         setIsOpenModal(true);
     }
-
-    // useEffect(() => {
-    //     console.log('enteredValue', enteredValue);
-    //     console.log('currentClicked', currentClicked);
-    //     if (enteredValue) {
-    //         if (currentClicked === 'weight') {
-    //             setPackedData({ ...packedData, weight: enteredValue });
-    //         }
-    //         else {
-    //             setPackedData({ ...packedData, courier: { ...packedData.courier, [currentClicked]: enteredValue } });
-    //         }
-
-    //     }
-    //     // eslint-disable-next-line
-    // }, [enteredValue]);
-
-    useEffect(() => {
-        console.log('packedData', packedData);
-
-    }, [packedData]);
 
     return (
         <div className={styles.parcelDetails}>
@@ -57,19 +44,22 @@ export default function ParcelDetails() {
                 <div className={styles.detailLabel}>HEIGHT</div>
             </div>
             <div className={styles.detailItem} onClick={() => handleCustomSize('weight')}>
-                <div className={styles.detailValue}>{packedData.weight}g</div>
+                <div className={styles.detailValue}>{packedData.courier.weight}g</div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
-            <div className={styles.detailItem} onClick={handleLabelPrint}>
-                <div className={styles.detailValue}>
-                    {/* eslint-disable-next-line */}
+            {/* <div className={styles.detailItem} onClick={handleLabelPrint}>
+                <div >
+                     eslint-disable-next-line 
                     <img
                         src="https://dev.indejuice.com/img/wh/print.png"
                         alt="Letter"
                     />
                 </div>
-                <div className={styles.detailLabel} >LABEL</div>
-            </div>
+                <div  >LABEL</div>
+            </div>*/}
+            {isValidForPrintLabel && (
+                <LabelPrintButton styles={styles} />
+            )}
 
             <PackingKeyPad enteredValue={enteredValue} setEnteredValue={setEnteredValue} setIsOpenModal={setIsOpenModal} isOpenModal={isOpenModal} />
         </div>

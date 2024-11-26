@@ -1,7 +1,7 @@
 const parcelDimensions = {
-    letter: { height: 20, width: 20, depth: 20 },
-    parcel: { height: 30, width: 30, depth: 30 },
-    extra_large_parcel: { height: 40, width: 40, depth: 40 },
+    letter: { length: 29.2, width: 19.8, depth: 2 },
+    parcel: { length: 23, width: 15.8, depth: 10.7 },
+    extra_large_parcel: { length: 31, width: 23.8, depth: 8.5 },
 };
 const shippingCost = {
     'RM-24': 3.99,

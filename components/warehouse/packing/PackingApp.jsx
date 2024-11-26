@@ -8,12 +8,14 @@ import { PackingAppProvider } from "@/contexts/PackingAppContext";
 import { GlobalStateProvider } from "@/contexts/GlobalStateContext";
 import PackingFooter from "@/components/warehouse/packing/PackingFooter";
 import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
+import PageSpinner from "@/components/loader/PageSpinner";
 
 export default function PackingApp({ orderData }) {
     return (
         <div className={styles.layout}>
             <GlobalStateProvider>
                 <ErrorModal />
+                <PageSpinner />
                 <PackingAppProvider orderData={orderData}>
 
                     <PackingHeader />
