@@ -47,7 +47,7 @@ export const getBuyerSchema = () => Joi.object({
     country_code: Joi.string()
         .length(2)
         .uppercase()
-        .required()
+        //.required()
         .label('country_code')
 });
 
