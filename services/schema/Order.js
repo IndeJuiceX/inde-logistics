@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { validateOrderItems } from './OrderItem'; // Import the item schema
-import { getOfficialCountryNames, getCountryCode } from '@/services/utils/countries.js';
+import { getOfficialCountryName, getCountryCode } from '@/services/utils/countries.js';
 /**
  * Generates a Joi validation schema for the country field.
  * @returns {Joi.StringSchema} Joi validation schema for country
@@ -8,7 +8,7 @@ import { getOfficialCountryNames, getCountryCode } from '@/services/utils/countr
 export const getCountrySchema = () => {
     return Joi.string()
         .required()
-        .valid(...getOfficialCountryNames())
+        //.valid(...getOfficialCountryNames())
         .label('country')
         .custom((value, helpers) => {
             const countryCode = getCountryCode(value);
@@ -17,15 +17,13 @@ export const getCountrySchema = () => {
                 return helpers.error('any.invalid', { value });
             }
 
-            // // Set the country_code in the parent object
-            // helpers.parent.country_code = countryCode;
+            // Get the official country name
+            const officialCountryName = getOfficialCountryName(countryCode);
 
-            // Return the country name as is
-            return value;
+            return officialCountryName;
         }, 'Country Name Validation')
         .messages({
-            'any.only': '"{#label}" must be a valid official country name in English',
-            'any.invalid': '"{#label}" is not a valid country',
+            'any.invalid': '"{#label}" must be a valid official country name in English',
         });
 };
 
@@ -78,7 +76,7 @@ export const validateOrder = (order) => {
     }
     const countryCode = getCountryCode(validatedOrder.buyer.country); //
     validatedOrder.buyer.country_code = countryCode;
-    
+
     // Validate each item in the 'items' array
     const itemValidationResult = validateOrderItems(order.items || [], countryCode);
 

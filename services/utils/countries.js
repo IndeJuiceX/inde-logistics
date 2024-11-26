@@ -30,3 +30,12 @@ export const getCountryCode = (countryName) => {
 export const getOfficialCountryNames = () => {
   return Object.values(countryNames);
 };
+/**
+ * Retrieves the official country name for a given country code.
+ * @param {string} countryCode - The ISO Alpha-2 country code.
+ * @returns {string|null} The official country name or null if not found.
+ */
+export const getOfficialCountryName = (countryCode) => {
+  if (!countryCode || typeof countryCode !== 'string') return null;
+  return countryNames[countryCode.toUpperCase()] || null;
+};
