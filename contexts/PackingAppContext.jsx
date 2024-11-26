@@ -4,8 +4,9 @@ import { createContext, useState, useContext, useEffect } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
 import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
-import { getParcelType, getServiceCode } from '@/services/utils/courier';
+import { getServiceCode } from '@/services/utils/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
+import { checkAllowedWeight, checkParcelDimensions } from '@/services/utils/packingValidations';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -44,11 +45,31 @@ export const PackingAppProvider = ({ children, orderData }) => {
             weight: packedData.courier.weight,
             service_code: getServiceCode(order, packedData.parcelOption),
         };
-        const isWeightValid = checkAllowedWeight();
-        const isParcelDimensionsValid = checkParcelDimensions(payload);
-        console.log('isWeightValid', isWeightValid);
-        console.log('isParcelDimensionsValid', isParcelDimensionsValid);
-        if (isWeightValid || isParcelDimensionsValid) {
+        const isValidWeight = checkAllowedWeight(order, packedData);
+        if (isValidWeight.error) {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(isValidWeight.message);
+            setIsErrorReload(false);
+            setPackedData({
+                ...packedData,
+                courier: {
+                    ...packedData.courier,
+                    weight: 0,
+                    parcelOption: '',
+                    width: 0,
+                    height: 0,
+                    depth: 0,
+                }
+            });
+            return;
+        }
+
+        const isValidParcelDimensions = checkParcelDimensions(order, payload);
+        console.log('isValidParcelDimensions', isValidParcelDimensions);
+        return;
+        if (isValidWeight.error || isValidParcelDimensions) {
             setLoading(false);
             setLoaded(true);
             return;
@@ -92,82 +113,9 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setErrorMessage(updateResult.error);
             setIsErrorReload(true);
         }
-        // const response = await fetch(`/api/v1/admin/order-shipments/update`, {
-        //     method: 'PATCH',
-        //     body: JSON.stringify(payload),
-        // });
-        // const data = await response.json();
-        // if (data.success) {
-        //     setIsValidForPrintLabel(true);
-        // }
-        // setLoading(false);
-        // setLoaded(true);
     }
 
-    const checkAllowedWeight = () => {
-        const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
-        if (packedData.courier.weight <= 0) {
-            setPackedData({ ...packedData, parcelOption: '' });
-            setIsErrorReload(false);
-            setError(true);
-            setErrorMessage(`Weight cannot be less than 0g. Please enter a valid weight`);
-            return true;
-        }
 
-
-        if (isParcelTypeValid) {
-
-            const maxWeight = isParcelTypeValid.max_weight_g;
-            if (packedData.courier.weight > maxWeight) {
-                setPackedData({ ...packedData, parcelOption: '' });
-                setPackedData({ ...packedData, courier: { ...packedData.courier, weight: 0 } });
-                setIsErrorReload(false);
-                setError(true);
-                setErrorMessage(`Weight exceeds the limit of ${maxWeight}g. Please select the correct parcel type`);
-                return true;
-            }
-            if (packedData.parcelOption === 'custom') {
-                if (packedData.courier.width > isParcelTypeValid.max_width_cm
-                    || packedData.courier.height > isParcelTypeValid.max_length_cm
-                    || packedData.courier.depth > isParcelTypeValid.max_depth_cm) {
-                    setPackedData({ ...packedData, parcelOption: '' });
-                    setIsErrorReload(false);
-                    setError(true);
-                    setErrorMessage(`Dimensions exceed the limit of ${isParcelTypeValid.max_width_cm}x${isParcelTypeValid.max_length_cm}x${isParcelTypeValid.max_depth_cm}cm. Please select the correct parcel type`);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    const checkParcelDimensions = (payload) => {
-        const isParcelTypeValid = getParcelType(order, payload.parcelOption);
-        if (order?.shipping_code === 'RM-INT') {
-            if (payload.courier.weight > 2000) //grams
-            {
-                setPackedData({ ...packedData, parcelOption: '' });
-                setIsErrorReload(false);
-                setError(true);
-                setErrorMessage(`Weight exceeds the limit of 2000g. Please select the correct parcel type`);
-                return true;
-            }
-            if (payload.courier.height + payload.courier.depth + payload.courier.width > 90) {
-                setPackedData({ ...packedData, parcelOption: '' });
-                setIsErrorReload(false);
-                setError(true);
-                setErrorMessage(`Height exceeds the limit of 90cm. Please select the correct parcel type`);
-                return true;
-            }
-            if (payload.courier.height > 60 || payload.courier.depth > 60 || payload.courier.width > 60) {
-                setPackedData({ ...packedData, parcelOption: '' });
-                setIsErrorReload(false);
-                setError(true);
-                setErrorMessage(`Height exceeds the limit of 60cm. Please select the correct parcel type`);
-                return true;
-            }
-        }
-        return false;
-    }
     const handleNumberEntered = (input) => {
         if (input === 'backspace') {
             const newInput = enteredValue.length > 0 ? enteredValue.slice(0, -1) : '';
