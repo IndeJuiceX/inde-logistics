@@ -15,7 +15,6 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
 
     // State variables
     const [products, setProducts] = useState([]); // Products to display
-    const [selectedItems, setSelectedItems] = useState([]); // Selected products with quantities
     const [searchTerm, setSearchTerm] = useState(''); // User input for search
     const [query, setQuery] = useState(''); // Actual search query used for API
     const [brands, setBrands] = useState([]); // Available brands for filtering
@@ -339,8 +338,11 @@ export default function EditStockShipment({ vendorId, stockShipmentId }) {
                                     {/* Product List */}
                                     <ProductList
                                         products={products}
-                                        selectedItems={selectedItems}
-                                        handleSelectProduct={handleSelectProduct}
+                                        onSelectionChange={(items) => {
+                                            items.forEach(item => {
+                                                handleSelectProduct(item, item.quantity);
+                                            });
+                                        }}
                                     />
 
                                     {/* Pagination Controls */}

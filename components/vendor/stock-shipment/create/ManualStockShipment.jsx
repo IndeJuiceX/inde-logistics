@@ -1,26 +1,16 @@
-'use client';
-
+'use client'
 import { useEffect, useState, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-
-import SearchBar from '@/components/SearchBar';
-import Filters from '@/components/Filters';
+import { useRouter } from 'next/navigation';
 import ItemsInShipment from '@/components/ItemsInShipment';
 import ProductList from '@/components/ProductList';
 import PaginationControls from '@/components/PaginationControls';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 import ProductSearchByFields from '@/components/vendor/product/ProductSearchByFields';
 
-
 export default function ManualStockShipment({ vendorId }) {
     const router = useRouter();
-    //   const { vendorId } = useParams();  // Get vendorId from route
 
     // State variables
-    const [responseData, setResponseData] = useState({
-        data: [],
-        last_evaluated_key: ''
-    });
     const [products, setProducts] = useState([]);                  // Products to display
     const [selectedItems, setSelectedItems] = useState([]);        // Selected products with quantities
     const [searchTerm, setSearchTerm] = useState('');              // User input for search
@@ -34,51 +24,44 @@ export default function ManualStockShipment({ vendorId }) {
     const [page, setPage] = useState(1);                           // Current page for pagination
     const [totalPages, setTotalPages] = useState(0);               // Total number of pages
     const [totalResults, setTotalResults] = useState(0);           // Total number of results
-    // const pageSize = 30;                                           // Products per page
-    const [pageSize, setPageSize] = useState(30);                  // Products per page
+    const pageSize = 30;                                           // Products per page
     const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null);
     const [hasMore, setHasMore] = useState(true);                  // More products available
     const observerRef = useRef(null);
 
-
-
-    const fetchProducts = async (startKey = null, newPageSize = null) => {
+    const fetchProducts = async (lastEvaluatedKey = null) => {
         try {
             let url = `/api/v1/vendor/products?page_size=${pageSize}`;
 
-            if (startKey && newPageSize) {
-                url = `/api/v1/vendor/products?page_size=${newPageSize}&last_evaluated_key=${encodeURIComponent(startKey)}`;
+            if (lastEvaluatedKey) {
+                url += `&last_evaluated_key=${encodeURIComponent(lastEvaluatedKey)}`;
             }
             const response = await fetch(url, {
                 method: 'GET',
                 cache: 'no-store',
             });
             const data = await response.json();
-            setResponseData(prev => ({
-                ...prev,
-                data: data.data,
-                last_evaluated_key: data.last_evaluated_key,
-            }));
-            setProducts(data.data)
+
+            setProducts((prevProducts) => [...prevProducts, ...data.data]);
             console.log('data', data.last_evaluated_key);
 
             setLastEvaluatedKey(data.last_evaluated_key);
-
-            setHasMore(data.hasMore);
-            setLoading(false)
+            setHasMore(!!data.last_evaluated_key);
+            setLoading(false);
         } catch (err) {
-            console.error('Failed to fetch orders:', err);
+            console.error('Failed to fetch products:', err);
         }
     };
 
     // Fetch vendor products with pagination and search
     useEffect(() => {
         if (vendorId) {
+            // Reset products and lastEvaluatedKey when vendorId changes or on initial load
+            setProducts([]);
+            setLastEvaluatedKey(null);
             fetchProducts();
         }
     }, [vendorId]);
-
-    ////=========================================================
 
     useEffect(() => {
         const options = {
@@ -89,13 +72,7 @@ export default function ManualStockShipment({ vendorId }) {
         const handleObserver = (entries) => {
             const target = entries[0];
             if (target.isIntersecting && hasMore) {
-                console.log('scrolling has more', hasMore);
-                const newPageSize = pageSize + 30;
-                setPageSize(newPageSize);
-                console.log('scrolling lastEvaluatedKey', responseData);
-
-                fetchProducts(responseData.last_evaluated_key, newPageSize);
-
+                fetchProducts(lastEvaluatedKey);
             }
         };
         observerRef.current = new IntersectionObserver(handleObserver, options);
@@ -109,7 +86,7 @@ export default function ManualStockShipment({ vendorId }) {
         return () => {
             if (observerRef.current) observerRef.current.disconnect();
         };
-    }, [hasMore, responseData]);
+    }, [hasMore, lastEvaluatedKey]);
 
 
     ////=========================================================
@@ -314,9 +291,7 @@ export default function ManualStockShipment({ vendorId }) {
                                     {/* Product List */}
                                     <ProductList
                                         products={products}
-                                        selectedItems={selectedItems}
-
-                                        handleSelectProduct={handleSelectProduct}
+                                        onSelectionChange={(items) => setSelectedItems(items)}
                                     />
 
                                     {/* Pagination Controls */}

@@ -34,7 +34,7 @@ export default function ItemsInShipment({ selectedItems, handleRemoveProduct }) 
                     key={item.vendor_sku}
                     className="flex items-center py-2 border-b last:border-none"
                   >
-                    <Image
+                    <img
                       src={item.image}
                       alt={item.name}
                       width={96}

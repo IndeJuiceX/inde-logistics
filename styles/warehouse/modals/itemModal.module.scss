@@ -1,132 +1,228 @@
+/* Container Styles */
 .container {
-  margin-top: 1rem; /* mt-4 */
   display: flex;
   flex-direction: column;
-  height: 100%; /* h-full */
+  height: 100%;
+  padding: 1rem;
+  background-color: #f9fafb;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
 .title {
-  text-align: center; /* text-center */
-  font-size: 1.125rem; /* text-lg */
-  font-weight: 600; /* font-semibold */
-  color: #000; /* text-black */
-  margin-bottom: 0.5rem; /* mb-2 */
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
 }
 
 .subtitle {
-  text-align: center; /* text-center */
-  font-size: 0.875rem; /* text-sm */
-  color: #6b7280; /* text-gray-500 */
-  margin-bottom: 1rem; /* mb-4 */
+  font-size: 1rem;
+  color: #4b5563;
 }
 
-.content {
+.mainContent {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  gap: 0.5rem; /* space-y-2 */
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .mainContent {
+    flex-direction: row;
+  }
+}
+
+/* Quantities Section */
+.quantitiesSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .quantityItem {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0.5rem; /* p-2 */
-  background-color: #fff; /* bg-white */
-  border-radius: 0.375rem; /* rounded-md */
-  border-width: 4px; /* border-4 */
-  //   width: 223px;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.quantityItem:hover {
+  border-color: #d1d5db;
 }
 
 .sent {
-  background: rgba(254, 199, 72, 0.3);
-  border: none;
+  background-color: rgba(254, 199, 72, 0.3);
+  cursor: default;
 }
 
 .accepted {
-  background: rgba(0, 216, 163, 0.25);
-  border: none;
+  background-color: rgba(0, 216, 163, 0.25);
+  cursor: default;
 }
 
 .active {
-  border-color: #22c55e; /* border-green-500 */
+  border-color: #10b981;
 }
 
 .label {
-  color: #000; /* text-black */
+  font-size: 1rem;
+  color: #374151;
 }
 
 .value {
-  font-weight: 600; /* font-semibold */
-  color: #000; /* text-black */
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #111827;
+}
+
+/* Image and Barcode Section */
+.imageBarcodeSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .imageWrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 1rem; /* mt-4 */
+  width: 100%;
+  text-align: center;
 }
 
 .productImage {
-  width: 18rem; /* w-[18rem] */
+  max-width: 100%;
   height: auto;
+  border-radius: 0.5rem;
 }
 
 .barcodeWrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem; /* mt-2 */
+  background-color: #111827;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
 }
 
 .barcode {
-  background-color: #000; /* bg-black */
-  color: #fff; /* text-white */
-  font-size: 0.875rem; /* text-sm */
-  font-family: monospace; /* font-mono */
-  padding: 0.25rem 0.75rem; /* px-3 py-1 */
-  border-radius: 0.375rem; /* rounded-md */
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 1rem;
 }
 
+/* Button Group */
 .buttonGroup {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 2rem; /* mb-8 */
+  margin-top: 1rem;
 }
 
-.button {
-  background-color: #e5e7eb; /* bg-gray-200 */
-  color: #6b7280; /* text-gray-500 */
-  padding: 0.5rem 1rem; /* px-4 py-2 */
-  border-radius: 0.375rem; /* rounded-md */
+.navButton {
+  flex: 1;
+  margin: 0 0.5rem;
+  padding: 0.75rem;
+  background-color: #e5e7eb;
+  color: #374151;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 0.5rem;
+}
+
+.navButton:hover:not(.disabledButton) {
+  background-color: #d1d5db;
 }
 
 .disabledButton {
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.5; /* opacity-50 */
 }
 
 .closeButton {
-  background-color: #ef4444; /* bg-red-500 */
-  color: #fff; /* text-white */
-  padding: 0.5rem 1rem; /* px-4 py-2 */
-  border-radius: 0.375rem; /* rounded-md */
+  flex: 1;
+  margin: 0 0.5rem;
+  padding: 0.75rem;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 0.5rem;
+}
+
+.closeButton:hover {
+  background-color: #dc2626;
+}
+
+/* Dial Pad Section */
+.dialPadSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .dialPadTitle {
   text-align: center;
-  font-size: 1.125rem; /* text-lg */
-  font-weight: 600; /* font-semibold */
-  margin-bottom: 0.5rem; /* mb-2 */
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
 }
 
 .dialPadDisplay {
   text-align: center;
-  font-size: 1.5rem; /* text-2xl */
+  font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 0.5rem; /* mb-2 */
+  color: #111827;
+  margin-bottom: 1rem;
 }
 
-.received,
-.faulty {
-  color: #000; /* text-black */
+/* Dial Pad Component Styles */
+.dialPad {
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.dialPad .grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.dialPad button {
+  padding: 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #374151;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+}
+
+.dialPad button:hover {
+  background-color: #e5e7eb;
+}
+
+.dialPad .actionButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.dialPad .actionButtons button {
+  flex: 1;
+  margin: 0 0.5rem;
+  padding: 1rem;
+}
+
+.dialPad .confirmButton {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.dialPad .confirmButton:hover {
+  background-color: #059669;
 }
