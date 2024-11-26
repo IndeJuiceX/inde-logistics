@@ -6,11 +6,12 @@ import { useParams } from 'next/navigation';
 import AlphabetPad from '@/components/warehouse/keypad/AlphabetPad';
 import ColorPad from '@/components/warehouse/keypad/ColorPad';
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
+import { updateStockShipmentItemAsShelved } from '@/services/data/stock-shipment-item';
 
 
 export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, items = null, setUnshelvedItems = null, }) {
     const params = useParams();
-    const { setLoading, setLoaded } = useContext(GlobalStateContext);
+    const { setLoading, setLoaded, setError, setErrorMessage, setErrorRedirect } = useContext(GlobalStateContext);
 
     // State variables
     const initialIndex =
@@ -125,10 +126,6 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
         }
     };
 
-    useEffect(() => {
-        console.log('locations', locations);
-
-    }, [locations]);
 
     const updateLocationsDetails = async () => {
         setLoading(true);
@@ -146,27 +143,40 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
                 }
             }
         }
-        console.log('payload', payload);
-        const response = await fetch('/api/v1/admin/stock-shipments/shelve-item', {
-            method: 'PATCH',
-            body: JSON.stringify(payload),
-        });
-        console.log('update shelved response', response);
 
-        // getUpdateUnShelvedShipmentDetails();
+        if (!payload.item.warehouse.aisle || !payload.item.warehouse.aisle_number || !payload.item.warehouse.shelf || !payload.item.warehouse.shelf_number) {
+            setLoaded(true);
+            setLoading(false);
+            setError(true);
+            setErrorMessage('Please enter all the fields');
+            setErrorRedirect(null);
+            return;
+        }
+
+
+
+
+        const updateResult = await updateStockShipmentItemAsShelved(params.vendor_id, params.shipment_id, payload.item);
+
+        // console.log('payload', payload);
+        // const response = await fetch('/api/v1/admin/stock-shipments/shelve-item', {
+        //     method: 'PATCH',
+        //     body: JSON.stringify(payload),
+        // });
+        // console.log('update shelved response', response);
+
         setLoaded(true);
         setLoading(false);
-        // const response = await fetch('');
-        // const data = await response.json();
+
     }
 
-    const getUpdateUnShelvedShipmentDetails = async () => {
-        const response = await fetch(`/api/v1/admin/stock-shipments/get-unshelved-items?vendor_id=${params.vendor_id}&stock_shipment_id=${params.shipment_id}`);
-        const updateShipments = await response.json();
-        if (updateShipments.success) {
-            setUnshelvedItems(updateShipments.data.items);
-        }
-    }
+    // const getUpdateUnShelvedShipmentDetails = async () => {
+    //     const response = await fetch(`/api/v1/admin/stock-shipments/get-unshelved-items?vendor_id=${params.vendor_id}&stock_shipment_id=${params.shipment_id}`);
+    //     const updateShipments = await response.json();
+    //     if (updateShipments.success) {
+    //         setUnshelvedItems(updateShipments.data.items);
+    //     }
+    // }
     return (
         <div className="mt-4 flex flex-col h-full">
             <h2 className="text-center text-lg font-semibold text-black mb-2">
