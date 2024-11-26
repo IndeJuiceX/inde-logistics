@@ -10,7 +10,16 @@ OrderItem:
     sales_value:
       type: number
       exclusiveMinimum: 0
+    custom_code:
+      type: string
+      example: Custom code required for non-UK buyers.
+    custom_description:
+      type: string
+      example: Custom description required for non-UK buyers.
+
   required:
     - vendor_sku
     - quantity
     - sales_value
+    - custom_code # if buyer's country is not the United Kingdom
+    - custom_description # if buyer's country is not the United Kingdom
