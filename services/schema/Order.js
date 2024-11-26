@@ -83,8 +83,9 @@ export const validateOrder = (order) => {
             });
         });
     }
-    const countryCode = validatedOrder.buyer.country_code;
-
+    const countryCode = getCountryCode(validatedOrder.buyer.country); //
+    validatedOrder.buyer.country_code = countryCode;
+    
     // Validate each item in the 'items' array
     const itemValidationResult = validateOrderItems(order.items || [], countryCode);
 

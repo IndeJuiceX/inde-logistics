@@ -12,7 +12,8 @@ export const createOrder = async (vendorId, order) => {
     try {
         const errors = [];
         const transactionItems = [];
-        const validShippingCode = await validateOrderShippingCode(vendorId, order.shipping_code)
+        const validShippingCode = await validateOrderShippingCode(vendorId, order)
+      
         if (!validShippingCode.success) {
             return { success: false, error: validShippingCode?.error || 'Could not validate order shipping code', details: validShippingCode?.details || 'Order Shipping code validation failed' }
         }
