@@ -4,13 +4,12 @@ import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LocationDetails from '@/components/warehouse/picking/Locations';
-import InitiateBarcodeScanner from '@/components/warehouse/barcode/InitiateBarcodeScanner';
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail } from '@/services/utils/index';
 import { FaCheckCircle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
-import { updateOrderShipmentError } from '@/services/data/order-shipment';
+import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
 
 export default function Picking({ order, order_id }) {
     // console.log('test order ', order);
@@ -56,38 +55,16 @@ export default function Picking({ order, order_id }) {
 
 
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            // order_id++;
-            // router.push(`/warehouse/picking/${order_id}`);
         }
-        // }
-        /*
-        if (barcodeValue === currentItem.barcodes) {
-            if (currentIndex < order.items.length - 1) {
-                const nextIndex = currentIndex + 1;
-                setCurrentIndex(nextIndex);
-                itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            else {
-                order_id++;
-                router.push(`/warehouse/picking/${order_id}`);
-            }
-        }
-            */
     };
 
     const handleForceTick = () => {
-        console.log('force tick');
-        console.log('currentIndex', currentIndex);
-        console.log('order.items.length', order.items.length);
-        console.log('condition', order.items.length - 1);
 
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
             newSelectedItem[currentIndex] = currentIndex;
             return newSelectedItem;
         });
-
 
         if (currentIndex < order.items.length - 1) {
             const nextIndex = currentIndex + 1;
@@ -103,25 +80,26 @@ export default function Picking({ order, order_id }) {
         console.log('totalItems', totalItems);
 
         if (pickedItems === totalItems) {
-            const payload = {
-                vendor_id: order.vendor_id,
-                vendor_order_id: order.vendor_order_id,
-            }
-            // app/api/v1/admin/order-shipments/mark-picked/route.js
-            const response = await fetch('/api/v1/admin/order-shipments/mark-picked', {
-                method: 'PATCH',
-                body: JSON.stringify(payload),
-            });
-            if (!response.ok) {
-                console.log('Error in marking order as picked');
-            }
-            const data = await response.json();
-            console.log('data', data);
-            if (data.success) {
-                // router.push('/warehouse/picking');
-                window.location.reload();
+            const vendor_id = order.vendor_id;
+            const vendor_order_id = order.vendor_order_id;
+
+            if (!vendor_id || !vendor_order_id) {
+                setError(true);
+                setErrorMessage('Something went wrong, Please reload the page');
+                setIsErrorReload(true);
             }
 
+            const data = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
+            console.log('data', data);
+
+            if (data.success) {
+                window.location.reload();
+            }
+            else {
+                setError(true);
+                setErrorMessage(data.error);
+                setIsErrorReload(true);
+            }
         };
 
     }
@@ -187,7 +165,7 @@ export default function Picking({ order, order_id }) {
                             </div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Order</p>
-                                <p className={styles.value}>{order.order_id || '#ABCD'}</p>
+                                <p className={styles.value}>{order.vendor_order_id || '#ABCD'}</p>
                             </div>
                         </div>
 
