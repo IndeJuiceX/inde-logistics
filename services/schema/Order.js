@@ -83,9 +83,10 @@ export const validateOrder = (order) => {
             });
         });
     }
+    const countryCode = validatedOrder.buyer.country_code;
 
     // Validate each item in the 'items' array
-    const itemValidationResult = validateOrderItems(order.items || []);
+    const itemValidationResult = validateOrderItems(order.items || [], countryCode);
 
     // Collect item-level validation errors
     if (itemValidationResult.errors.length > 0) {
