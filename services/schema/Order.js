@@ -18,7 +18,7 @@ export const getCountrySchema = () => {
             }
 
             // Set the country_code in the parent object
-            helpers.state.ancestors[0].country_code = countryCode;
+            helpers.parent.country_code = countryCode;
 
             // Return the country name as is
             return value;
@@ -47,7 +47,7 @@ export const getBuyerSchema = () => Joi.object({
     country_code: Joi.string()
         .length(2)
         .uppercase()
-        .optional()
+        // .optional()
         .label('country_code')
 });
 
