@@ -2,7 +2,7 @@ import { getItem, transactWriteItems, queryItems, updateItem, queryItemsWithPkAn
 import { cleanResponseData } from '../utils';
 
 
-export const validateOrderShippingCode = async (vendorId, code) => {
+export const validateOrderShippingCode = async (vendorId, order) => {
     try {
         //get the vendor couriers 
         const vendorData = await getItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`)
@@ -15,14 +15,20 @@ export const validateOrderShippingCode = async (vendorId, code) => {
             return { success: false, error: 'Vendor Courier is not set', details: "Please set the vendor courier and try again" }
         }
         const courierNameKey = vendorCourier.toLowerCase().replace(/\s+/g, '');
-        const courierData = await queryItemsWithPkAndSk(`COURIER#${courierNameKey}`, `CODE#${code}#`)
+        const courierData = await queryItemsWithPkAndSk(`COURIER#${courierNameKey}`, `CODE#${order.shipping_code}#`)
 
         const courierCodes = courierData?.data || null
         if (!courierCodes || courierCodes.length === 0) {
-            return { success: false, error: 'Invalid Shipping Code', details: "Please check shipping_code and try again" }
-        } else {
-            return { success: true, data: { 'shipping_code': code, 'courier': courierCodes[0].courier_name, 'shipping_id': courierCodes[0].inde_shipping_id } };
+            //return { success: false, error: 'Invalid Shipping Code', details: "Please check shipping_code and try again" }
+            return {success: false, error : 'Invalid shipping_code, Please check shipping_code and try again' }
+         } //else {
+        //     return { success: true, data: { 'shipping_code': code, 'courier': courierCodes[0].courier_name, 'shipping_id': courierCodes[0].inde_shipping_id } };
+        // }
+        if(order.buyer.country_code !== 'GB' && !order.shipping_code.includes('-INT')) {
+            return {success: false, error : 'Invalid shipping_code for international shipment, Please check shipping_code and try again' }
+
         }
+        return {success:true}
 
     } catch (error) {
         console.error('Error in createOrder:', error);
@@ -52,3 +58,4 @@ export const getCourierDetails = async (vendorId,code='RM-24') => {
     }
     return {success: true, data:cleanResponseData(courierCodes)}
 }
+

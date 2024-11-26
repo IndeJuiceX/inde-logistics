@@ -6,7 +6,7 @@ import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
 import { getLoggedInUser } from '@/app/actions';
 import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-import { validateOrderShippingCode } from '@/services/data/courier';
+import { getCourierDetails, validateOrderShippingCode } from '@/services/data/courier';
 import { getExpectedDeliveryDate } from '@/services/utils';
 export const createOrder = async (vendorId, order) => {
     try {
@@ -16,7 +16,9 @@ export const createOrder = async (vendorId, order) => {
         if(!validShippingCode.success) {
             return {success:false , error : validShippingCode?.error || 'Could not validate order shipping code' , details: validShippingCode?.details || 'Order Shipping code validation failed'}
         }
+         const courierData = await getCourierDetails(vendorId, order.shipping_code)
 
+         const indeShippingID = courierData.data[0].inde_shipping_id
         // Get the current timestamp
         const timestamp = new Date().toISOString();
 
@@ -89,7 +91,7 @@ export const createOrder = async (vendorId, order) => {
         const uniqueOrderId = generateOrderId(vendorId, order.vendor_order_id); // You need to implement generateUniqueId()
 
          // Return success and the created order
-         const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
+         const expectedDeliveryData = await getExpectedDeliveryDate(indeShippingID)
          const expectedDelivery = expectedDeliveryData?.data  || null
          let expectedDeliveryDate = null
          if(expectedDelivery) {
