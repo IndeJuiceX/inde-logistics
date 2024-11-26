@@ -1,7 +1,33 @@
 import Joi from 'joi';
 import { validateOrderItems } from './OrderItem'; // Import the item schema
+import { getOfficialCountryNames, getCountryCode } from '@/services/utils/countries.js';
+/**
+ * Generates a Joi validation schema for the country field.
+ * @returns {Joi.StringSchema} Joi validation schema for country
+ */
+export const getCountrySchema = () => {
+    return Joi.string()
+        .required()
+        .valid(...getOfficialCountryNames())
+        .label('country')
+        .custom((value, helpers) => {
+            const countryCode = getCountryCode(value);
 
-// Define the order schema
+            if (!countryCode) {
+                return helpers.error('any.invalid', { value });
+            }
+
+            // Set the country_code in the parent object
+            helpers.state.ancestors[0].country_code = countryCode;
+
+            // Return the country name as is
+            return value;
+        }, 'Country Name Validation')
+        .messages({
+            'any.only': '"{#label}" must be a valid official country name in English',
+            'any.invalid': '"{#label}" is not a valid country',
+        });
+};
 
 export const getBuyerSchema = () => Joi.object({
     name: Joi.string().required().label('name'),
@@ -13,14 +39,23 @@ export const getBuyerSchema = () => Joi.object({
     address_line_4: Joi.string().allow('', null).label('address_line_4'),
     city: Joi.string().required().label('city'),
     postcode: Joi.string().required().label('postcode'),
-    country: Joi.string().required().label('country'),
+    //country: Joi.string().required().label('country'),
+    // Use the country schema from the utility module
+    country: getCountrySchema(),
+
+    // Country code field: Automatically populated
+    country_code: Joi.string()
+        .length(2)
+        .uppercase()
+        .required()
+        .label('country_code')
 });
 
 
 export const getOrderSchema = () =>
     Joi.object({
         vendor_order_id: Joi.string().required().label('vendor_order_id'),
-        shipping_cost :  Joi.number().required().label('shipping_cost'),
+        shipping_cost: Joi.number().required().label('shipping_cost'),
 
         shipping_code: Joi.string().required().label('shipping_code'),
 
