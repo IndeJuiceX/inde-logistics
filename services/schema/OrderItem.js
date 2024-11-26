@@ -15,13 +15,20 @@ export const getOrderItemSchema = () => Joi.object({
     .positive()
     .required()
     .label('sales_value'),
+  customs_code: Joi.alternatives().conditional(Joi.ref('$country_code'), {
+    is: 'GB',
+    then: Joi.any().strip(), // Remove customs_code when country_code is 'GB' //Joi.string().optional().label('customs_code')
+    otherwise: Joi.string().required().label('customs_code'),
+  }),
 });
 
 // Function to validate a single order item
-export const validateOrderItem = (item) => {
+export const validateOrderItem = (item, country_code) => {
   const schema = getOrderItemSchema();
-  const { error, value } = schema.validate(item, { abortEarly: false });
-
+  const { error, value } = schema.validate(item, {
+    abortEarly: false,
+    context: { country_code },
+  });
   if (error) {
     // Collect all error messages
     const errors = error.details.map((err) => ({
@@ -36,12 +43,12 @@ export const validateOrderItem = (item) => {
 
 
 // Function to validate multiple order items
-export const validateOrderItems = (items) => {
+export const validateOrderItems = (items, countryCode) => {
   const validatedItems = [];
   const invalidItems = [];
 
   items.forEach((item, index) => {
-    const result = validateOrderItem(item);
+    const result = validateOrderItem(item, countryCode);
     if (result.success) {
       validatedItems.push(result.value);
     } else {

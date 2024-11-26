@@ -6,20 +6,24 @@ import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
 import { getLoggedInUser } from '@/app/actions';
 import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
-import { validateOrderShippingCode } from '@/services/data/courier';
+import { getCourierDetails, validateOrderShippingCode } from '@/services/data/courier';
 import { getExpectedDeliveryDate } from '@/services/utils';
 export const createOrder = async (vendorId, order) => {
     try {
         const errors = [];
         const transactionItems = [];
-        const validShippingCode = await validateOrderShippingCode(vendorId,order.shipping_code)
-        if(!validShippingCode.success) {
-            return {success:false , error : validShippingCode?.error || 'Could not validate order shipping code' , details: validShippingCode?.details || 'Order Shipping code validation failed'}
+        const validShippingCode = await validateOrderShippingCode(vendorId, order.shipping_code)
+        if (!validShippingCode.success) {
+            return { success: false, error: validShippingCode?.error || 'Could not validate order shipping code', details: validShippingCode?.details || 'Order Shipping code validation failed' }
         }
+        const courierData = await getCourierDetails(vendorId, order.shipping_code)
 
+        const indeShippingID = courierData.data[0].inde_shipping_id
         // Get the current timestamp
         const timestamp = new Date().toISOString();
-
+        // Determine whether to include customs_code
+        const needCustomsCode =
+            order.buyer.country_code !== 'GB' || order.shipping_code.includes('-INT');
         // For each item in the order
         for (const item of order.items) {
             const vendor_sku = item.vendor_sku;
@@ -72,6 +76,10 @@ export const createOrder = async (vendorId, order) => {
                         },
                     },
                 };
+                // Include customs_code if required and present
+                if (needCustomsCode && item.customs_code) {
+                    orderItemPutOperation.Put.Item.customs_code = item.customs_code;
+                }
 
                 transactionItems.push(orderItemPutOperation);
             }
@@ -88,14 +96,14 @@ export const createOrder = async (vendorId, order) => {
         // Generate a unique ID for the order if not already provided
         const uniqueOrderId = generateOrderId(vendorId, order.vendor_order_id); // You need to implement generateUniqueId()
 
-         // Return success and the created order
-         const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
-         const expectedDelivery = expectedDeliveryData?.data  || null
-         let expectedDeliveryDate = null
-         if(expectedDelivery) {
+        // Return success and the created order
+        const expectedDeliveryData = await getExpectedDeliveryDate(indeShippingID)
+        const expectedDelivery = expectedDeliveryData?.data || null
+        let expectedDeliveryDate = null
+        if (expectedDelivery) {
             const [day, month, year] = expectedDelivery.expected_delivery_to_date.split('-');
             expectedDeliveryDate = new Date(`${year}-${month}-${day}`).toISOString();
-         }
+        }
         // Prepare Put operation for the order itself with 'created_at' and 'updated_at'
         const orderPutOperation = {
             Put: {
@@ -104,7 +112,7 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    shipping_code : order.shipping_code,
+                    shipping_code: order.shipping_code,
                     expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
                     shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
@@ -142,7 +150,7 @@ export const createOrder = async (vendorId, order) => {
                 };
             }
         }
- 
+
         // // Return success and the created order
         // const expectedDeliveryData = await getExpectedDeliveryDate(validShippingCode.data.shipping_id)
         // const expectedDelivery = expectedDeliveryData?.data  || null
@@ -150,8 +158,8 @@ export const createOrder = async (vendorId, order) => {
             success: true,
             createdOrder: {
                 order_id: uniqueOrderId,
-                vendor_order_id : order.vendor_order_id,
-                expected_delivery_date : expectedDeliveryDate
+                vendor_order_id: order.vendor_order_id,
+                expected_delivery_date: expectedDeliveryDate
             },
         };
     } catch (error) {
@@ -382,7 +390,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
     //     },
 
     // };
-    const orderItemsData = await queryItemsWithPkAndSk(pkVal,skPrefix)
+    const orderItemsData = await queryItemsWithPkAndSk(pkVal, skPrefix)
     if (!orderItemsData.success) {
         return { success: false, error: 'Failed to retrieve order items' };
     }
@@ -424,7 +432,7 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
                 attributes: product.attributes,
                 image: product.image,
                 warehouse: product?.warehouse || null,
-                barcodes : product?.barcodes || null
+                barcodes: product?.barcodes || null
             };
         }
         return null;
