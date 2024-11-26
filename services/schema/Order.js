@@ -17,8 +17,8 @@ export const getCountrySchema = () => {
                 return helpers.error('any.invalid', { value });
             }
 
-            // Set the country_code in the parent object
-            helpers.parent.country_code = countryCode;
+            // // Set the country_code in the parent object
+            // helpers.parent.country_code = countryCode;
 
             // Return the country name as is
             return value;
@@ -42,13 +42,6 @@ export const getBuyerSchema = () => Joi.object({
     //country: Joi.string().required().label('country'),
     // Use the country schema from the utility module
     country: getCountrySchema(),
-
-    // Country code field: Automatically populated
-    country_code: Joi.string()
-        .length(2)
-        .uppercase()
-        // .optional()
-        .label('country_code')
 });
 
 
