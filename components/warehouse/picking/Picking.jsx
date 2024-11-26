@@ -127,20 +127,7 @@ export default function Picking({ order, order_id }) {
     }
 
     const handleErrorQueue = async () => {
-        console.log('handleErrorQueue');
-
         const errorItem = order.items[currentIndex];
-        console.log('order current', errorItem);
-
-        // const payload = {
-        //     vendor_id: order.vendor_id,
-        //     vendor_order_id: order.vendor_order_id,
-        //     error_reason: {
-        //         reason: 'Missing Item',
-        //         details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
-        //     }
-        // }
-
         const vendor_id = order.vendor_id;
         const vendor_order_id = order.vendor_order_id;
         const error_reason = {
