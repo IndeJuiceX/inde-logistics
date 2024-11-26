@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
-
+import { getNextUnPickedOrderShipment } from '@/services/data/order-shipment';
 export default function NoOrders() {
     const { handleSignOut } = usePickingAppContext();
     const [isOpenModal, setIsOpenModal] = useState(true);
@@ -16,9 +16,11 @@ export default function NoOrders() {
     const checkingNewOrders = async () => {
         // console.log('checkingNewOrders');
         // app/api/v1/admin/order-shipments/get-next-unpicked/route.js
-        const response = await fetch('/api/v1/admin/order-shipments/get-next-unpicked');
-        const data = await response.json();
-        console.log('data', data);
+        // const response = await fetch('/api/v1/admin/order-shipments/get-next-unpicked');
+        // const data = await response.json();
+        // console.log('data', data);
+        const data = await getNextUnPickedOrderShipment();
+
 
         if (data.success && data.data && !Array.isArray(data.data)) {
             setIsNewOrder(true);
