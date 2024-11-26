@@ -1,4 +1,6 @@
-// services/data/vendor.js
+'use server'
+
+
 import { getItem, queryItems, putItem, deleteItem, queryItemsWithPkAndSk, updateItem } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID

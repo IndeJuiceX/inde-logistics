@@ -2,8 +2,11 @@ import { useEffect, useState } from "react"
 import { FaBarcode } from "react-icons/fa";
 import { MdAddCircleOutline, MdUpdate } from 'react-icons/md';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
+import { addBarcodeToProduct } from '@/services/data/product';
 
 export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, order }) {
+
+
     const [barcodeValue, setBarcodeValue] = useState('');
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
@@ -50,32 +53,27 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     // create the callback function for the button onClick event
     // vendor_id, vendor_sku, barcode
     const addNewBarcode = async () => {
-        console.log('addNewBarcode');
-        const payload = {
-            vendor_id: order.vendor_id,
-            vendor_sku: currentItem.vendor_sku,
-            barcode: barcodeValue
+        // const payload = {
+        //     vendor_id: order.vendor_id,
+        //     vendor_sku: currentItem.vendor_sku,
+        //     barcode: barcodeValue
+        // }
+
+        if (!order.vendor_id || !currentItem.vendor_sku || !barcodeValue) {
+            console.log('addNewBarcode error', order.vendor_id, currentItem.vendor_sku, barcodeValue);
+            return;
         }
-        const response = await fetch('/api/v1/admin/products/add-barcode', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-        if (response.ok) {
-            const data = await response.json();
-            console.log('data', data);
-            if (data.success) {
-                setBarcodeError(false);
-                setBarcodeValue(barcodeValue);
-                onBarcodeScanned(barcodeValue);
-            }
-            else {
-                console.log('error', data.error);
-            }
+
+        const response = await addBarcodeToProduct(order.vendor_id, currentItem.vendor_sku, barcodeValue);
+        if (response.success) {
+            setBarcodeError(false);
+            setBarcodeValue(barcodeValue);
+            onBarcodeScanned(barcodeValue);
         }
         else {
-            console.log('error', response.statusText);
-
+            console.log('addNewBarcode error', response.error);
         }
+      
     }
     return (
         <>
