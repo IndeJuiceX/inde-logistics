@@ -20,6 +20,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [currentClicked, setCurrentClicked] = useState('');
     const [enteredValue, setEnteredValue] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
+    const [isReadyForDispatch, setIsReadyForDispatch] = useState(false);
 
 
     const handleSignOut = async () => {
@@ -133,7 +134,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel }}>
+            value={{ handleSignOut, order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch }}>
             {children}
         </PackingAppContext.Provider>
     );
