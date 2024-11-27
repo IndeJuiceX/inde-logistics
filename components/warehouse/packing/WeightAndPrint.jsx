@@ -8,7 +8,7 @@ import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 import LabelPrintButton from '@/components/warehouse/packing/LabelPrintButton';
 export default function WeightAndPrint() {
-    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch } = usePackingAppContext();
+    const { order, packedData, setPackedData,  isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, printLabel } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
     const handleWeightChange = () => {
@@ -45,8 +45,8 @@ export default function WeightAndPrint() {
             {isValidForPrintLabel && (
                 <LabelPrintButton styles={styles} />
             )}
-            {isReadyForDispatch && (
-                <div className={styles.complete} onClick={handleComplete}>
+            {/* {isReadyForDispatch && ( */}
+                <div className={styles.complete} onClick={printLabel}>
                     {/* eslint-disable-next-line */}
                     <img
                         src="https://dev.indejuice.com/img/wh/label_added.png"
@@ -54,7 +54,7 @@ export default function WeightAndPrint() {
                     />
                     <span>PACKED & LABELLED</span>
                 </div>
-            )}
+            {/* )} */}
 
 
         </div>

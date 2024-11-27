@@ -5,13 +5,14 @@ import { getOrderWithItemDetails } from "../data/order";
 import { getOrderShipment } from "../data/order-shipment";
 import { getCourierDetails } from "../data/courier";
 import { cleanResponseData } from ".";
-export const getServiceCode = (order, selectedParcelType) => {
-    const parcelType = getParcelType(order, selectedParcelType);
+
+export const getServiceCode = async (order, selectedParcelType) => {
+    const parcelType = await getParcelType(order, selectedParcelType);
     return parcelType.service_code;
 }
 // we can extend this function to get the parcel type from the service provider
-export const getParcelType = (order, selectedParcelType) => {
-    
+export const getParcelType = async (order, selectedParcelType) => {
+
     const shippingCodeSplit = order?.shipping_code?.split('-');
     if (!shippingCodeSplit[0]) {
         return ['error', 'Shipping code is not found'];
