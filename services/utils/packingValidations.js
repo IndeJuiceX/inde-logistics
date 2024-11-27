@@ -1,3 +1,5 @@
+'use server';
+
 import { getParcelType } from '@/services/utils/courier';
 
 
