@@ -1,10 +1,10 @@
 'use server';
 
 
-import { getOrderWithItemDetails } from "../data/order";
-import { getOrderShipment } from "../data/order-shipment";
-import { getCourierDetails } from "../data/courier";
-import { cleanResponseData } from ".";
+import { getOrderWithItemDetails } from "../../data/order";
+import { getOrderShipment } from "../../data/order-shipment";
+import { getCourierDetails } from "../../data/courier";
+import { cleanResponseData } from "..";
 
 export const getServiceCode = (order, selectedParcelType) => {
     const parcelType = getParcelType(order, selectedParcelType);
@@ -32,7 +32,7 @@ export const getParcelType = (order, selectedParcelType) => {
     return parcelType;
 }
 
-export const generateLabel = async (vendorId, orderId) => {
+export const generateLabel = async (vendorId, orderId,stationId) => {
     // Get vendor order with this id
     const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
     const orderData = orderDetailsData?.data || null;
@@ -157,7 +157,7 @@ export const generateLabel = async (vendorId, orderId) => {
     // Check if label already exists
     if (shipment.label_key && shipment.label_key !== '') {
         return {
-            success:true,
+            success: true,
             tracking_code: shipment.tracking,
             label_key: shipment.label_key,
         };
@@ -167,9 +167,9 @@ export const generateLabel = async (vendorId, orderId) => {
         const result = await api_POST(url, data);
 
         if (result && result.trackingNumber) {
-            
+
             return {
-                success:true,
+                success: true,
                 tracking_code: result.trackingNumber,
                 label_key: result.orderIdentifier,
                 label_url: result.labelUrl,
