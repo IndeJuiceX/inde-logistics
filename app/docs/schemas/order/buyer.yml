@@ -24,8 +24,10 @@ Buyer:
       type: string
     postcode:
       type: string
-    country:
+    country_code:
       type: string
+      example: GB
+      description: ISO alpha-2 country code
   required:
     - name
     - phone
@@ -33,4 +35,4 @@ Buyer:
     - address_line_1
     - city
     - postcode
-    - country
+    - country_code
