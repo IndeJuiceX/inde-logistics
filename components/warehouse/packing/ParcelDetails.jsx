@@ -1,13 +1,11 @@
 'use client'
-import React, { useEffect, useState } from "react";
+
 import styles from "@/styles/warehouse/packing/ParcelDetails.module.scss";
 import PackingKeyPad from "@/components/warehouse/packing/PackingKeyPad";
 import { usePackingAppContext } from "@/contexts/PackingAppContext";
 import LabelPrintButton from "@/components/warehouse/packing/LabelPrintButton";
 export default function ParcelDetails() {
-    const { order, packedData, setPackedData,  handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel } = usePackingAppContext();
-
-
+    const {  packedData, setPackedData, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel } = usePackingAppContext();
 
 
     const handleCustomSize = (currentClick) => {
