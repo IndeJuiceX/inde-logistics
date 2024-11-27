@@ -16,7 +16,7 @@ export default function EditProduct({ vendorId, productData, isVendorDashboard =
     const [newAttributeKey, setNewAttributeKey] = useState('');
     const [newAttributeValue, setNewAttributeValue] = useState('');
 
-   
+
 
     // Fetch product data
     // useEffect(() => {
@@ -42,24 +42,42 @@ export default function EditProduct({ vendorId, productData, isVendorDashboard =
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('product', product);
+        console.log('updatedFields', updatedFields);
+        console.log('product.attributes', product.attributes);
+        let nicotineAttributes = {};
+        if (product.attributes && product.attributes.nicotine && Array.isArray(product.attributes.nicotine)) {
+            // Split the value into an array
+            const nicotineValues = product.attributes.nicotine;
+          
+            // Remove the existing nicotine attribute
+            const { nicotine, ...restAttributes } = product.attributes;
 
-        // Merge existing attributes with updated attributes
-        const combinedAttributes = {
-            ...product.attributes,
-            ...(updatedFields.attributes || {}),
-        };
+            // Create new attributes for each nicotine value
+            nicotineValues.forEach((nicotineValue, index) => {
+                restAttributes[`nicotine${index === 0 ? '' : `-${index}`}`] = nicotineValue;
+            });
+            
+            setUpdatedFields({
+                ...updatedFields,
+                attributes: restAttributes,
+            });
+            nicotineAttributes = restAttributes;
+            
+        }
+     
 
         const updatedProduct = {
             vendor_sku: product.vendor_sku, // Required identifier
             ...updatedFields, // Include updated fields
-            attributes: combinedAttributes, // Include all attributes
+            attributes: nicotineAttributes, // Include all attributes
         };
 
         const payload = {
             products: [updatedProduct],
         };
-        console.log('payload', payload);
-
+ 
+        // return;
         try {
             // const response = await fetch(`/api/v1/vendor/update-products?vendorId=${vendorId}`, {
             //     method: 'PUT',
