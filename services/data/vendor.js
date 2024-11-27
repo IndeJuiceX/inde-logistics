@@ -1,3 +1,5 @@
+'use server'
+
 // services/data/vendor.js
 import { getItem, queryItems, putItem, deleteItem, updateItemIfExists } from '../external/dynamo/wrapper';
 
