@@ -19,7 +19,7 @@ export const getCountryCodeSchema = () => {
 export const getBuyerSchema = () => Joi.object({
     name: Joi.string().required().label('name'),
     phone: Joi.string().required().label('phone'),
-    email: Joi.string().email().required().label('email'),
+    email: Joi.string().email({ tlds: { allow: false } }).required().label('email'),
     address_line_1: Joi.string().required().label('address_line_1'),
     address_line_2: Joi.string().allow('', null).label('address_line_2'),
     address_line_3: Joi.string().allow('', null).label('address_line_3'),

@@ -1,3 +1,6 @@
+'use server';
+
+
 import { getOrderWithItemDetails } from "../data/order";
 import { getOrderShipment } from "../data/order-shipment";
 import { getCourierDetails } from "../data/courier";
@@ -157,6 +160,7 @@ export const generateLabel = async (vendorId, orderId) => {
             label_key: shipment.label_key,
         };
     } else {
+        // return data;
         const url = 'https://indelabels.vercel.app/api/label'; // Replace with your actual API endpoint
         const result = await api_POST(url, data);
 
@@ -173,19 +177,40 @@ export const generateLabel = async (vendorId, orderId) => {
 
 
     // Helper function to perform POST requests
-    async function api_POST(url, data) {
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-            return await response.json();
-        } catch (error) {
-            console.error('Error in api_POST:', error);
-            return null;
-        }
-    }
+    // async function api_POST(url, data) {
+    //     try {
+    //         const response = await fetch(url, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(data),
+    //         });
+    //         return await response.json();
+    //     } catch (error) {
+    //         console.error('Error in api_POST:', error);
+    //         return null;
+    //     }
+    // }
+    
 }
+export const api_POST = async (url, data) => {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      const data2 = await response.json();
+  
+      return data2;//{ success: true, data: response.data }
+  
+  
+    } catch (error) {
+      // ... error handling
+      return { success: false, error: error }
+    }
+  
+  }
