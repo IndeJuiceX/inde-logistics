@@ -19,7 +19,8 @@ const nextConfig = {
         AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
         AWS_REGION: process.env.AWS_REGION,
-        APP_ENV: process.env.APP_ENV
+        APP_ENV: process.env.APP_ENV,
+        PRINT_NODE_API_KEY:process.env.PRINT_NODE_API_KEY
     },
 };
 
