@@ -10,8 +10,9 @@ import PageSpinner from '@/components/loader/PageSpinner';
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 import MissingItem from '@/components/warehouse/shipments/shipment/MissingItem';
 import styles from '@/styles/warehouse/stock-app/shipmentItems.module.scss';
+import { updateStockShipmentAsReceived } from '@/services/data/stock-shipment';
 
-export default function ShipmentItems({ vendor, shipmentDetailsData }) {
+export default function ShipmentItems({ vendor, shipmentDetailsData, user }) {
     const params = useParams();
     const { setLoading, setLoaded } = useContext(GlobalStateContext);
     // console.log('shipmentDetailsData', shipmentDetailsData.items);
@@ -46,16 +47,7 @@ export default function ShipmentItems({ vendor, shipmentDetailsData }) {
     const updateConfirmStock = async () => {
         setLoading(true);
         console.log('shipmentDetails', shipmentDetails);
-        const payload = {
-            vendor_id: params.vendor_id,
-            stock_shipment_id: params.shipment_id,
-        }
-        console.log('payload', payload);
-        const response = await fetch('/api/v1/admin/stock-shipments/update-stock-shipment', {
-            method: 'PATCH',
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
+        const data = await updateStockShipmentAsReceived(params.vendor_id, params.shipment_id, user);
         console.log('return response', data);
         setLoaded(true);
         setLoading(false);
