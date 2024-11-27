@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 
-export default function EditProduct({ vendorId, productId }) {
+export default function EditProduct({ vendorId, productData, isVendorDashboard = true }) {
 
     const router = useRouter();
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [product, setProduct] = useState(productData);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [updatedFields, setUpdatedFields] = useState({}); // Track updated fields
 
@@ -16,26 +16,28 @@ export default function EditProduct({ vendorId, productId }) {
     const [newAttributeKey, setNewAttributeKey] = useState('');
     const [newAttributeValue, setNewAttributeValue] = useState('');
 
+   
+
     // Fetch product data
-    useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-                // const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`);
-                const response = await fetch(`/api/v1/vendor/products?vendor_sku=${productId}`);
+    // useEffect(() => {
+    //     const fetchProduct = async () => {
+    //         try {
+    //             // const response = await fetch(`/api/v1/admin/vendor/${vendorId}/product/${productId}`);
+    //             const response = await fetch(`/api/v1/vendor/products?vendor_sku=${productId}`);
 
-                const data = await response.json();
-                setProduct(data.data); // Populate product data
-                setLoading(false);
-            } catch (err) {
-                setError('Error fetching product data');
-                setLoading(false);
-            }
-        };
+    //             const data = await response.json();
+    //             setProduct(data.data); // Populate product data
+    //             setLoading(false);
+    //         } catch (err) {
+    //             setError('Error fetching product data');
+    //             setLoading(false);
+    //         }
+    //     };
 
-        if (vendorId && productId) {
-            fetchProduct();
-        }
-    }, [vendorId, productId]);
+    //     if (vendorId && productId) {
+    //         fetchProduct();
+    //     }
+    // }, [vendorId, productId]);
 
     // Handle form submission
     const handleSubmit = async (e) => {
@@ -57,7 +59,7 @@ export default function EditProduct({ vendorId, productId }) {
             products: [updatedProduct],
         };
         console.log('payload', payload);
-        
+
         try {
             // const response = await fetch(`/api/v1/vendor/update-products?vendorId=${vendorId}`, {
             //     method: 'PUT',
@@ -183,7 +185,8 @@ export default function EditProduct({ vendorId, productId }) {
 
     return (
         <>
-            <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />
+            {isVendorDashboard && <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />}
+
 
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">
