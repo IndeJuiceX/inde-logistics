@@ -155,7 +155,7 @@ export const generateLabel = async (vendorId, orderId,stationId) => {
     };
 
     // Check if label already exists
-    if (shipment.label_key && shipment.label_key !== '') {
+    if (shipment?.label_key && shipment.label_key !== '') {
         return {
             success: true,
             tracking_code: shipment.tracking,
@@ -167,7 +167,7 @@ export const generateLabel = async (vendorId, orderId,stationId) => {
         const result = await api_POST(url, data);
 
         if (result && result.trackingNumber) {
-
+            // save tracking label key against shipment...
             return {
                 success: true,
                 tracking_code: result.trackingNumber,
