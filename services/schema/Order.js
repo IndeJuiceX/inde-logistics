@@ -1,31 +1,20 @@
 import Joi from 'joi';
 import { validateOrderItems } from './OrderItem'; // Import the item schema
-import { getOfficialCountryName, getCountryCode } from '@/services/utils/countries.js';
-/**
- * Generates a Joi validation schema for the country field.
- * @returns {Joi.StringSchema} Joi validation schema for country
- */
-export const getCountrySchema = () => {
+import { getAllCountryCodes } from '@/services/utils/countries.js';
+
+export const getCountryCodeSchema = () => {
     return Joi.string()
-        .required()
-        //.valid(...getOfficialCountryNames())
-        .label('country')
-        .custom((value, helpers) => {
-            const countryCode = getCountryCode(value);
-
-            if (!countryCode) {
-                return helpers.error('any.invalid', { value });
-            }
-
-            // Get the official country name
-            const officialCountryName = getOfficialCountryName(countryCode);
-
-            return officialCountryName;
-        }, 'Country Name Validation')
-        .messages({
-            'any.invalid': '"{#label}" must be a valid official country name in English',
-        });
-};
+      .required()
+      .uppercase()
+      .length(2)
+      .valid(...getAllCountryCodes())
+      .label('country_code')
+      .messages({
+        'any.required': '"{#label}" is required.',
+        'string.length': '"{#label}" must be exactly 2 characters long.',
+        'any.only': '"{#label}" must be a valid ISO Alpha-2 country code.',
+      });
+  };
 
 export const getBuyerSchema = () => Joi.object({
     name: Joi.string().required().label('name'),
@@ -39,7 +28,7 @@ export const getBuyerSchema = () => Joi.object({
     postcode: Joi.string().required().label('postcode'),
     //country: Joi.string().required().label('country'),
     // Use the country schema from the utility module
-    country: getCountrySchema(),
+    country_code: getCountryCodeSchema(),
 });
 
 
@@ -74,8 +63,8 @@ export const validateOrder = (order) => {
             });
         });
     }
-    const countryCode = getCountryCode(validatedOrder.buyer.country); //
-    validatedOrder.buyer.country_code = countryCode;
+    const countryCode = validatedOrder.buyer.country_code//getCountryCode(validatedOrder.buyer.country); //
+    //validatedOrder.buyer.country_code = countryCode;
 
     // Validate each item in the 'items' array
     const itemValidationResult = validateOrderItems(order.items || [], countryCode);

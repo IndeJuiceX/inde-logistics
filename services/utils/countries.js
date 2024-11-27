@@ -3,33 +3,14 @@ import countries from 'i18n-iso-countries';
 // Register the English locale
 countries.registerLocale(require('i18n-iso-countries/langs/en.json'));
 
-// Retrieve official country names
-const countryNames = countries.getNames('en', { select: 'official' });
-
-// Create a mapping of lowercase country names to country codes
-const countryNameToCodeMap = {};
-for (const [code, name] of Object.entries(countryNames)) {
-  countryNameToCodeMap[name.trim().toLowerCase()] = code;
-}
-
 /**
- * Retrieves the country code for a given country name, case-insensitive.
- * @param {string} countryName - The country name.
- * @returns {string|null} The ISO Alpha-2 country code or null if not found.
+ * Provides the list of all ISO Alpha-2 country codes.
+ * @returns {string[]} Array of country codes.
  */
-export const getCountryCode = (countryName) => {
-  if (!countryName) return null;
-  const normalizedCountryName = countryName.trim().toLowerCase();
-  return countryNameToCodeMap[normalizedCountryName] || null;
+export const getAllCountryCodes = () => {
+  return Object.keys(countries.getNames('en', { select: 'official' })).map((code) => code.toUpperCase());
 };
 
-/**
- * Provides the list of official country names in English.
- * @returns {string[]} Array of official country names.
- */
-export const getOfficialCountryNames = () => {
-  return Object.values(countryNames);
-};
 /**
  * Retrieves the official country name for a given country code.
  * @param {string} countryCode - The ISO Alpha-2 country code.
@@ -37,5 +18,5 @@ export const getOfficialCountryNames = () => {
  */
 export const getOfficialCountryName = (countryCode) => {
   if (!countryCode || typeof countryCode !== 'string') return null;
-  return countryNames[countryCode.toUpperCase()] || null;
+  return countries.getName(countryCode.toUpperCase(), 'en', { select: 'official' }) || null;
 };
