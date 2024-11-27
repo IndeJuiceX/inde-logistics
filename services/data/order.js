@@ -432,8 +432,11 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
                 brand_name: product.brand_name,
                 attributes: product.attributes,
                 image: product.image,
+                sale_price : product.sale_price,
+                cost_price : product.cost_price,
                 warehouse: product?.warehouse || null,
-                barcodes: product?.barcodes || null
+                barcodes: product?.barcodes || null,
+                customs_code : product?.customs_code || null
             };
         }
         return null;
