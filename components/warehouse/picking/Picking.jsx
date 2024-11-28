@@ -46,14 +46,9 @@ export default function Picking({ order, order_id }) {
             newSelectedItem[currentIndex] = currentIndex;
             return newSelectedItem;
         });
-        // const barcodes = currentItem?.barcodes;
-        // if (barcodes && Array.isArray(barcodes) && barcodes.includes(barcodeValue)) {
         if (currentIndex < order.items.length - 1) {
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
-
-
-
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     };
@@ -76,8 +71,7 @@ export default function Picking({ order, order_id }) {
     const handlePicked = async () => {
         const totalItems = order.items.length; //index starts from 0
         const pickedItems = selectedItem.filter(item => item !== undefined).length;
-        console.log('pickedItems', pickedItems);
-        console.log('totalItems', totalItems);
+        
 
         if (pickedItems === totalItems) {
             const vendor_id = order.vendor_id;
