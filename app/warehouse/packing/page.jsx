@@ -1,5 +1,5 @@
 'use server'
-import PackingApp from '@/components/warehouse/packing/packingApp';
+import PackingApp from '@/components/warehouse/packing/PackingApp';
 import { getNextUnPackedOrderShipment } from '@/services/data/order-shipment';
 
 
@@ -11,7 +11,7 @@ export default async function PackingPage() {
         unPackedOrder = getNextUnPackedOrder.data;
     }
 
-    
+
 
     return (
         <PackingApp orderData={unPackedOrder} />
