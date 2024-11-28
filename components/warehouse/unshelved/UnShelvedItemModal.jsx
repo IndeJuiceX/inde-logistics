@@ -35,19 +35,51 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
     };
 
     const handleDialPadInput = (input) => {
+        if (input === 'backspace' || input === 'ok') {
+            setLocations((prev) => {
+                const currentInput = String(prev[activeField] || '');
+                return input === 'backspace' 
+                    ? { ...prev, [activeField]: currentInput.slice(0, -1) }
+                    : prev;
+            });
+            return;
+        }
+
+        // Handle number input
         setLocations((prev) => {
-            const currentInput = String(prev[activeField] || '');
-            if (input === 'backspace') {
-                return { ...prev, [activeField]: currentInput.slice(0, -1) };
-            } else if (input === 'ok') {
-                if (activeField === 'aisleNumber') setActiveField('shelf');
-                else if (activeField === 'shelfNumber') setActiveField(null);
-                return prev;
-            } else {
-                return { ...prev, [activeField]: currentInput + input };
+            const updatedLocations = { 
+                ...prev, 
+                [activeField]: prev[activeField] + input 
+            };
+
+            // Only proceed with save if this is the last field (shelfNumber)
+            if (activeField === 'shelfNumber') {
+                // Verify all fields are filled before saving
+                if (updatedLocations.aisle && 
+                    updatedLocations.aisleNumber && 
+                    updatedLocations.shelf && 
+                    updatedLocations.shelfNumber) {
+                    // Wait for state to update before saving
+                    Promise.resolve().then(() => {
+                        updateLocationsDetails(updatedLocations)
+                            .then(() => {
+                                handleNext();
+                                setActiveField('aisle');
+                            })
+                            .catch(() => {
+                                // If save fails, don't move to next item
+                                setActiveField('shelfNumber');
+                            });
+                    });
+                }
             }
+            return updatedLocations;
         });
-        if (input === 'ok') updateLocationsDetails();
+
+        // Move to next field
+        if (activeField === 'aisleNumber') {
+            setActiveField('shelf');
+        }
     };
 
     useEffect(() => {
@@ -81,7 +113,7 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
         }
     };
 
-    const updateLocationsDetails = async () => {
+    const updateLocationsDetails = async (locationData) => {
         setLoading(true);
         const payload = {
             vendor_id: params.vendor_id,
@@ -89,26 +121,38 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
             item: {
                 vendor_sku: item.vendor_sku,
                 warehouse: {
-                    aisle: locations.aisle,
-                    aisle_number: locations.aisleNumber,
-                    shelf: locations.shelf,
-                    shelf_number: locations.shelfNumber,
+                    aisle: locationData.aisle,
+                    aisle_number: locationData.aisleNumber,
+                    shelf: locationData.shelf,
+                    shelf_number: locationData.shelfNumber,
                 }
             }
         };
 
-        if (!payload.item.warehouse.aisle || !payload.item.warehouse.aisle_number || !payload.item.warehouse.shelf || !payload.item.warehouse.shelf_number) {
+        try {
+            await updateStockShipmentItemAsShelved(params.vendor_id, params.shipment_id, payload.item);
+            if (setUnshelvedItems) {
+                setUnshelvedItems(prev => prev.map(i => {
+                    if (i.vendor_sku === item.vendor_sku) {
+                        return {
+                            ...i,
+                            warehouse: payload.item.warehouse,
+                            shelved: 1  // This will trigger the green tick in ActionButtons
+                        };
+                    }
+                    return i;
+                }));
+            }
+            return true;
+        } catch (error) {
+            setError(true);
+            setErrorMessage('Failed to save location details');
+            setErrorRedirect(null);
+            throw error;
+        } finally {
             setLoaded(true);
             setLoading(false);
-            setError(true);
-            setErrorMessage('Please enter all the fields');
-            setErrorRedirect(null);
-            return;
         }
-
-        await updateStockShipmentItemAsShelved(params.vendor_id, params.shipment_id, payload.item);
-        setLoaded(true);
-        setLoading(false);
     };
 
     const moveToNextField = () => {
