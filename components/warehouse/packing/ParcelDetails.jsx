@@ -37,7 +37,7 @@ export default function ParcelDetails() {
                 <div className={styles.detailValue}>{packedData.courier.width}cm</div>
                 <div className={styles.detailLabel}>WIDTH</div>
             </div>
-            <div className={styles.detailItem} onClick={() => handleCustomSize('height')}>
+            <div className={styles.detailItem} onClick={() => handleCustomSize('length')}>
                 <div className={styles.detailValue}>{packedData.courier.length}cm</div>
                 <div className={styles.detailLabel}>HEIGHT</div>
             </div>
