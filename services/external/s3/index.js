@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 //import { streamToString } from './streamToString'; // Helper to convert stream to string
 
 // Initialize the S3 client
@@ -116,5 +117,35 @@ export const streamToString = async (stream) => {
 
     // Handle unexpected cases
     throw new Error('Unsupported stream type');
+};
+
+
+
+export const getLabelPresignedUrl = async (s3Key) => {
+  const LABEL_REGION = 'us-east-2'; // Label bucket region
+  const LABEL_BUCKET_NAME = 'shipping-labels.indejuice.com'; // Label bucket name
+
+  const s3ClientForLabels = new S3Client({
+    region: LABEL_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+  });
+
+  const params = {
+    Bucket: LABEL_BUCKET_NAME,
+    Key: s3Key,
+  };
+
+  try {
+    const command = new GetObjectCommand(params);
+    // Generate a presigned URL valid for 15 minutes
+    const signedUrl = await getSignedUrl(s3ClientForLabels, command, { expiresIn: 900 });
+    return signedUrl;
+  } catch (error) {
+    console.error('Error generating presigned URL for label:', error);
+    throw new Error('Failed to generate presigned URL for label');
+  }
 };
 

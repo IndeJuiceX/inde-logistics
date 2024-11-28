@@ -1,10 +1,10 @@
 'use server';
 
 
-import { getOrderWithItemDetails } from "../../data/order";
-import { getOrderShipment } from "../../data/order-shipment";
-import { getCourierDetails } from "../../data/courier";
-import { cleanResponseData } from "..";
+import { getOrderWithItemDetails } from "@/services/data/order";
+import { getOrderShipment, updateOrderShipment, updateOrderShipmentError } from "@/services/data/order-shipment";
+import { getCourierDetails } from "@/services/data/courier";
+import { cleanResponseData } from "@/services/utils";
 
 export const getServiceCode = (order, selectedParcelType) => {
     const parcelType = getParcelType(order, selectedParcelType);
@@ -168,6 +168,8 @@ export const generateLabel = async (vendorId, orderId,stationId) => {
 
         if (result && result.trackingNumber) {
             // save tracking label key against shipment...
+            const shipmentUpdateFields = {tracking : result.trackingNumber, label_key : result.orderIdentifier}
+            await updateOrderShipment(vendorId, orderData.vendor_order_id,shipmentUpdateFields)
             return {
                 success: true,
                 tracking_code: result.trackingNumber,
@@ -175,6 +177,8 @@ export const generateLabel = async (vendorId, orderId,stationId) => {
                 label_url: result.labelUrl,
             };
         } else {
+            //register the label generation error for the shipment 
+            await updateOrderShipmentError(vendorId,orderId, `Error in generating label, ${result.error}`)
             return { success: false, error: 'Error generating label' };
         }
     }
