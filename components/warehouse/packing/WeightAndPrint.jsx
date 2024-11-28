@@ -27,8 +27,12 @@ export default function WeightAndPrint() {
 
     const handleComplete = async () => {
         console.log('handleComplete');
-
-
+        const vendorId = order.vendorId;
+        const vendorOrderId = order.vendorOrderId;
+        const updateFields = {
+            status: 'dispatched'
+        }
+        const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
     }
 
     return (
@@ -46,7 +50,7 @@ export default function WeightAndPrint() {
                 <LabelPrintButton styles={styles} />
             )}
             {/* {isReadyForDispatch && ( */}
-                <div className={styles.complete} onClick={printLabel}>
+                <div className={styles.complete} onClick={handleComplete}>
                     {/* eslint-disable-next-line */}
                     <img
                         src="https://dev.indejuice.com/img/wh/label_added.png"
