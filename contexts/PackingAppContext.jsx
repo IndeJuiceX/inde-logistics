@@ -29,7 +29,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     useEffect(() => {
         const checkSetStationId = getStationId();
-        console.log('checkSetStationId', checkSetStationId);
+       
         if (checkSetStationId) {
             setIsSetStationId(true);
         } else {
