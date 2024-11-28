@@ -1,3 +1,4 @@
+'use client';
 // utils/station.js
 
 // Function to get station ID from local storage

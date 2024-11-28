@@ -7,6 +7,8 @@ import { getParcelDimensions } from '@/services/utils/warehouse/indePackageDimen
 import { getServiceCode } from '@/services/utils/warehouse/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
 import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValidations';
+import CheckSetStationId from '@/components/warehouse/packing/CheckSetStationId';
+
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -21,6 +23,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [enteredValue, setEnteredValue] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
     const [isReadyForDispatch, setIsReadyForDispatch] = useState(false);
+    const [isSetStationId, setIsSetStationId] = useState(false);
 
 
     const handleSignOut = async () => {
@@ -76,9 +79,9 @@ export const PackingAppProvider = ({ children, orderData }) => {
             width_cm: payload.courier.width,
             height_cm: payload.courier.length,
         };
-      
+
         const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
-      
+
         if (updateResult.success) {
             setLoading(false);
             setLoaded(true);
@@ -141,8 +144,10 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel }}>
-            {children}
+            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId }}>
+            <CheckSetStationId />
+            {isSetStationId && children}
+
         </PackingAppContext.Provider>
     );
 };
