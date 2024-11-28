@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import LocationDetails from '@/components/warehouse/picking/Locations';
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
-import { extractNameFromEmail } from '@/services/utils/index';
+import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
 import { FaCheckCircle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
