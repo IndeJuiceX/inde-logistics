@@ -12,7 +12,7 @@ export const PickingAppProvider = ({ children }) => {
     useEffect(() => {
         const isBarcodeInitiated = localStorage.getItem("isBarcodeInitiated");
         if (isBarcodeInitiated && isBarcodeInitiated === "true") {
-            console.log('isBarcodeInitiated', isBarcodeInitiated);
+            
             setBarcodeInitiated(true);
         }
     }, []);

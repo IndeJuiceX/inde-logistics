@@ -21,6 +21,7 @@ export default function Picking({ order, order_id }) {
     const [currentIndex, setCurrentIndex] = useState(0); // Track the current item index
     const itemRefs = useRef([]); // Array of refs for each item
     const [selectedItem, setSelectedItem] = useState([]);
+    const [pickedItems, setPickedItems] = useState([]);
 
 
 
@@ -41,6 +42,10 @@ export default function Picking({ order, order_id }) {
 
     const moveToNextItem = (barcodeValue) => {
         const currentItem = order.items[currentIndex];
+
+        setPickedItems(prevPickedItems => [...prevPickedItems, currentItem]);
+
+
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
             newSelectedItem[currentIndex] = currentIndex;
@@ -51,6 +56,7 @@ export default function Picking({ order, order_id }) {
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
     };
 
     const handleForceTick = () => {
@@ -60,8 +66,9 @@ export default function Picking({ order, order_id }) {
             newSelectedItem[currentIndex] = currentIndex;
             return newSelectedItem;
         });
-
+        setPickedItems(prevPickedItems => [...prevPickedItems, order.items[currentIndex]]);
         if (currentIndex < order.items.length - 1) {
+
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -69,11 +76,12 @@ export default function Picking({ order, order_id }) {
 
     }
     const handlePicked = async () => {
-        const totalItems = order.items.length; //index starts from 0
-        const pickedItems = selectedItem.filter(item => item !== undefined).length;
         
-
-        if (pickedItems === totalItems) {
+        const totalItems = order.items.length; //index starts from 0
+        const pickedItemsCount = pickedItems.length;
+      
+    
+        if (pickedItemsCount === totalItems) {
             const vendor_id = order.vendor_id;
             const vendor_order_id = order.vendor_order_id;
 
@@ -86,17 +94,19 @@ export default function Picking({ order, order_id }) {
             const data = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
             console.log('data', data);
 
-            if (data.success) {
-                window.location.reload();
-            }
-            else {
-                setError(true);
-                setErrorMessage(data.error);
-                setIsErrorReload(true);
-            }
+            // if (data.success) {
+            //     window.location.reload();
+            // }
+            // else {
+            //     setError(true);
+            //     setErrorMessage(data.error);
+            //     setIsErrorReload(true);
+            // }
         };
 
     }
+
+
 
     const handleErrorQueue = async () => {
         const errorItem = order.items[currentIndex];
@@ -197,7 +207,7 @@ export default function Picking({ order, order_id }) {
                                                     .join(', ')}
                                             </p>
                                         </div>
-                                        <dev onClick={handleForceTick}> force tick </dev>
+                                        <div onClick={handleForceTick}> force tick </div>
                                     </div>
                                     <LocationDetails location={item.warehouse} styles={styles} />
                                 </div>
