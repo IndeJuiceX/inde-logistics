@@ -128,7 +128,7 @@ export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity)
 
         const product = productResult.data;
 
-        if(product.status !== 'Active' &&  product.status !== 'active' ) {
+        if(product.status?.toLowerCase() !== 'active') {
             return {
                 exists: false, // Product does not exist
                 success: false,
