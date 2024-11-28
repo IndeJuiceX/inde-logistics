@@ -20,6 +20,11 @@ export const getOrderItemSchema = () => Joi.object({
     then: Joi.any().strip(), // Remove customs_code when country_code is 'GB' //Joi.string().optional().label('customs_code')
     otherwise: Joi.string().required().label('customs_code'),
   }),
+  customs_description: Joi.alternatives().conditional(Joi.ref('$country_code'), {
+    is: 'GB',
+    then: Joi.any().strip(), // Remove customs_code when country_code is 'GB' //Joi.string().optional().label('customs_code')
+    otherwise: Joi.string().required().label('customs_description'),
+  }),
 });
 
 // Function to validate a single order item
