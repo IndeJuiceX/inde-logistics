@@ -1,4 +1,4 @@
-import { getParcelType } from '@/services/utils/courier';
+import { getParcelType } from '@/services/utils/warehouse/courier';
 
 
 export const parcelPayloadValidation = (order, payload, packedData) => {
@@ -8,7 +8,7 @@ export const parcelPayloadValidation = (order, payload, packedData) => {
         return { error: true, message: isAllowedWeight.message || isValidParcelDimensions.message };
     }
 
-    
+
     let weight = payload.courier.weight;
     let width = payload.courier.width;
     let height = payload.courier.length;
@@ -37,7 +37,7 @@ export const parcelPayloadValidation = (order, payload, packedData) => {
 
 
 export const checkAllowedWeight = (order, packedData) => {
-    
+
     const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
     if (packedData.courier.weight <= 0) {
         return { error: true, message: 'Weight cannot be less than 0g. Please enter a valid weight' };

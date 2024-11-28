@@ -1,13 +1,11 @@
 'use client'
-import React, { useEffect, useState } from "react";
+
 import styles from "@/styles/warehouse/packing/ParcelDetails.module.scss";
 import PackingKeyPad from "@/components/warehouse/packing/PackingKeyPad";
 import { usePackingAppContext } from "@/contexts/PackingAppContext";
 import LabelPrintButton from "@/components/warehouse/packing/LabelPrintButton";
 export default function ParcelDetails() {
-    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel } = usePackingAppContext();
-
-
+    const {  packedData, setPackedData, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel } = usePackingAppContext();
 
 
     const handleCustomSize = (currentClick) => {
@@ -47,16 +45,7 @@ export default function ParcelDetails() {
                 <div className={styles.detailValue}>{packedData.courier.weight}g</div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
-            {/* <div className={styles.detailItem} onClick={handleLabelPrint}>
-                <div >
-                     eslint-disable-next-line 
-                    <img
-                        src="https://dev.indejuice.com/img/wh/print.png"
-                        alt="Letter"
-                    />
-                </div>
-                <div  >LABEL</div>
-            </div>*/}
+            
             {isValidForPrintLabel && (
                 <LabelPrintButton styles={styles} />
             )}

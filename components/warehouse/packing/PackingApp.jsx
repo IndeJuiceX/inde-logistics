@@ -1,9 +1,9 @@
+'use client';
 import React from "react";
 import styles from '@/styles/warehouse/packing/PackingApp.module.scss';
 import PackingHeader from "@/components/warehouse/packing/PackingHeader";
 import PackingItems from "@/components/warehouse/packing/PackingItems";
 import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
-import ParcelDetails from "@/components/warehouse/packing/ParcelDetails";
 import { PackingAppProvider } from "@/contexts/PackingAppContext";
 import { GlobalStateProvider } from "@/contexts/GlobalStateContext";
 import PackingFooter from "@/components/warehouse/packing/PackingFooter";
@@ -11,12 +11,15 @@ import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
 import PageSpinner from "@/components/loader/PageSpinner";
 
 export default function PackingApp({ orderData }) {
+
     return (
         <div className={styles.layout}>
+
             <GlobalStateProvider>
                 <ErrorModal />
                 <PageSpinner />
                 <PackingAppProvider orderData={orderData}>
+                  
 
                     <PackingHeader />
 

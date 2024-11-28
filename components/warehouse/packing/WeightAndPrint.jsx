@@ -8,7 +8,7 @@ import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 import LabelPrintButton from '@/components/warehouse/packing/LabelPrintButton';
 export default function WeightAndPrint() {
-    const { order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch } = usePackingAppContext();
+    const { order, packedData, setPackedData,  isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, printLabel } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
     const handleWeightChange = () => {
@@ -27,8 +27,12 @@ export default function WeightAndPrint() {
 
     const handleComplete = async () => {
         console.log('handleComplete');
-
-
+        const vendorId = order.vendorId;
+        const vendorOrderId = order.vendorOrderId;
+        const updateFields = {
+            status: 'dispatched'
+        }
+        const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
     }
 
     return (
@@ -45,7 +49,7 @@ export default function WeightAndPrint() {
             {isValidForPrintLabel && (
                 <LabelPrintButton styles={styles} />
             )}
-            {isReadyForDispatch && (
+            {/* {isReadyForDispatch && ( */}
                 <div className={styles.complete} onClick={handleComplete}>
                     {/* eslint-disable-next-line */}
                     <img
@@ -54,7 +58,7 @@ export default function WeightAndPrint() {
                     />
                     <span>PACKED & LABELLED</span>
                 </div>
-            )}
+            {/* )} */}
 
 
         </div>

@@ -1,12 +1,16 @@
-"use client";
+'use client';
 
 import { createContext, useState, useContext, useEffect } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
-import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
-import { getServiceCode } from '@/services/utils/courier';
+import { getParcelDimensions } from '@/services/utils/warehouse/indePackageDimensions';
+import { getServiceCode } from '@/services/utils/warehouse/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
-import { parcelPayloadValidation } from '@/services/utils/packingValidations';
+import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValidations';
+import CheckSetStationId from '@/components/warehouse/packing/CheckSetStationId';
+import { getStationId } from '@/services/utils/warehouse/packingStation';
+import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
+
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -21,13 +25,23 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [enteredValue, setEnteredValue] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
     const [isReadyForDispatch, setIsReadyForDispatch] = useState(false);
+    const [isSetStationId, setIsSetStationId] = useState(true);
 
+    useEffect(() => {
+        const checkSetStationId = getStationId();
+       
+        if (checkSetStationId) {
+            setIsSetStationId(true);
+        } else {
+            setIsSetStationId(false);
+        }
+    }, []);
 
     const handleSignOut = async () => {
         await doLogOut();
     };
 
-    const handleLabelPrint = async () => {
+    const updateWeightAndDimensions = async () => {
         setLoading(true);
         const payload = {
             vendor_id: order.vendor_id,
@@ -44,7 +58,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         payload.courier = {
             ...payload.courier,
             weight: packedData.courier.weight,
-            service_code: getServiceCode(order, packedData.parcelOption),
+            service_code: await getServiceCode(order, packedData.parcelOption),
         };
 
         let service_code = payload.courier.service_code;
@@ -76,7 +90,9 @@ export const PackingAppProvider = ({ children, orderData }) => {
             width_cm: payload.courier.width,
             height_cm: payload.courier.length,
         };
+
         const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
+
         if (updateResult.success) {
             setLoading(false);
             setLoaded(true);
@@ -114,7 +130,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
             setIsOpenModal(false);
             if (currentClicked === 'weight') {
-                handleLabelPrint();
+                updateWeightAndDimensions();
             }
         } else {
             const newNumberInput = enteredValue + input;
@@ -131,11 +147,24 @@ export const PackingAppProvider = ({ children, orderData }) => {
         }
     };
 
-
+    const printLabel = async () => {
+        const stationId = getStationId();
+        if (stationId === null) {
+            setIsSetStationId(false);
+            return;
+        }
+        const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
+        console.log('printLabel response', printLabelResult);
+    }
+    useEffect(() => {
+        console.log('isSetStationId', isSetStationId);
+    }, [isSetStationId]);
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleLabelPrint, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch }}>
-            {children}
+            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId }}>
+            {!isSetStationId && <CheckSetStationId />}
+            {isSetStationId && children}
+
         </PackingAppContext.Provider>
     );
 };

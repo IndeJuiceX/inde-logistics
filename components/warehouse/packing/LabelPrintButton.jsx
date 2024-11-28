@@ -2,9 +2,9 @@
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function LabelPrintButton({ styles }) {
-    const { handleLabelPrint } = usePackingAppContext();
+    const { printLabel } = usePackingAppContext();
     return (
-        <div className={styles.detailItem} onClick={handleLabelPrint}>
+        <div className={styles.detailItem} onClick={printLabel}>
             {/* eslint-disable-next-line */}
             <img
                 src="https://dev.indejuice.com/img/wh/print.png"
