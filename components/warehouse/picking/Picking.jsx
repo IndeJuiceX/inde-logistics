@@ -197,7 +197,7 @@ export default function Picking({ order, order_id }) {
                                                     .join(', ')}
                                             </p>
                                         </div>
-                                        <button onClick={handleForceTick}> force tick </button>
+                                        <dev onClick={handleForceTick}> force tick </dev>
                                     </div>
                                     <LocationDetails location={item.warehouse} styles={styles} />
                                 </div>

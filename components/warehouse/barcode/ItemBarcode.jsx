@@ -90,7 +90,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
                 !barcodeError &&
                 <FaBarcode className={styles.barcodeImage} />
             }
-            <PickingAppModal isOpen={isNewBarcode} onClose={() => setIsNewBarcode(false)}>
+            <PickingAppModal isOpen={isNewBarcode} onClose={() => setIsNewBarcode(false)} styles={'noOrder'}>
                 <div>
                     <p>Please re-scan the barcode for confirmation</p>
                 </div>
