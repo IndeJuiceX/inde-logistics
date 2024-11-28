@@ -1,6 +1,10 @@
+'use server'
 import { sendPrintJob } from "@/services/external/printnode";
-import { generateLabel } from "./courier";
-import { stationPrinterMap } from "./stationPrinterMap";
+import { generateLabel } from "@/services/utils/warehouse/courier";
+import { stationPrinterMap } from "@/services/utils/warehouse/stationPrinterMap";
+import { getLabelPresignedUrl } from "@/services/external/s3";
+
+
 export const generateAndPrintLabel = async (vendorId, orderId, stationId) => {
     const labelGenerateResponse = await generateLabel(vendorId, orderId)
     const printerId = stationPrinterMap[stationId]
@@ -9,7 +13,7 @@ export const generateAndPrintLabel = async (vendorId, orderId, stationId) => {
     }
 
     // Proceed to print the label if label_url is available
-    if (labelGenerateResponse.label_url) {
+    if (labelGenerateResponse?.label_url) {
         const printResult = await printLabel(labelGenerateResponse.label_url, printerId);
 
         if (!printResult.success) {
@@ -17,10 +21,27 @@ export const generateAndPrintLabel = async (vendorId, orderId, stationId) => {
         }
 
         return { success: true, data: labelGenerateResponse };
-    } else if (labelGenerateResponse.label_key) {
-        // If label_key is available, implement logic to fetch from S3 and print
-        // For now, return an error indicating this is not implemented
-        return { success: false, error: 'Fetching label from S3 not implemented' };
+    } else if (labelGenerateResponse?.label_key) {
+        // Generate a presigned URL and print the label
+        try {
+            // Generate a presigned URL for the label
+            const presignedUrl = await getLabelPresignedUrl(labelGenerateResponse.label_key);
+
+            // Use the existing printLabel function with the presigned URL
+            const printResult = await printLabel(presignedUrl, printerId);
+
+            if (!printResult.success) {
+                return { success: false, error: printResult.error || 'Failure in printing label from S3' };
+            }
+
+            // Optionally, update labelGenerateResponse to include the label_url
+            labelGenerateResponse.label_url = presignedUrl;
+
+            return { success: true, data: labelGenerateResponse };
+        } catch (error) {
+            console.error('Error generating presigned URL or printing label from S3:', error);
+            return { success: false, error: error.message || 'Error printing label from S3' };
+        }
     } else {
         // If neither label_url nor label_key is available, return an error
         return { success: false, error: 'Label URL or key is missing' };

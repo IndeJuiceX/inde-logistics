@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 //import { streamToString } from './streamToString'; // Helper to convert stream to string
 
 // Initialize the S3 client
@@ -118,46 +119,33 @@ export const streamToString = async (stream) => {
     throw new Error('Unsupported stream type');
 };
 
-// New function to fetch label from S3
-export const getLabelFromS3 = async (s3Key) => {
-    const LABEL_REGION = 'us-east-2'; // Label bucket region
-    const LABEL_BUCKET_NAME = 'shipping-labels.indejuice.com'; // Label bucket name
 
-    const s3ClientForLabels = new S3Client({
-        region: LABEL_REGION,
-        credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-        }
-    });
 
-    const params = {
-        Bucket: LABEL_BUCKET_NAME,
-        Key: s3Key,
-    };
+export const getLabelPresignedUrl = async (s3Key) => {
+  const LABEL_REGION = 'us-east-2'; // Label bucket region
+  const LABEL_BUCKET_NAME = 'shipping-labels.indejuice.com'; // Label bucket name
 
-    try {
-        const command = new GetObjectCommand(params);
-        const response = await s3ClientForLabels.send(command);
-
-        if (response.Body) {
-            const fileContent = await streamToBuffer(response.Body);
-            return fileContent; // Return the buffer
-        } else {
-            throw new Error('No content in S3 response');
-        }
-    } catch (error) {
-        console.error('Error getting label from S3:', error);
-        throw new Error('Failed to retrieve label from S3');
+  const s3ClientForLabels = new S3Client({
+    region: LABEL_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
+  });
+
+  const params = {
+    Bucket: LABEL_BUCKET_NAME,
+    Key: s3Key,
+  };
+
+  try {
+    const command = new GetObjectCommand(params);
+    // Generate a presigned URL valid for 15 minutes
+    const signedUrl = await getSignedUrl(s3ClientForLabels, command, { expiresIn: 900 });
+    return signedUrl;
+  } catch (error) {
+    console.error('Error generating presigned URL for label:', error);
+    throw new Error('Failed to generate presigned URL for label');
+  }
 };
 
-// Helper function to convert stream to buffer
-export const streamToBuffer = async (stream) => {
-    return new Promise((resolve, reject) => {
-        const chunks = [];
-        stream.on('data', (chunk) => chunks.push(chunk));
-        stream.on('error', reject);
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-    });
-};
