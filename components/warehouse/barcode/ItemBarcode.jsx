@@ -11,7 +11,6 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
 
-    // console.log('currentItem', currentItem);
 
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -50,14 +49,9 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
         setIsNewBarcode(true);
     }
 
-    // create the callback function for the button onClick event
-    // vendor_id, vendor_sku, barcode
+
     const addNewBarcode = async () => {
-        // const payload = {
-        //     vendor_id: order.vendor_id,
-        //     vendor_sku: currentItem.vendor_sku,
-        //     barcode: barcodeValue
-        // }
+
 
         if (!order.vendor_id || !currentItem.vendor_sku || !barcodeValue) {
             console.log('addNewBarcode error', order.vendor_id, currentItem.vendor_sku, barcodeValue);
@@ -73,7 +67,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
         else {
             console.log('addNewBarcode error', response.error);
         }
-      
+
     }
     return (
         <>

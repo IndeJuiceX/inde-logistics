@@ -11,7 +11,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
 
-export default function Picking({ order, order_id }) {
+export default function Picking({ order }) {
     // console.log('test order ', order);
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
@@ -22,10 +22,6 @@ export default function Picking({ order, order_id }) {
     const itemRefs = useRef([]); // Array of refs for each item
     const [selectedItem, setSelectedItem] = useState([]);
     const [pickedItems, setPickedItems] = useState([]);
-
-
-
-    // console.log('order', order);
 
 
     useEffect(() => {
@@ -76,11 +72,11 @@ export default function Picking({ order, order_id }) {
 
     }
     const handlePicked = async () => {
-        
+
         const totalItems = order.items.length; //index starts from 0
         const pickedItemsCount = pickedItems.length;
-      
-    
+
+
         if (pickedItemsCount === totalItems) {
             const vendor_id = order.vendor_id;
             const vendor_order_id = order.vendor_order_id;
@@ -92,7 +88,7 @@ export default function Picking({ order, order_id }) {
             }
 
             const data = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
-            
+
 
             if (data.success) {
                 window.location.reload();
@@ -118,7 +114,6 @@ export default function Picking({ order, order_id }) {
         }
         // Validate that vendor_id, stock_shipment_id, and item are present
         if (!vendor_id || !vendor_order_id) {
-            // return NextResponse.json({ error: 'vendor_id, vendor_order_id, and item are required' }, { status: 400 });
             setError(true);
             setErrorMessage('Something went wrong, Please reload the page');
             setIsErrorReload(true);
@@ -144,28 +139,24 @@ export default function Picking({ order, order_id }) {
 
 
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
+    const deliveryDuration = order?.shipping_code ? getShippingDuration(order.shipping_code) : '-';
     return (
         <>
-
-            {/* <InitiateBarcodeScanner setIsInitiated={setBarcodeInitiated} /> */}
             {isBarcodeInitiated &&
                 <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
                     <div className={styles.container}>
 
-                        {/* Header Section */}
+
                         <div className={styles.headerSection}>
                             <div className={styles.orderCode}>X{totalQuantity || '0'}</div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Customer</p>
                                 <p className={styles.value}>{order.buyer.name || 'G M'}</p>
                             </div>
-                            {/* <div className={styles.infoSection}>
-                                <p className={styles.label}>Vendor</p>
-                                <p className={styles.value}>{order.vendor_id || 'INVITERI'}</p>
-                            </div> */}
+
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Delivery</p>
-                                <p className={styles.value}>24</p>
+                                <p className={styles.value}>{deliveryDuration}</p>
                             </div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Order</p>
@@ -173,10 +164,9 @@ export default function Picking({ order, order_id }) {
                             </div>
                         </div>
 
-                        {/* Product & Location Section */}
+
                         <div className={styles.productList} style={{ maxHeight }}>
                             {order.items.map((item, index) => (
-                                // ${index < currentIndex ? styles.disabledItem : ''}
                                 <div
                                     className={`${styles.productItem} ${selectedItem[index] === index ? styles.disabledItem : ''
                                         }`}
@@ -214,12 +204,12 @@ export default function Picking({ order, order_id }) {
                             ))}
                         </div>
 
-                        {/* Picker Info & Barcode */}
+
                         <div className={styles.footer}>
                             <div className={styles.pickerInfo}>
                                 <div>
                                     <p className={styles.pickerName}>{extractNameFromEmail(order.picker) || 'Ali B.'}</p>
-                                    {/* <p className={styles.containerInfo}>Container 1</p> */}
+
                                 </div>
                                 <div className={styles.warningButtonContainer}>
                                     <button onClick={handleErrorQueue} className={styles.warningButton}>!</button>
