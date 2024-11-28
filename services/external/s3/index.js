@@ -24,7 +24,7 @@ const s3Client = new S3Client({
 export const uploadToS3 = async (s3Key, fileContent, contentType = 'application/json') => {
     const params = {
         Bucket: BUCKET_NAME,
-        Key: s3Key,
+        Key: 'royal-mail/'+s3Key,
         Body: fileContent,
         ContentType: contentType,
     };
