@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'L', 'M', 'Z', '★', 'Ψ'];
+const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'L', 'M', 'Z', '★', 'Ψ', 'PA', 'PB'];
 
 export default function AlphabetPad({ onValueSelected }) {
     const gridRef = useRef(null);
