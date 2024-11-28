@@ -1,5 +1,5 @@
 import { getItem, transactWriteItems, queryItems, updateItem, queryItemsWithPkAndSk, } from '@/services/external/dynamo/wrapper';
-import { cleanResponseData } from '../utils';
+import { cleanResponseData } from '@/services/utils';
 
 
 export const validateOrderShippingCode = async (vendorId, order) => {
