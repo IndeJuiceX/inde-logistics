@@ -7,6 +7,7 @@ import AlphabetPad from '@/components/warehouse/keypad/AlphabetPad';
 import ColorPad from '@/components/warehouse/keypad/ColorPad';
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 import { updateStockShipmentItemAsShelved } from '@/services/data/stock-shipment-item';
+import { MdWarning } from "react-icons/md";
 
 export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, items = null, setUnshelvedItems = null }) {
     const params = useParams();
@@ -38,7 +39,7 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
         if (input === 'backspace' || input === 'ok') {
             setLocations((prev) => {
                 const currentInput = String(prev[activeField] || '');
-                return input === 'backspace' 
+                return input === 'backspace'
                     ? { ...prev, [activeField]: currentInput.slice(0, -1) }
                     : prev;
             });
@@ -47,17 +48,17 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
 
         // Handle number input
         setLocations((prev) => {
-            const updatedLocations = { 
-                ...prev, 
-                [activeField]: prev[activeField] + input 
+            const updatedLocations = {
+                ...prev,
+                [activeField]: prev[activeField] + input
             };
 
             // Only proceed with save if this is the last field (shelfNumber)
             if (activeField === 'shelfNumber') {
                 // Verify all fields are filled before saving
-                if (updatedLocations.aisle && 
-                    updatedLocations.aisleNumber && 
-                    updatedLocations.shelf && 
+                if (updatedLocations.aisle &&
+                    updatedLocations.aisleNumber &&
+                    updatedLocations.shelf &&
                     updatedLocations.shelfNumber) {
                     // Wait for state to update before saving
                     Promise.resolve().then(() => {
@@ -177,9 +178,12 @@ export default function UnShelvedItemModal({ setIsModalOpen, itemData = null, it
         <div className="flex flex-col lg:flex-row h-full bg-white rounded-lg shadow-lg overflow-y-scroll">
             <div className="lg:w-1/2 p-6 space-y-4">
                 <h2 className="text-2xl font-bold text-center text-gray-800">{item?.name}</h2>
-                <p className="text-sm text-center text-gray-500">
-                    {item && Object.values(item.attributes).filter((value) => !Array.isArray(value)).join(' • ')}
-                </p>
+                <div className="flex items-center justify-center gap-2 text-lg text-center bg-yellow-100 border-2 border-yellow-400 rounded-md p-3 font-bold shadow-md">
+                    <MdWarning className="text-2xl text-yellow-600 animate-pulse" />
+                    <span className="text-yellow-800">
+                        {item && Object.values(item.attributes).filter((value) => !Array.isArray(value)).join(' • ')}
+                    </span>
+                </div>
 
                 <div className="flex justify-center space-x-4">
                     <LocationBox
