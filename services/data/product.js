@@ -128,6 +128,13 @@ export const checkProductStock = async (vendorId, vendor_sku, requestedQuantity)
 
         const product = productResult.data;
 
+        if(product.status !== 'Active' &&  product.status !== 'active' ) {
+            return {
+                exists: false, // Product does not exist
+                success: false,
+                message: `Product with vendor_sku "${vendor_sku}" is not active`,
+            };
+        }
         // Extract the available stock from the product data
         // Adjust the field name based on how you store the stock levels
         let availableStock = product.stock_available || 0;
