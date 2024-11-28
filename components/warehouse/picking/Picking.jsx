@@ -10,6 +10,7 @@ import { extractNameFromEmail, getShippingDuration } from '@/services/utils/inde
 import { FaCheckCircle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
+import PickingAppModal from '../modal/PickingAppModal';
 
 export default function Picking({ order }) {
     // console.log('test order ', order);
@@ -22,6 +23,7 @@ export default function Picking({ order }) {
     const itemRefs = useRef([]); // Array of refs for each item
     const [selectedItem, setSelectedItem] = useState([]);
     const [pickedItems, setPickedItems] = useState([]);
+    const [isOpenModal, setIsOpenModal] = useState(false);
 
 
     useEffect(() => {
@@ -137,6 +139,9 @@ export default function Picking({ order }) {
 
     }
 
+    const handleErrorReason = () => {
+        setIsOpenModal(true);
+    }
 
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
     const deliveryDuration = order?.shipping_code ? getShippingDuration(order.shipping_code) : '-';
@@ -212,7 +217,7 @@ export default function Picking({ order }) {
 
                                 </div>
                                 <div className={styles.warningButtonContainer}>
-                                    <button onClick={handleErrorQueue} className={styles.warningButton}>!</button>
+                                    <button onClick={handleErrorReason} className={styles.warningButton}>!</button>
                                 </div>
                                 {selectedItem.length === order.items.length && (
                                     <button
@@ -230,7 +235,12 @@ export default function Picking({ order }) {
 
                     </div>
                 </div>
+
+
             }
+            <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={'error'} >
+                <div className={styles.errorReason} onClick={handleErrorQueue}><h1>Missing Item</h1></div>
+            </PickingAppModal>
         </>
     );
 }
