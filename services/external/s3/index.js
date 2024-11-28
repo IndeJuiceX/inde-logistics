@@ -24,7 +24,7 @@ const s3Client = new S3Client({
 export const uploadToS3 = async (s3Key, fileContent, contentType = 'application/json') => {
     const params = {
         Bucket: BUCKET_NAME,
-        Key: 'royal-mail/'+s3Key,
+        Key: s3Key,
         Body: fileContent,
         ContentType: contentType,
     };
@@ -122,30 +122,30 @@ export const streamToString = async (stream) => {
 
 
 export const getLabelPresignedUrl = async (s3Key) => {
-  const LABEL_REGION = 'us-east-2'; // Label bucket region
-  const LABEL_BUCKET_NAME = 'shipping-labels.indejuice.com'; // Label bucket name
+    const LABEL_REGION = 'us-east-2'; // Label bucket region
+    const LABEL_BUCKET_NAME = 'shipping-labels.indejuice.com'; // Label bucket name
 
-  const s3ClientForLabels = new S3Client({
-    region: LABEL_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    const s3ClientForLabels = new S3Client({
+        region: LABEL_REGION,
+        credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        }
+    });
+
+    const params = {
+        Bucket: LABEL_BUCKET_NAME,
+        Key: 'royal-mail/' + s3Key,
+    };
+
+    try {
+        const command = new GetObjectCommand(params);
+        // Generate a presigned URL valid for 15 minutes
+        const signedUrl = await getSignedUrl(s3ClientForLabels, command, { expiresIn: 900 });
+        return signedUrl;
+    } catch (error) {
+        console.error('Error generating presigned URL for label:', error);
+        throw new Error('Failed to generate presigned URL for label');
     }
-  });
-
-  const params = {
-    Bucket: LABEL_BUCKET_NAME,
-    Key: s3Key,
-  };
-
-  try {
-    const command = new GetObjectCommand(params);
-    // Generate a presigned URL valid for 15 minutes
-    const signedUrl = await getSignedUrl(s3ClientForLabels, command, { expiresIn: 900 });
-    return signedUrl;
-  } catch (error) {
-    console.error('Error generating presigned URL for label:', error);
-    throw new Error('Failed to generate presigned URL for label');
-  }
 };
 
