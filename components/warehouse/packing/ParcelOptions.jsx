@@ -7,11 +7,15 @@ import { usePackingAppContext } from '@/contexts/PackingAppContext';
 import { FaCog } from 'react-icons/fa';
 
 export default function ParcelOptions() {
-  const { order, packedData, setPackedData } = usePackingAppContext();
+  const { order, packedData, setPackedData, isGeneratedLabel } = usePackingAppContext();
 
   const handleParcelOptionClick = (parcelOption) => {
-    const selectedOption = parcelOption === packedData.parcelOption ? '' : parcelOption;
-    setPackedData({ ...packedData, parcelOption: selectedOption });
+    if (isGeneratedLabel) {
+      setPackedData({ ...packedData, parcelOption: parcelOption });
+    } else {
+      const selectedOption = parcelOption === packedData.parcelOption ? '' : parcelOption;
+      setPackedData({ ...packedData, parcelOption: selectedOption });
+    }
   }
   return (
     <div className={styles.parcelOptions}>
@@ -56,7 +60,7 @@ export default function ParcelOptions() {
 
         )}
       </div>
-
+      
       {packedData.parcelOption !== '' && (packedData.parcelOption.includes('letter') || packedData.parcelOption.includes('parcel') || packedData.parcelOption.includes('extra_large_parcel')) ? (
         <WeightAndPrint />
       ) : packedData.parcelOption === 'custom' && (
