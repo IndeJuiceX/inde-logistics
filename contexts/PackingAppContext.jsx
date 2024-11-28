@@ -24,20 +24,21 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [currentClicked, setCurrentClicked] = useState('');
     const [enteredValue, setEnteredValue] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
-    const [isReadyForDispatch, setIsReadyForDispatch] = useState(order?.shipment?.label_key !== null && order?.shipment?.tracking !== null);
+    const [isReadyForDispatch, setIsReadyForDispatch] = useState(order?.shipment?.label_key != null && order?.shipment?.tracking != null);
     const [isSetStationId, setIsSetStationId] = useState(true);
-    const [isGeneratedLabel, setIsGeneratedLabel] = useState(order?.shipment?.label_key !== null && order?.shipment?.tracking !== null);
+    const [isGeneratedLabel, setIsGeneratedLabel] = useState(order?.shipment?.label_key != null && order?.shipment?.tracking != null);
 
 
     useEffect(() => {
         const checkSetStationId = getStationId();
-       
+
         if (checkSetStationId) {
             setIsSetStationId(true);
         } else {
             setIsSetStationId(false);
         }
     }, []);
+
 
     const handleSignOut = async () => {
         await doLogOut();
@@ -94,7 +95,8 @@ export const PackingAppProvider = ({ children, orderData }) => {
         };
 
         const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
-
+        console.log('updateResult', updateResult);
+        
         if (updateResult.success) {
             setLoading(false);
             setLoaded(true);
@@ -166,7 +168,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
             status: 'dispatched'
         }
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
-    } 
+    }
     return (
         <PackingAppContext.Provider
             value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleComplete }}>

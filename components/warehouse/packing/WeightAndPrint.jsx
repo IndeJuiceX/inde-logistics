@@ -43,7 +43,7 @@ export default function WeightAndPrint() {
             <div className={styles.actions}>
                 <PackingKeyPad enteredValue={enteredValue} setEnteredValue={setEnteredValue} setIsOpenModal={setIsOpenModal} isOpenModal={isOpenModal} />
             </div>
-            {isValidForPrintLabel || isGeneratedLabel && (
+            {(isValidForPrintLabel || isGeneratedLabel) && (
                 <LabelPrintButton styles={styles} />
             )}
             {isReadyForDispatch && (
