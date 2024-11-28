@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
 import { getParcelDimensions } from '@/services/utils/warehouse/indePackageDimensions';
@@ -8,6 +8,8 @@ import { getServiceCode } from '@/services/utils/warehouse/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
 import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValidations';
 import CheckSetStationId from '@/components/warehouse/packing/CheckSetStationId';
+import { getStationId } from '@/services/utils/warehouse/packingStation';
+import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
 
 export const PackingAppContext = createContext();
 
@@ -137,8 +139,12 @@ export const PackingAppProvider = ({ children, orderData }) => {
     };
 
     const printLabel = async () => {
-        console.log('printLabel');
-        const printLabelResult = await generateLabel(order.vendor_id, order.vendor_order_id);
+        const stationId = getStationId();
+        if (stationId === null) {
+            setIsSetStationId(false);
+            return;
+        }
+        const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
         console.log('printLabel response', printLabelResult);
     }
 
