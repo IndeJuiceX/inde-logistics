@@ -1,5 +1,5 @@
 export const stationPrinterMap = {
-    '1': '586160', // Printer ID for station 1
-    '2': '410066', // Printer ID for station 2
+    '1': '73517176', // Printer ID for station 586160
+    '2': '71072944', // Printer ID for station 410066
     // Add more mappings as needed
 };
