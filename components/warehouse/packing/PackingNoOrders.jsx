@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
-import { getNextUnPackedOrder } from '@/services/data/order-shipment';
+import { getNextUnPackedOrderShipment } from '@/services/data/order-shipment';
 
 export default function PackingNoOrders() {
     // const { handleSignOut } = usePackingAppContext();
@@ -16,7 +16,7 @@ export default function PackingNoOrders() {
     }
     const checkingNewOrders = async () => {
 
-        const data = await getNextUnPackedOrder();
+        const data = await getNextUnPackedOrderShipment();
 
 
         if (data.success && data.data && !Array.isArray(data.data)) {
