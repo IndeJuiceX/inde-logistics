@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
 import { getParcelDimensions } from '@/services/utils/warehouse/indePackageDimensions';
@@ -25,8 +25,17 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [enteredValue, setEnteredValue] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
     const [isReadyForDispatch, setIsReadyForDispatch] = useState(false);
-    const [isSetStationId, setIsSetStationId] = useState(false);
+    const [isSetStationId, setIsSetStationId] = useState(true);
 
+    useEffect(() => {
+        const checkSetStationId = getStationId();
+        console.log('checkSetStationId', checkSetStationId);
+        if (checkSetStationId) {
+            setIsSetStationId(true);
+        } else {
+            setIsSetStationId(false);
+        }
+    }, []);
 
     const handleSignOut = async () => {
         await doLogOut();
@@ -147,11 +156,13 @@ export const PackingAppProvider = ({ children, orderData }) => {
         const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
         console.log('printLabel response', printLabelResult);
     }
-
+    useEffect(() => {
+        console.log('isSetStationId', isSetStationId);
+    }, [isSetStationId]);
     return (
         <PackingAppContext.Provider
             value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId }}>
-            <CheckSetStationId />
+            {!isSetStationId && <CheckSetStationId />}
             {isSetStationId && children}
 
         </PackingAppContext.Provider>
