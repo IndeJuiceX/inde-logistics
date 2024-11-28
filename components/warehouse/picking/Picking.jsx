@@ -92,16 +92,16 @@ export default function Picking({ order, order_id }) {
             }
 
             const data = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
-            console.log('data', data);
+            
 
-            // if (data.success) {
-            //     window.location.reload();
-            // }
-            // else {
-            //     setError(true);
-            //     setErrorMessage(data.error);
-            //     setIsErrorReload(true);
-            // }
+            if (data.success) {
+                window.location.reload();
+            }
+            else {
+                setError(true);
+                setErrorMessage(data.error);
+                setIsErrorReload(true);
+            }
         };
 
     }
