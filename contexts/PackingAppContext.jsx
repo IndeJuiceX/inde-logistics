@@ -3,11 +3,10 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { doLogOut } from '@/app/actions';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
-import { getParcelDimensions } from '@/services/utils/indePackageDimensions';
-import { getServiceCode } from '@/services/utils/courier';
+import { getParcelDimensions } from '@/services/utils/warehouse/indePackageDimensions';
+import { getServiceCode } from '@/services/utils/warehouse/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
-import { parcelPayloadValidation } from '@/services/utils/packingValidations';
-import { generateLabel } from '@/services/utils/courier';
+import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValidations';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {

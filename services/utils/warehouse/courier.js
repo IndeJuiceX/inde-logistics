@@ -1,17 +1,17 @@
 'use server';
 
 
-import { getOrderWithItemDetails } from "../data/order";
-import { getOrderShipment } from "../data/order-shipment";
-import { getCourierDetails } from "../data/courier";
-import { cleanResponseData } from ".";
+import { getOrderWithItemDetails } from "../../data/order";
+import { getOrderShipment } from "../../data/order-shipment";
+import { getCourierDetails } from "../../data/courier";
+import { cleanResponseData } from "..";
 
-export const getServiceCode = async (order, selectedParcelType) => {
-    const parcelType = await getParcelType(order, selectedParcelType);
+export const getServiceCode = (order, selectedParcelType) => {
+    const parcelType = getParcelType(order, selectedParcelType);
     return parcelType.service_code;
 }
 // we can extend this function to get the parcel type from the service provider
-export const getParcelType = async (order, selectedParcelType) => {
+export const getParcelType = (order, selectedParcelType) => {
 
     const shippingCodeSplit = order?.shipping_code?.split('-');
     if (!shippingCodeSplit[0]) {
@@ -32,7 +32,7 @@ export const getParcelType = async (order, selectedParcelType) => {
     return parcelType;
 }
 
-export const generateLabel = async (vendorId, orderId) => {
+export const generateLabel = async (vendorId, orderId,stationId) => {
     // Get vendor order with this id
     const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
     const orderData = orderDetailsData?.data || null;
@@ -60,7 +60,7 @@ export const generateLabel = async (vendorId, orderId) => {
     orderData.shipment.courier = courierDataRow[0];
 
     // Extract isInternational from buyer.country
-    const isInternational = orderData.buyer.country !== 'GB';
+    const isInternational = orderData.buyer.country_code !== 'GB';
     //return orderData;
     // Shipment data with total weight and dimensions
     const shipment = orderData.shipment;
@@ -155,8 +155,9 @@ export const generateLabel = async (vendorId, orderId) => {
     };
 
     // Check if label already exists
-    if (shipment.label_key && shipment.label_key !== '') {
+    if (shipment?.label_key && shipment.label_key !== '') {
         return {
+            success: true,
             tracking_code: shipment.tracking,
             label_key: shipment.label_key,
         };
@@ -166,7 +167,9 @@ export const generateLabel = async (vendorId, orderId) => {
         const result = await api_POST(url, data);
 
         if (result && result.trackingNumber) {
+            // save tracking label key against shipment...
             return {
+                success: true,
                 tracking_code: result.trackingNumber,
                 label_key: result.orderIdentifier,
                 label_url: result.labelUrl,
@@ -177,41 +180,24 @@ export const generateLabel = async (vendorId, orderId) => {
     }
 
 
-    // Helper function to perform POST requests
-    // async function api_POST(url, data) {
-    //     try {
-    //         const response = await fetch(url, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify(data),
-    //         });
-    //         return await response.json();
-    //     } catch (error) {
-    //         console.error('Error in api_POST:', error);
-    //         return null;
-    //     }
-    // }
-    
 }
 export const api_POST = async (url, data) => {
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      const data2 = await response.json();
-  
-      return data2;//{ success: true, data: response.data }
-  
-  
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        const data2 = await response.json();
+
+        return data2;//{ success: true, data: response.data }
+
+
     } catch (error) {
-      // ... error handling
-      return { success: false, error: error }
+        // ... error handling
+        return { success: false, error: error }
     }
-  
-  }
+
+}

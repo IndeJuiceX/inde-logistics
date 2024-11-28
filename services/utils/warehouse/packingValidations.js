@@ -1,16 +1,14 @@
-'use server';
-
-import { getParcelType } from '@/services/utils/courier';
+import { getParcelType } from '@/services/utils/warehouse/courier';
 
 
-export const parcelPayloadValidation = async (order, payload, packedData) => {
-    const isAllowedWeight = await checkAllowedWeight(order, packedData);
-    const isValidParcelDimensions = await checkParcelDimensions(order, payload, packedData);
+export const parcelPayloadValidation = (order, payload, packedData) => {
+    const isAllowedWeight = checkAllowedWeight(order, packedData);
+    const isValidParcelDimensions = checkParcelDimensions(order, payload, packedData);
     if (isAllowedWeight.error || isValidParcelDimensions.error) {
         return { error: true, message: isAllowedWeight.message || isValidParcelDimensions.message };
     }
 
-    
+
     let weight = payload.courier.weight;
     let width = payload.courier.width;
     let height = payload.courier.length;
@@ -38,9 +36,9 @@ export const parcelPayloadValidation = async (order, payload, packedData) => {
 
 
 
-export const checkAllowedWeight = async (order, packedData) => {
-    
-    const isParcelTypeValid = await getParcelType(order, packedData.parcelOption);
+export const checkAllowedWeight = (order, packedData) => {
+
+    const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
     if (packedData.courier.weight <= 0) {
         return { error: true, message: 'Weight cannot be less than 0g. Please enter a valid weight' };
     }
@@ -56,8 +54,8 @@ export const checkAllowedWeight = async (order, packedData) => {
     }
 
 }
-export const checkParcelDimensions = async (order, payload, packedData) => {
-    const isParcelTypeValid = await getParcelType(order, packedData.parcelOption);
+export const checkParcelDimensions = (order, payload, packedData) => {
+    const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
     if (packedData.parcelOption === 'custom') {
         if (packedData.courier.width > isParcelTypeValid.max_width_cm
             || packedData.courier.length > isParcelTypeValid.max_length_cm
