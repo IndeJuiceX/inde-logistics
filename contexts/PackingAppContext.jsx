@@ -65,6 +65,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         };
 
         let service_code = payload.courier.service_code;
+
         const validationResult = parcelPayloadValidation(order, payload, packedData);
         if (validationResult.error) {
             setLoading(false);
@@ -95,8 +96,8 @@ export const PackingAppProvider = ({ children, orderData }) => {
         };
 
         const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
-        console.log('updateResult', updateResult);
-        
+
+
         if (updateResult.success) {
             setLoading(false);
             setLoaded(true);
@@ -164,14 +165,24 @@ export const PackingAppProvider = ({ children, orderData }) => {
         }
     }
 
-    const handleComplete = async () => {
-        console.log('handleComplete');
-        const vendorId = order.vendorId;
-        const vendorOrderId = order.vendorOrderId;
+    const handleComplete = async (withSignOut = false) => {
+        setLoading(true);
+        const vendorId = order.vendor_id;
+        const vendorOrderId = order.vendor_order_id;
         const updateFields = {
             status: 'dispatched'
         }
+        console.log('updateFields', updateFields);
+
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
+        if (response.success) {
+            if (withSignOut) {
+                await doLogOut();
+            }
+            else {
+                window.location.reload();
+            }
+        }
     }
     return (
         <PackingAppContext.Provider

@@ -7,7 +7,7 @@ import { usePackingAppContext } from '@/contexts/PackingAppContext';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 import LabelPrintButton from '@/components/warehouse/packing/LabelPrintButton';
-import OrderDispatch from '@/components/warehouse/packing/OrderDispatch';
+import PickedAndLabeled from '@/components/warehouse/packing/PickedAndLabeled';
 export default function WeightAndPrint() {
     const { order, packedData, setPackedData, isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, isGeneratedLabel } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
@@ -47,7 +47,7 @@ export default function WeightAndPrint() {
                 <LabelPrintButton styles={styles} />
             )}
             {isReadyForDispatch && (
-                <OrderDispatch />
+                <PickedAndLabeled />
             )}
 
 

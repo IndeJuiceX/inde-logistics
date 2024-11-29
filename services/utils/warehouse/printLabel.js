@@ -6,6 +6,7 @@ import { getLabelPresignedUrl } from "@/services/external/s3";
 
 
 export const generateAndPrintLabel = async (vendorId, orderId, stationId) => {
+    return { success: true, data: {} };
     const labelGenerateResponse = await generateLabel(vendorId, orderId)
     const printerId = stationPrinterMap[stationId]
     if (!printerId) {
