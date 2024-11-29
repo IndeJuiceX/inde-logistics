@@ -43,7 +43,7 @@ export default function Modal({ isOpen, onClose, classNames, children }) {
             ></div>
 
             {/* Modal content */}
-            <div className={`relative bg-gray-50 rounded-lg shadow-lg w-[85%] h-[85%] mx-auto p-4 z-10 overflow-y-auto`}>
+            <div className={`relative bg-gray-50 rounded-lg shadow-lg w-[85%] h-[100%] mx-auto z-10 overflow-y-auto`}>
                 {/* <div className="mt-4"> */}
                 {children}
                 {/* </div> */}

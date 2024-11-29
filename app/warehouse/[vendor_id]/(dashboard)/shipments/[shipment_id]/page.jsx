@@ -1,5 +1,6 @@
 
 
+import { getLoggedInUser } from "@/app/actions";
 import ShipmentItems from "@/components/warehouse/shipments/shipment/ShipmentItems";
 import { getStockShipmentDetails } from "@/services/data/stock-shipment";
 import { getVendorById } from "@/services/data/vendor";
@@ -8,10 +9,11 @@ import { getVendorById } from "@/services/data/vendor";
 
 export default async function ShipmentPage({ params }) {
     const { vendor_id, shipment_id } = params;
+    const user = await getLoggedInUser();
 
-    const getShipmentDetails = await getStockShipmentDetails(vendor_id, shipment_id);
-   
-    
+    const getShipmentDetails = await getStockShipmentDetails(vendor_id, shipment_id, user?.email || 'API TOKEN');
+
+
     let shipmentDetails = []
     if (getShipmentDetails.success) {
         shipmentDetails = getShipmentDetails.data
@@ -25,6 +27,6 @@ export default async function ShipmentPage({ params }) {
     }
 
     return (
-        <ShipmentItems shipmentDetailsData={shipmentDetails} vendor={vendor} />
+        <ShipmentItems shipmentDetailsData={shipmentDetails} vendor={vendor} user={user} />
     )
 }

@@ -16,7 +16,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-   
+
     const attributeKeys = [];
     if (unshelvedItems && unshelvedItems.length > 0) {
         unshelvedItems.forEach(item => {
@@ -70,7 +70,7 @@ export default function UnShelvedItems({ vendor, shipmentDetails }) {
                                         {/* eslint-disable-next-line */}
                                         <img src={item.image} alt={item.name} className="w-12 h-12" />
                                     </td>
-                                    <td className="p-4 text-center text-base text-gray-700">{item.name}
+                                    <td className="p-4 text-left text-base text-gray-700">{item.name}
                                     </td>
                                     {attributeKeys.length > 0 && attributeKeys.map((attribute, index) => (
                                         <td className="p-4 text-center text-base text-gray-700" key={index}>{item.attributes[attribute]}</td>

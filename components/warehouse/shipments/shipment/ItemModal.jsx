@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useContext } from 'react';
-import DialPad from '@/components/warehouse/keypad/DialPad';
 import { useParams } from 'next/navigation';
 import { GlobalStateContext } from '@/contexts/GlobalStateContext';
 import { AiOutlineLeft, AiOutlineRight, AiOutlineClose } from 'react-icons/ai';
 import { updateStockShipmentItemReceived } from '@/services/data/stock-shipment-item';
 import { getStockShipmentDetails } from '@/services/data/stock-shipment';
 import { getLoggedInUser } from '@/app/actions';
+import DialPad from '../../keypad/DialPad';
 
 
 export default function ItemModal({ setIsModalOpen, itemData = null, items = null, setShipmentDetails = null }) {
@@ -96,7 +96,6 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
     };
 
     const updateShipmentItem = async () => {
-        // const allowedFields = ['received', 'faulty', 'vendor_sku']
         const user = await getLoggedInUser()
         try {
             setLoading(true);
@@ -105,12 +104,26 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
                 faulty: quantities.faulty,
                 vendor_sku: item.vendor_sku
             }, user);
+            // console.log('submit', submit)
+            if (submit.success) {
 
-            const updatedDetails = await getStockShipmentDetails(params.vendor_id, params.shipment_id);
-            console.log('updatedDetails', updatedDetails)
-            setShipmentDetails(updatedDetails.data);
+                // Update the local shipment details instead of fetching everything again
+                setShipmentDetails(prevDetails => ({
+                    ...prevDetails,
+                    items: prevDetails.items.map(shipmentItem =>
+                        shipmentItem.vendor_sku === item.vendor_sku
+                            ? {
+                                ...shipmentItem,
+                                received: quantities.accepted,
+                                faulty: quantities.faulty
+                            }
+                            : shipmentItem
+                    )
+                }));
+            } else {
+                alert('Error updating shipment item: ' + submit.error)
+            }
             handleNext();
-
         } catch (error) {
             console.error('Error updating shipment:', error);
         } finally {
@@ -147,7 +160,6 @@ export default function ItemModal({ setIsModalOpen, itemData = null, items = nul
         if (items && currentIndex < items.length - 1) {
             setCurrentIndex(currentIndex + 1);
             setActiveField('received');
-            // Remove setNumberInput('')
         }
     };
 

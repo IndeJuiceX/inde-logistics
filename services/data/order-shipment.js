@@ -276,7 +276,7 @@ export const getNextUnPickedOrderShipment = async () => {
   }
 
   const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-  console.log('orderDetailsData', orderDetailsData)
+  // console.log('orderDetailsData', orderDetailsData)
   if (!orderDetailsData || !orderDetailsData?.success) {
     return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
   }

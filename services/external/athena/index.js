@@ -32,10 +32,10 @@ export async function executeDataQuery({ query, limit, nextToken, queryExecution
       queryExecutionId,
       // database: 'logistics_production', // Optional: specify if different
     });
-    console.log('Data Query Results:', result.data);
+    // console.log('Data Query Results:', result.data);
     return result;
   } catch (error) {
-    console.error('Error executing data query:', error);
+    // console.error('Error executing data query:', error);
     throw error; // Re-throw the error after logging
   }
 }
