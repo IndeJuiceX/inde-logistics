@@ -11,11 +11,13 @@ import CheckSetStationId from '@/components/warehouse/packing/CheckSetStationId'
 import { getStationId } from '@/services/utils/warehouse/packingStation';
 import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
 import { updateOrderShipmentError } from '@/services/data/order-shipment';
+
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
     const { setError, setErrorMessage, setIsErrorReload, setLoading, setLoaded } = useGlobalContext();
     const [order, setOrder] = useState(orderData);
+
     const [packedData, setPackedData] = useState({
         parcelOption: '',
         courier: { width: '0', length: '0', depth: '0', weight: '0' },
@@ -37,8 +39,9 @@ export const PackingAppProvider = ({ children, orderData }) => {
         } else {
             setIsSetStationId(false);
         }
+        
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
 
     const handleSignOut = async () => {
         await doLogOut();
@@ -160,8 +163,9 @@ export const PackingAppProvider = ({ children, orderData }) => {
             return;
         }
         const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
-    
+
         if (printLabelResult.success) {
+            setIsGeneratedLabel(true);
             setIsReadyForDispatch(true);
             setLoading(false);
             setLoaded(true);
@@ -174,7 +178,11 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setIsErrorReload(true);
         }
     }
-
+    useEffect(() => {
+        if (order) {
+            console.log('order', order);
+        }
+    }, [order]);
     const handleCompleteOrder = async (withSignOut = false) => {
         setLoading(true);
         const vendorId = order.vendor_id;
@@ -182,7 +190,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         const updateFields = {
             status: 'dispatched'
         }
-        
+
 
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
         if (response.success) {
@@ -204,7 +212,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     const addToRequireAttentionQueue = async (reason) => {
         setLoading(true);
-        
+
         const error_reason = {
             reason: reason,
             details: { vendor_id: order.vendor_id, vendor_order_id: order.vendor_order_id }
@@ -222,7 +230,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
             args.push(error_reason);
         }
         const data = await updateOrderShipmentError(...args);
-        
+
         if (data.success) {
             window.location.reload();
         }

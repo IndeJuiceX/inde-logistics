@@ -206,3 +206,9 @@ export const api_POST = async (url, data) => {
     }
 
 }
+
+
+export const getSelectedParcelOption = async (order) => {
+    const getCourierDetails = order?.shipment?.courier.find(item => item.service_code === order?.shipment?.service_code);
+    return getCourierDetails ? getCourierDetails.package_type : null;
+}
