@@ -178,11 +178,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setIsErrorReload(true);
         }
     }
-    useEffect(() => {
-        if (order) {
-            console.log('order', order);
-        }
-    }, [order]);
+ 
     const handleCompleteOrder = async (withSignOut = false) => {
         setLoading(true);
         const vendorId = order.vendor_id;
