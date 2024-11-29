@@ -160,7 +160,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
             return;
         }
         const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
-        console.log('printLabelResult', printLabelResult);
+    
         if (printLabelResult.success) {
             setIsReadyForDispatch(true);
             setLoading(false);
@@ -182,7 +182,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         const updateFields = {
             status: 'dispatched'
         }
-        console.log('updateFields', updateFields);
+        
 
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
         if (response.success) {
@@ -204,7 +204,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
 
     const addToRequireAttentionQueue = async (reason) => {
         setLoading(true);
-        console.log('addToRequireAttentionQueue', reason);
+        
         const error_reason = {
             reason: reason,
             details: { vendor_id: order.vendor_id, vendor_order_id: order.vendor_order_id }
@@ -222,7 +222,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
             args.push(error_reason);
         }
         const data = await updateOrderShipmentError(...args);
-        console.log('data', data);
+        
         if (data.success) {
             window.location.reload();
         }
