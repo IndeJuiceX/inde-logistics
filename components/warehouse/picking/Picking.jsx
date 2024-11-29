@@ -165,7 +165,10 @@ export default function Picking({ order }) {
                     <header className="bg-slate-100 shadow-md py-2 px-4 relative z-10">
                         <div className="flex justify-between items-center">
                             <div className="flex items-center space-x-4">
-                                <span className="text-3xl font-bold text-blue-600">X{totalQuantity || '0'}</span>
+                                <div className="flex items-baseline">
+                                    <span className="text-s text-slate-500 uppercase tracking-wider">x</span>
+                                    <span className="text-3xl font-bold text-blue-600">{totalQuantity || '0'}</span>
+                                </div>
                                 <div>
                                     <p className="text-xs text-gray-500">Customer</p>
                                     <p className="font-semibold text-sm">{order.buyer.name || 'G M'}</p>
@@ -190,9 +193,8 @@ export default function Picking({ order }) {
                             <div
                                 key={index}
                                 ref={(el) => (itemRefs.current[index] = el)}
-                                className={`bg-white rounded-lg shadow-md mb-2 p-2 flex items-center relative ${
-                                    selectedItem[index] === index ? 'opacity-50' : ''
-                                }`}
+                                className={`bg-white rounded-lg shadow-md mb-2 p-2 flex items-center relative ${selectedItem[index] === index ? 'opacity-50' : ''
+                                    }`}
                                 style={{ height: `${windowHeight - 160}px` }}
                             >
                                 {/* Image column */}
@@ -261,12 +263,14 @@ export default function Picking({ order }) {
                                 </div>
 
                                 {/* Force Tick Button - moved to bottom right of container */}
-                                <button 
-                                    onClick={() => handleForceTick(index)} 
-                                    className="absolute bottom-2 right-2 text-blue-500 text-xs hover:text-blue-600 
-                                             transition-colors duration-150"
+                                <button
+                                    onClick={() => handleForceTick(index)}
+                                    className="absolute bottom-2 right-2 text-slate-400 text-xs 
+                                             hover:text-blue-500 transition-colors duration-150
+                                             border border-slate-200 rounded px-2 py-1
+                                             opacity-70 hover:opacity-100"
                                 >
-                                    Force tick
+                                    <span className="text-[10px] uppercase tracking-wider">Force tick</span>
                                 </button>
                             </div>
                         ))}
