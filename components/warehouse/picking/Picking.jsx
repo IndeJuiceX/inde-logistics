@@ -7,7 +7,7 @@ import LocationDetails from '@/components/warehouse/picking/Locations';
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
 import PickingAppModal from '../modal/PickingAppModal';
@@ -43,35 +43,47 @@ export default function Picking({ order }) {
 
         setPickedItems(prevPickedItems => [...prevPickedItems, currentItem]);
 
-
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
             newSelectedItem[currentIndex] = currentIndex;
             return newSelectedItem;
         });
-        if (currentIndex < order.items.length - 1) {
+
+        // If this was the last item, scroll to the confirmation screen
+        if (currentIndex === order.items.length - 1) {
+            // Add a small delay to ensure the confirmation screen is rendered
+            setTimeout(() => {
+                const confirmationScreen = document.querySelector('.bg-green-500');
+                confirmationScreen?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        } else {
+            // Otherwise, scroll to the next item as before
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
     };
 
-    const handleForceTick = () => {
-
+    const handleForceTick = (itemIndex) => {
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
-            newSelectedItem[currentIndex] = currentIndex;
+            newSelectedItem[itemIndex] = itemIndex;
             return newSelectedItem;
         });
-        setPickedItems(prevPickedItems => [...prevPickedItems, order.items[currentIndex]]);
-        if (currentIndex < order.items.length - 1) {
 
-            const nextIndex = currentIndex + 1;
+        setPickedItems(prevPickedItems => {
+            // Check if item is already picked to avoid duplicates
+            if (!prevPickedItems.includes(order.items[itemIndex])) {
+                return [...prevPickedItems, order.items[itemIndex]];
+            }
+            return prevPickedItems;
+        });
+
+        if (itemIndex < order.items.length - 1) {
+            const nextIndex = itemIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
     }
     const handlePicked = async () => {
 
@@ -147,99 +159,138 @@ export default function Picking({ order }) {
     const deliveryDuration = order?.shipping_code ? getShippingDuration(order.shipping_code) : '-';
     return (
         <>
-            {isBarcodeInitiated &&
-                <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
-                    <div className={styles.container}>
-
-
-                        <div className={styles.headerSection}>
-                            <div className={styles.orderCode}>X{totalQuantity || '0'}</div>
-                            <div className={styles.infoSection}>
-                                <p className={styles.label}>Customer</p>
-                                <p className={styles.value}>{order.buyer.name || 'G M'}</p>
+            {isBarcodeInitiated && (
+                <div className="flex flex-col h-screen bg-gray-100">
+                    {/* Header - updated with blue-gray */}
+                    <header className="bg-slate-100 shadow-md py-2 px-4 relative z-10">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-4">
+                                <span className="text-3xl font-bold text-blue-600">X{totalQuantity || '0'}</span>
+                                <div>
+                                    <p className="text-xs text-gray-500">Customer</p>
+                                    <p className="font-semibold text-sm">{order.buyer.name || 'G M'}</p>
+                                </div>
                             </div>
-
-                            <div className={styles.infoSection}>
-                                <p className={styles.label}>Delivery</p>
-                                <p className={styles.value}>{deliveryDuration}</p>
-                            </div>
-                            <div className={styles.infoSection}>
-                                <p className={styles.label}>Order</p>
-                                <p className={styles.value}>{order.vendor_order_id || '#ABCD'}</p>
+                            <div className="flex space-x-4">
+                                <div>
+                                    <p className="text-xs text-gray-500">Delivery</p>
+                                    <p className="font-semibold text-sm">{deliveryDuration}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">Order</p>
+                                    <p className="font-semibold text-sm">{order.vendor_order_id || '#ABCD'}</p>
+                                </div>
                             </div>
                         </div>
+                    </header>
 
-
-                        <div className={styles.productList} style={{ maxHeight }}>
-                            {order.items.map((item, index) => (
-                                <div
-                                    className={`${styles.productItem} ${selectedItem[index] === index ? styles.disabledItem : ''
-                                        }`}
-                                    key={index}
-                                    data-index={index}
-                                    data-current={selectedItem[index]}
-                                    ref={(el) => (itemRefs.current[index] = el)} // Assign refs to each item
-                                >
-                                    <div className={styles.productImageContainer}>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {/* Main section */}
+                    <main className="flex-1 overflow-y-auto p-2">
+                        {order.items.map((item, index) => (
+                            <div
+                                key={index}
+                                ref={(el) => (itemRefs.current[index] = el)}
+                                className={`bg-white rounded-lg shadow-md mb-2 p-2 flex items-center ${selectedItem[index] === index ? 'opacity-50' : ''
+                                    }`}
+                                style={{ height: `${windowHeight - 160}px` }}
+                            >
+                                {/* Image column */}
+                                <div className="w-1/4 relative h-full">
+                                    <div className="absolute inset-0 flex items-center justify-center">
                                         <img
                                             src={item.image || 'https://cdn.indejuice.com/images/4j6.jpg'}
                                             alt="Product"
-                                            className={styles.productImage}
+                                            className="w-full h-full rounded-md object-contain"
                                         />
-                                        <div className={styles.productQuantity}>
-                                            x{item.quantity || 1}
-                                        </div>
                                     </div>
-                                    <div className={styles.productInfo}>
-                                        <p className={styles.productName}>{item.name}</p>
-                                        <p className={styles.productWarning}>{item.brand_name}</p>
-                                        <div className={styles.productAttributes}>
-                                            <p className={styles.attributes}>
-                                                {Object.values(item.attributes || {})
-                                                    .filter(value => value && value.length > 0)
-                                                    .map(value => Array.isArray(value) ? value.join(', ') : value)
-                                                    .join(', ')}
-                                            </p>
-                                        </div>
-                                        <div onClick={handleForceTick}> force tick </div>
+                                </div>
+
+                                {/* Quantity column - already centered */}
+                                <div className="w-1/5 flex items-center justify-center px-2">
+                                    <div className={`
+                                        aspect-square w-24 
+                                        ${item.quantity > 1 ? 'bg-red-500' : 'bg-blue-500'} 
+                                        rounded-xl shadow-md
+                                        flex flex-col items-center justify-center
+                                        transition-colors duration-200
+                                    `}>
+                                        <span className="text-4xl font-bold text-white">
+                                            {item.quantity || 1}
+                                        </span>
+                                        <span className="text-sm text-white/90 uppercase tracking-wider">
+                                            units
+                                        </span>
                                     </div>
-                                    <LocationDetails location={item.warehouse} styles={styles} />
                                 </div>
-                            ))}
-                        </div>
 
-
-                        <div className={styles.footer}>
-                            <div className={styles.pickerInfo}>
-                                <div>
-                                    <p className={styles.pickerName}>{extractNameFromEmail(order.picker) || 'Ali B.'}</p>
-
-                                </div>
-                                <div className={styles.warningButtonContainer}>
-                                    <button onClick={handleErrorReason} className={styles.warningButton}>!</button>
-                                </div>
-                                {selectedItem.length === order.items.length && (
-                                    <button
-                                        onClick={handlePicked}
-                                        className={styles.completeButton}
-                                    >
-                                        <FaCheckCircle style={{ color: 'green', marginRight: '8px' }} />
-                                        Items Ready
+                                {/* Product details column - centered */}
+                                <div className="w-2/5 px-2 flex flex-col justify-center">
+                                    <h3 className="font-bold text-sm">{item.name}</h3>
+                                    <p className="text-xs text-gray-600">{item.brand_name}</p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {Object.values(item.attributes || {})
+                                            .filter(value => value && value.length > 0)
+                                            .map(value => Array.isArray(value) ? value.join(', ') : value)
+                                            .join(', ')}
+                                    </p>
+                                    <button onClick={() => handleForceTick(index)} className="mt-1 text-blue-500 text-xs text-left">
+                                        Force tick
                                     </button>
-                                )}
+                                </div>
 
+                                {/* Location column - centered */}
+                                <div className="w-1/5 flex items-center justify-center">
+                                    <LocationDetails styles={styles} location={item.warehouse} />
+                                </div>
                             </div>
+                        ))}
+
+                        {/* Add confirmation screen as last item */}
+                        {selectedItem.length === order.items.length && (
+                            <div
+                                onClick={handlePicked}
+                                className="bg-green-500 hover:bg-green-600 rounded-lg shadow-md mb-2 p-2 flex items-center cursor-pointer transition-colors duration-200"
+                                style={{ height: `${windowHeight - 160}px` }}
+                            >
+                                <div className="w-1/2 flex justify-center items-center">
+                                    <div className="text-8xl text-white">
+                                        <FaCheckCircle />
+                                    </div>
+                                </div>
+                                <div className="w-1/2 text-white">
+                                    <h2 className="text-3xl font-bold mb-4">All Items Picked!</h2>
+                                    <p className="text-xl">
+                                        Tap anywhere to confirm
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer - updated with blue-gray */}
+                    <footer className="bg-slate-100 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-2 px-4 flex justify-between items-center h-[60px]">
+                        <div className="">
+                            <div className="flex items-center space-x-2">
+                                <p className="font-semibold text-sm">{extractNameFromEmail(order.picker) || 'Ali B.'}</p>
+                                <button
+                                    onClick={handleErrorReason}
+                                    className="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                                >
+                                    <FaExclamationTriangle />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="mt-2">
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} order={order} />
                         </div>
-
-                    </div>
+                    </footer>
                 </div>
+            )}
 
-
-            }
-            <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={'error'} >
-                <div className={styles.errorReason} onClick={handleErrorQueue}><h1>Missing Item</h1></div>
+            <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={'error'}>
+                <div className="p-4" onClick={handleErrorQueue}>
+                    <h1 className="text-xl font-bold text-red-600">Missing Item</h1>
+                </div>
             </PickingAppModal>
         </>
     );
