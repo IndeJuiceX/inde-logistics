@@ -190,8 +190,9 @@ export default function Picking({ order }) {
                             <div
                                 key={index}
                                 ref={(el) => (itemRefs.current[index] = el)}
-                                className={`bg-white rounded-lg shadow-md mb-2 p-2 flex items-center ${selectedItem[index] === index ? 'opacity-50' : ''
-                                    }`}
+                                className={`bg-white rounded-lg shadow-md mb-2 p-2 flex items-center relative ${
+                                    selectedItem[index] === index ? 'opacity-50' : ''
+                                }`}
                                 style={{ height: `${windowHeight - 160}px` }}
                             >
                                 {/* Image column */}
@@ -224,24 +225,49 @@ export default function Picking({ order }) {
                                 </div>
 
                                 {/* Product details column - centered */}
-                                <div className="w-2/5 px-2 flex flex-col justify-center">
-                                    <h3 className="font-bold text-sm">{item.name}</h3>
-                                    <p className="text-xs text-gray-600">{item.brand_name}</p>
-                                    <p className="text-xs text-gray-500 mt-1">
+                                <div className="w-2/5 px-2 flex flex-col justify-center space-y-2">
+                                    {/* Product Name */}
+                                    <h3 className="font-bold text-base text-slate-800">
+                                        {item.name}
+                                    </h3>
+
+                                    {/* Brand */}
+                                    <div className="flex items-center">
+                                        <span className="text-xs text-slate-500 uppercase tracking-wide">Brand:</span>
+                                        <span className="ml-2 text-sm font-medium text-slate-700">
+                                            {item.brand_name}
+                                        </span>
+                                    </div>
+
+                                    {/* Attributes */}
+                                    <div className="flex flex-wrap gap-1">
                                         {Object.values(item.attributes || {})
                                             .filter(value => value && value.length > 0)
-                                            .map(value => Array.isArray(value) ? value.join(', ') : value)
-                                            .join(', ')}
-                                    </p>
-                                    <button onClick={() => handleForceTick(index)} className="mt-1 text-blue-500 text-xs text-left">
-                                        Force tick
-                                    </button>
+                                            .map((value, i) => (
+                                                <span
+                                                    key={i}
+                                                    className="inline-flex items-center px-2 py-0.5 rounded-full 
+                                                             text-xs font-medium bg-slate-100 text-slate-700"
+                                                >
+                                                    {Array.isArray(value) ? value.join(', ') : value}
+                                                </span>
+                                            ))}
+                                    </div>
                                 </div>
 
                                 {/* Location column - centered */}
                                 <div className="w-1/5 flex items-center justify-center">
                                     <LocationDetails styles={styles} location={item.warehouse} />
                                 </div>
+
+                                {/* Force Tick Button - moved to bottom right of container */}
+                                <button 
+                                    onClick={() => handleForceTick(index)} 
+                                    className="absolute bottom-2 right-2 text-blue-500 text-xs hover:text-blue-600 
+                                             transition-colors duration-150"
+                                >
+                                    Force tick
+                                </button>
                             </div>
                         ))}
 
