@@ -17,10 +17,16 @@ export async function createStockShipment(vendorId, stockShipmentItems) {
 
             // Fetch the existing product by vendor_sku
             const result = await getProductById(vendorId, vendor_sku);
-            if (!result.success || !result.data) {
+            const product = result?.data || null 
+            if (!product) {
                 invalidItems.push({
                     item: vendor_sku,
                     error: `Product with SKU ${vendor_sku} not found in the system`,
+                });
+            } else if(product && product.status?.toLowerCase() !== 'active'){
+                invalidItems.push({
+                    item: vendor_sku,
+                    error: `Product with SKU ${vendor_sku} is not active`,
                 });
             } else {
                 validItems.push(item);
