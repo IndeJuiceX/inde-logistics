@@ -7,7 +7,7 @@ import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 
 export default function PickedAndLabeled() {
     const [isOpenConfirmation, setIsOpenConfirmation] = useState(false);
-    const { handleComplete } = usePackingAppContext();
+    const { handleCompleteOrder } = usePackingAppContext();
 
 
     const handleOpenConfirmation = () => {
@@ -40,10 +40,10 @@ export default function PickedAndLabeled() {
 
                 {/* Buttons */}
                 <div className="flex flex-col items-center gap-4">
-                    <button className="px-6 py-3 bg-white text-teal-500 font-semibold rounded-full shadow-md hover:bg-gray-200" onClick={() => handleComplete(false)}>
+                    <button className="px-6 py-3 bg-white text-teal-500 font-semibold rounded-full shadow-md hover:bg-gray-200" onClick={() => handleCompleteOrder(false)}>
                         COMPLETE
                     </button>
-                    <button className="px-6 py-3 text-white border border-white rounded-full hover:bg-teal-600" onClick={() => handleComplete(true)}>
+                    <button className="px-6 py-3 text-white border border-white rounded-full hover:bg-teal-600" onClick={() => handleCompleteOrder(true)}>
                         COMPLETE & LOGOUT
                     </button>
                 </div>

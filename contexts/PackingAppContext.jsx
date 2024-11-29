@@ -10,7 +10,7 @@ import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValid
 import CheckSetStationId from '@/components/warehouse/packing/CheckSetStationId';
 import { getStationId } from '@/services/utils/warehouse/packingStation';
 import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
-
+import { updateOrderShipmentError } from '@/services/data/order-shipment';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
@@ -153,6 +153,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     };
 
     const printLabel = async () => {
+        setLoading(true);
         const stationId = getStationId();
         if (stationId === null) {
             setIsSetStationId(false);
@@ -162,10 +163,19 @@ export const PackingAppProvider = ({ children, orderData }) => {
         console.log('printLabelResult', printLabelResult);
         if (printLabelResult.success) {
             setIsReadyForDispatch(true);
+            setLoading(false);
+            setLoaded(true);
+        }
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(printLabelResult.error);
+            setIsErrorReload(true);
         }
     }
 
-    const handleComplete = async (withSignOut = false) => {
+    const handleCompleteOrder = async (withSignOut = false) => {
         setLoading(true);
         const vendorId = order.vendor_id;
         const vendorOrderId = order.vendor_order_id;
@@ -183,10 +193,50 @@ export const PackingAppProvider = ({ children, orderData }) => {
                 window.location.reload();
             }
         }
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(response.error);
+            setIsErrorReload(true);
+        }
+    }
+
+    const addToRequireAttentionQueue = async (reason) => {
+        setLoading(true);
+        console.log('addToRequireAttentionQueue', reason);
+        const error_reason = {
+            reason: reason,
+            details: { vendor_id: order.vendor_id, vendor_order_id: order.vendor_order_id }
+        }
+        // Validate that vendor_id, stock_shipment_id, and item are present
+        if (!order.vendor_id || !order.vendor_order_id) {
+            setError(true);
+            setErrorMessage('Something went wrong, Please reload the page');
+            setIsErrorReload(true);
+        }
+
+        // Prepare the arguments array
+        const args = [order.vendor_id, order.vendor_order_id];
+        if (error_reason && error_reason != '' && error_reason !== undefined) {
+            args.push(error_reason);
+        }
+        const data = await updateOrderShipmentError(...args);
+        console.log('data', data);
+        if (data.success) {
+            window.location.reload();
+        }
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(data.error);
+            setIsErrorReload(true);
+        }
     }
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleComplete }}>
+            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue }}>
             {!isSetStationId && <CheckSetStationId />}
             {isSetStationId && children}
 
