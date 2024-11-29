@@ -11,8 +11,6 @@ export default async function PackingPage() {
         unPackedOrder = getNextUnPackedOrder;
     }
 
-    
-
     return (
         <PackingApp orderData={unPackedOrder} />
     )

@@ -27,23 +27,12 @@ export default function PackingApp({ orderData }) {
                         <ErrorModal />
                         <PageSpinner />
                         <PackingAppProvider orderData={orderData.data}>
-
-
                             <PackingHeader />
-
-                            {/* Main Section */}
                             <div className={styles.main}>
-                                {/* Product List */}
-
                                 <PackingItems />
-
-                                {/* Parcel Options */}
                                 <ParcelOptions />
-                                {/* <ParcelDetails /> */}
                             </div>
-
                             <PackingFooter />
-
                         </PackingAppProvider>
                     </GlobalStateProvider>
                 </div>
