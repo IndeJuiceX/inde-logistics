@@ -164,17 +164,15 @@ export default function Picking({ order }) {
                     {/* Header - updated with blue-gray */}
                     <header className="bg-slate-100 shadow-md py-2 px-4 relative z-10">
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-4">
-                                <div className="flex items-baseline">
-                                    <span className="text-s text-slate-500 uppercase tracking-wider">x</span>
-                                    <span className="text-3xl font-bold text-blue-600">{totalQuantity || '0'}</span>
-                                </div>
+                            <div className="px-10 py-1 rounded-lg bg-black transition-colors duration-200 -ml-5">
+                                <span className="text-sm text-white/90 uppercase tracking-wider">x</span>
+                                <span className="text-2xl font-bold text-white">{totalQuantity || '0'}</span>
+                            </div>
+                            <div className="flex space-x-4">
                                 <div>
                                     <p className="text-xs text-gray-500">Customer</p>
                                     <p className="font-semibold text-sm">{order.buyer.name || 'G M'}</p>
                                 </div>
-                            </div>
-                            <div className="flex space-x-4">
                                 <div>
                                     <p className="text-xs text-gray-500">Delivery</p>
                                     <p className="font-semibold text-sm">{deliveryDuration}</p>
