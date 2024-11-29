@@ -5,7 +5,7 @@ export default function PickingAppModal({ isOpen, onClose, statusClass = 'noOrde
 
     if (!isOpen) return null;
     return (
-        <div className={`${styles.modalOverlay} ${statusClass === 'noOrder' ? styles.noOrder : ''} ${statusClass === 'newOrder' ? styles.newOrder : ''}`}>
+        <div className={`${styles.modalOverlay} ${statusClass === 'noOrder' ? styles.noOrder : ''} ${statusClass === 'newOrder' ? styles.newOrder : ''} ${statusClass === 'error' ? styles.error : ''}`}>
             <div className={styles.modalContainer}>
                 <button className={styles.closeButton} onClick={onClose}>&times;</button>
                 {/* <div className={styles.iconContainer}>

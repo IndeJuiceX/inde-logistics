@@ -1,25 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
-import { getNextUnPickedOrderShipment } from '@/services/data/order-shipment';
-export default function NoOrders() {
-    const { handleSignOut } = usePickingAppContext();
+import { getNextUnPackedOrderShipment } from '@/services/data/order-shipment';
+
+export default function PackingNoOrders() {
+    // const { handleSignOut } = usePackingAppContext();
     const [isOpenModal, setIsOpenModal] = useState(true);
     const [isNewOrder, setIsNewOrder] = useState(false);
     const [status, setStatus] = useState('noOrder');
     const [statusHeading, setStatusHeading] = useState('No Orders Found');
-
+    const handleSignOut = async () => {
+        await doLogOut();
+    }
     const checkingNewOrders = async () => {
-        // console.log('checkingNewOrders');
-        // app/api/v1/admin/order-shipments/get-next-unpicked/route.js
-        // const response = await fetch('/api/v1/admin/order-shipments/get-next-unpicked');
-        // const data = await response.json();
-        // console.log('data', data);
-        const data = await getNextUnPickedOrderShipment();
+
+        const data = await getNextUnPackedOrderShipment();
 
 
         if (data.success && data.data && !Array.isArray(data.data)) {
@@ -39,11 +36,11 @@ export default function NoOrders() {
 
 
     return (
-        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={status} >
-         
+        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(true)} statusClass={status} >
+            {/* background-color: #00d084; */}
             <div>
                 <h1>{statusHeading}</h1>
-                {isNewOrder && <Link className={styles.viewOrderLink} href = {'/warehouse/picking'}>View Order</Link>}
+                {isNewOrder && <button className={styles.viewOrderLink} onClick={() => window.location.href = '/warehouse/packing'}>View Order</button>}
                 <button onClick={handleSignOut}>Sign Out</button>
 
             </div>

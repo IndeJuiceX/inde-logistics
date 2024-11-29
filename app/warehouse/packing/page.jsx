@@ -8,7 +8,7 @@ export default async function PackingPage() {
     const getNextUnPackedOrder = await getNextUnPackedOrderShipment();
     let unPackedOrder = [];
     if (getNextUnPackedOrder.success) {
-        unPackedOrder = getNextUnPackedOrder.data;
+        unPackedOrder = getNextUnPackedOrder;
     }
 
 

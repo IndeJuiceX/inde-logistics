@@ -23,8 +23,6 @@ export function getShippingCost(code) {
         console.error(`Invalid shipping code: ${code}`);
         return null;
     }
-    console.log('code', code);
-    console.log('shippingCost', shippingCost);
-    console.log('shippingCost[code]', shippingCost[code]);
+   
     return shippingCost[code];
 }

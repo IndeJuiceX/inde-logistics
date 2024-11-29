@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import LocationDetails from '@/components/warehouse/picking/Locations';
 import ItemBarcode from '@/components/warehouse/barcode/ItemBarcode';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
-import { extractNameFromEmail } from '@/services/utils/index';
+import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
 import { FaCheckCircle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
+import PickingAppModal from '../modal/PickingAppModal';
 
-export default function Picking({ order, order_id }) {
+export default function Picking({ order }) {
     // console.log('test order ', order);
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
@@ -21,10 +22,8 @@ export default function Picking({ order, order_id }) {
     const [currentIndex, setCurrentIndex] = useState(0); // Track the current item index
     const itemRefs = useRef([]); // Array of refs for each item
     const [selectedItem, setSelectedItem] = useState([]);
-
-
-
-    // console.log('order', order);
+    const [pickedItems, setPickedItems] = useState([]);
+    const [isOpenModal, setIsOpenModal] = useState(false);
 
 
     useEffect(() => {
@@ -41,21 +40,21 @@ export default function Picking({ order, order_id }) {
 
     const moveToNextItem = (barcodeValue) => {
         const currentItem = order.items[currentIndex];
+
+        setPickedItems(prevPickedItems => [...prevPickedItems, currentItem]);
+
+
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
             newSelectedItem[currentIndex] = currentIndex;
             return newSelectedItem;
         });
-        // const barcodes = currentItem?.barcodes;
-        // if (barcodes && Array.isArray(barcodes) && barcodes.includes(barcodeValue)) {
         if (currentIndex < order.items.length - 1) {
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
-
-
-
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
     };
 
     const handleForceTick = () => {
@@ -65,8 +64,9 @@ export default function Picking({ order, order_id }) {
             newSelectedItem[currentIndex] = currentIndex;
             return newSelectedItem;
         });
-
+        setPickedItems(prevPickedItems => [...prevPickedItems, order.items[currentIndex]]);
         if (currentIndex < order.items.length - 1) {
+
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -74,12 +74,12 @@ export default function Picking({ order, order_id }) {
 
     }
     const handlePicked = async () => {
-        const totalItems = order.items.length; //index starts from 0
-        const pickedItems = selectedItem.filter(item => item !== undefined).length;
-        console.log('pickedItems', pickedItems);
-        console.log('totalItems', totalItems);
 
-        if (pickedItems === totalItems) {
+        const totalItems = order.items.length; //index starts from 0
+        const pickedItemsCount = pickedItems.length;
+
+
+        if (pickedItemsCount === totalItems) {
             const vendor_id = order.vendor_id;
             const vendor_order_id = order.vendor_order_id;
 
@@ -90,7 +90,7 @@ export default function Picking({ order, order_id }) {
             }
 
             const data = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
-            console.log('data', data);
+
 
             if (data.success) {
                 window.location.reload();
@@ -104,6 +104,8 @@ export default function Picking({ order, order_id }) {
 
     }
 
+
+
     const handleErrorQueue = async () => {
         const errorItem = order.items[currentIndex];
         const vendor_id = order.vendor_id;
@@ -114,7 +116,6 @@ export default function Picking({ order, order_id }) {
         }
         // Validate that vendor_id, stock_shipment_id, and item are present
         if (!vendor_id || !vendor_order_id) {
-            // return NextResponse.json({ error: 'vendor_id, vendor_order_id, and item are required' }, { status: 400 });
             setError(true);
             setErrorMessage('Something went wrong, Please reload the page');
             setIsErrorReload(true);
@@ -138,30 +139,29 @@ export default function Picking({ order, order_id }) {
 
     }
 
+    const handleErrorReason = () => {
+        setIsOpenModal(true);
+    }
 
     const totalQuantity = order?.items?.length ? order.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
+    const deliveryDuration = order?.shipping_code ? getShippingDuration(order.shipping_code) : '-';
     return (
         <>
-
-            {/* <InitiateBarcodeScanner setIsInitiated={setBarcodeInitiated} /> */}
             {isBarcodeInitiated &&
                 <div className={styles.fullscreen} style={{ height: windowHeight, width: windowWidth }}>
                     <div className={styles.container}>
 
-                        {/* Header Section */}
+
                         <div className={styles.headerSection}>
                             <div className={styles.orderCode}>X{totalQuantity || '0'}</div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Customer</p>
                                 <p className={styles.value}>{order.buyer.name || 'G M'}</p>
                             </div>
-                            {/* <div className={styles.infoSection}>
-                                <p className={styles.label}>Vendor</p>
-                                <p className={styles.value}>{order.vendor_id || 'INVITERI'}</p>
-                            </div> */}
+
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Delivery</p>
-                                <p className={styles.value}>24</p>
+                                <p className={styles.value}>{deliveryDuration}</p>
                             </div>
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Order</p>
@@ -169,10 +169,9 @@ export default function Picking({ order, order_id }) {
                             </div>
                         </div>
 
-                        {/* Product & Location Section */}
+
                         <div className={styles.productList} style={{ maxHeight }}>
                             {order.items.map((item, index) => (
-                                // ${index < currentIndex ? styles.disabledItem : ''}
                                 <div
                                     className={`${styles.productItem} ${selectedItem[index] === index ? styles.disabledItem : ''
                                         }`}
@@ -203,22 +202,22 @@ export default function Picking({ order, order_id }) {
                                                     .join(', ')}
                                             </p>
                                         </div>
-                                        <button onClick={handleForceTick}> force tick </button>
+                                        <div onClick={handleForceTick}> force tick </div>
                                     </div>
                                     <LocationDetails location={item.warehouse} styles={styles} />
                                 </div>
                             ))}
                         </div>
 
-                        {/* Picker Info & Barcode */}
+
                         <div className={styles.footer}>
                             <div className={styles.pickerInfo}>
                                 <div>
                                     <p className={styles.pickerName}>{extractNameFromEmail(order.picker) || 'Ali B.'}</p>
-                                    {/* <p className={styles.containerInfo}>Container 1</p> */}
+
                                 </div>
                                 <div className={styles.warningButtonContainer}>
-                                    <button onClick={handleErrorQueue} className={styles.warningButton}>!</button>
+                                    <button onClick={handleErrorReason} className={styles.warningButton}>!</button>
                                 </div>
                                 {selectedItem.length === order.items.length && (
                                     <button
@@ -236,7 +235,12 @@ export default function Picking({ order, order_id }) {
 
                     </div>
                 </div>
+
+
             }
+            <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={'error'} >
+                <div className={styles.errorReason} onClick={handleErrorQueue}><h1>Missing Item</h1></div>
+            </PickingAppModal>
         </>
     );
 }

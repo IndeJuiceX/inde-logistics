@@ -19,16 +19,7 @@ export const GlobalStateProvider = ({ children }) => {
     // Globally assign the selected vender products
     const [globalProducts, setGlobalProducts] = useState([]);
 
-    // // Functions to control loading state
-    // const showLoading = () => setLoading(true);
-    // const hideLoading = () => setLoading(false);
-
-    // // Functions to control error state
-    // const showError = (message) => setError(message);
-    // const hideError = () => setError(null);
-    // error,
-    // showError,
-    // hideError,
+   
 
     return (
         <GlobalStateContext.Provider

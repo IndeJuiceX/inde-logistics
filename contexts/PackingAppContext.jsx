@@ -24,18 +24,21 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [currentClicked, setCurrentClicked] = useState('');
     const [enteredValue, setEnteredValue] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
-    const [isReadyForDispatch, setIsReadyForDispatch] = useState(false);
+    const [isReadyForDispatch, setIsReadyForDispatch] = useState(order?.shipment?.label_key != null && order?.shipment?.tracking != null);
     const [isSetStationId, setIsSetStationId] = useState(true);
+    const [isGeneratedLabel, setIsGeneratedLabel] = useState(order?.shipment?.label_key != null && order?.shipment?.tracking != null);
+
 
     useEffect(() => {
         const checkSetStationId = getStationId();
-       
+
         if (checkSetStationId) {
             setIsSetStationId(true);
         } else {
             setIsSetStationId(false);
         }
     }, []);
+
 
     const handleSignOut = async () => {
         await doLogOut();
@@ -62,6 +65,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         };
 
         let service_code = payload.courier.service_code;
+
         const validationResult = parcelPayloadValidation(order, payload, packedData);
         if (validationResult.error) {
             setLoading(false);
@@ -92,6 +96,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         };
 
         const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
+
 
         if (updateResult.success) {
             setLoading(false);
@@ -154,14 +159,34 @@ export const PackingAppProvider = ({ children, orderData }) => {
             return;
         }
         const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
-        console.log('printLabel response', printLabelResult);
+        console.log('printLabelResult', printLabelResult);
+        if (printLabelResult.success) {
+            setIsReadyForDispatch(true);
+        }
     }
-    useEffect(() => {
-        console.log('isSetStationId', isSetStationId);
-    }, [isSetStationId]);
+
+    const handleComplete = async (withSignOut = false) => {
+        setLoading(true);
+        const vendorId = order.vendor_id;
+        const vendorOrderId = order.vendor_order_id;
+        const updateFields = {
+            status: 'dispatched'
+        }
+        console.log('updateFields', updateFields);
+
+        const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
+        if (response.success) {
+            if (withSignOut) {
+                await doLogOut();
+            }
+            else {
+                window.location.reload();
+            }
+        }
+    }
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId }}>
+            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleComplete }}>
             {!isSetStationId && <CheckSetStationId />}
             {isSetStationId && children}
 

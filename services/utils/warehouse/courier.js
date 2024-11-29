@@ -6,12 +6,12 @@ import { getOrderShipment, updateOrderShipment, updateOrderShipmentError } from 
 import { getCourierDetails } from "@/services/data/courier";
 import { cleanResponseData } from "@/services/utils";
 
-export const getServiceCode = (order, selectedParcelType) => {
-    const parcelType = getParcelType(order, selectedParcelType);
+export const getServiceCode = async (order, selectedParcelType) => {
+    const parcelType = await getParcelType(order, selectedParcelType);
     return parcelType.service_code;
 }
 // we can extend this function to get the parcel type from the service provider
-export const getParcelType = (order, selectedParcelType) => {
+export const getParcelType = async (order, selectedParcelType) => {
 
     const shippingCodeSplit = order?.shipping_code?.split('-');
     if (!shippingCodeSplit[0]) {
@@ -162,6 +162,7 @@ export const generateLabel = async (vendorId, orderId,stationId) => {
             label_key: shipment.label_key,
         };
     } else {
+        console.log('data before sending', data);
         // return data;
         const url = 'https://indelabels.vercel.app/api/label'; // Replace with your actual API endpoint
         const result = await api_POST(url, data);
