@@ -158,6 +158,10 @@ export const PackingAppProvider = ({ children, orderData }) => {
             return;
         }
         const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
+        console.log('printLabelResult', printLabelResult);
+        if (printLabelResult.success) {
+            setIsReadyForDispatch(true);
+        }
     }
 
     const handleComplete = async () => {
