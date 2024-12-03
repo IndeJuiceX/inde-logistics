@@ -2,7 +2,7 @@
 
 import { getVendorShippingCodes } from '@/services/data/courier';
 import ShippingOptionsView from '@/components/vendor/shipping-options/ShippingOptionsView';
-
+import { getAllCountriesWithNames } from '@/services/utils/countries';
 export default async function ShippingOptionsPage({ params }) {
     const vendorId = params.vendorId;
     let results = [];
@@ -11,5 +11,9 @@ export default async function ShippingOptionsPage({ params }) {
     if (shippingCodes.success) {
         results = shippingCodes.data;
     }
-    return <ShippingOptionsView shippingCodes={results.shipping_codes} />;
+
+    const countries = getAllCountriesWithNames();
+    console.log('countries', countries);
+
+    return <ShippingOptionsView shippingCodes={results.shipping_codes} countries={countries} courierCodes={countries} />;
 }

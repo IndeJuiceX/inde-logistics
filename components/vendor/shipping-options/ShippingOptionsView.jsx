@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-export default function ShippingOptionsView({ shippingCodes }) {
+export default function ShippingOptionsView({ shippingCodes, countries }) {
     const shippingOptions = [
         { code: 'RM-24', deliveryTime: 'Next Day' },
         { code: 'RM-48', deliveryTime: '2 - 3 Days' },
@@ -38,6 +38,25 @@ export default function ShippingOptionsView({ shippingCodes }) {
             ) : (
                 <p className="text-gray-600">No shipping codes available.</p>
             )}
+
+            <h2 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Countries</h2>
+            <table className="min-w-full bg-white">
+                <thead>
+                    <tr>
+                        <th className="border py-2">Code</th>
+                        <th className="border py-2">Country</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {countries.map((country, index) => (
+                        <tr key={index} className="text-gray-600">
+                            <td className="border px-4 py-2">{country.code}</td>
+                            <td className="border px-4 py-2">{country.name}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
+
     );
 }
