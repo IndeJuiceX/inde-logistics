@@ -37,9 +37,11 @@ export default function PackageSize() {
 
     const handleFieldClick = (field) => {
         setActiveField(field);
-        // if(selectedParcelOption)
-        // const parcelDimensions = getParcelDimensions(selectedParcelOption);
-        setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
+        if (selectedParcelOption !== 'custom') {
+            const parcelDimensions = getParcelDimensions(selectedParcelOption);
+            console.log('parcelDimensions', parcelDimensions);
+            setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
+        }
 
         setIsOpenModal(true);
     }
