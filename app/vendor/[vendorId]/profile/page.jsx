@@ -8,6 +8,6 @@ export default async function VendorProfilePage({ params }) {
     if (profile.success) {
         result = profile.data
     }
-    console.log('result', result)
+
     return <Profile vendorId={params.vendorId} profileData={result} />;
 }

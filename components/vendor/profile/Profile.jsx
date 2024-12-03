@@ -4,14 +4,7 @@ import { useState } from 'react';
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
 
 export default function Profile({ vendorId, profileData }) {
-    // const profileData = {
-    //     companyName: "Acme Corporation",
-    //     companyNumber: "123456789",
-    //     phone: "+1-800-555-0199",
-    //     email: "contact@acmecorp.com",
-    //     apiKey: "12345-abcde-67890-fghij"
-
-    // };
+    const apiKeyLabel = process.env.APP_ENV === 'staging' ? 'Sandbox Api Key' : 'Api Key';
 
     const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
 
@@ -48,7 +41,7 @@ export default function Profile({ vendorId, profileData }) {
                     <input type="email" name="email" value={profileData.user_email} readOnly className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
                 </div>
                 <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">API Key:</label>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">{apiKeyLabel}:</label>
                     <div className="flex items-center">
                         {!isApiKeyVisible &&
                             <input
