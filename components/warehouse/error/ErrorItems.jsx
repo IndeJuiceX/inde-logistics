@@ -4,7 +4,7 @@ import { useErrorAppContext } from '@/contexts/ErrorAppContext';
 
 
 export default function ErrorItems() {
-    const { currentErrorOrder } = useErrorAppContext();
+    const { currentErrorOrder, currentOrderShipment } = useErrorAppContext();
     return (
         <>
             {(currentErrorOrder && currentErrorOrder?.items.length > 0) && currentErrorOrder?.items?.map((item, index) => (
@@ -20,16 +20,18 @@ export default function ErrorItems() {
                         <span className="font-bold text-lg">{item.name}</span>
                         <span className="text-sm text-gray-500">{item.brand}</span>
                         <span className="text-xs text-gray-400">
-                        {Object.values(item.attributes || {})
-                                    .filter(value => value && value.length > 0)
-                                    .map(value => Array.isArray(value) ? value.join(', ') : value)
-                                    .join(' | ')}</span>
+                            {Object.values(item.attributes || {})
+                                .filter(value => value && value.length > 0)
+                                .map(value => Array.isArray(value) ? value.join(', ') : value)
+                                .join(' | ')}</span>
                     </div>
-                    <div className="ml-auto bg-green-200 text-green-700 font-bold text-xl px-4 py-2 rounded-full">
+                    <div className={`ml-auto font-bold text-xl px-4 py-2 rounded-full ${currentOrderShipment?.status === 'picked'
+                            ? 'bg-gray-200 text-gray-700'
+                            : 'bg-green-200 text-green-700'
+                        }`}>
                         x{item.quantity}
                     </div>
                 </div>
-
             ))}
         </>
     );
