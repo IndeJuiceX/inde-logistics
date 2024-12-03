@@ -39,6 +39,7 @@ const batchGetItems = async (keyPairs, options = {}) => {
     const {
         concurrencyLimit = CONCURRENCY_LIMIT,
         retryLimit = RETRY_LIMIT,
+        attributes = null, // Accept attributes to fetch
     } = options;
 
     // Split the keys into batches of MAX_BATCH_GET_SIZE
@@ -63,7 +64,14 @@ const batchGetItems = async (keyPairs, options = {}) => {
             RequestItems: {
                 [TABLE_NAME]: {
                     Keys: batch,
-                   // ProjectionExpression: "pk, sk, Name, Price", // Specify needed attributes
+                    // Add ProjectionExpression and ExpressionAttributeNames if attributes are provided
+                    ...(attributes && {
+                        ProjectionExpression: attributes.map((attr, idx) => `#attr${idx}`).join(', '),
+                        ExpressionAttributeNames: attributes.reduce((acc, attr, idx) => {
+                            acc[`#attr${idx}`] = attr;
+                            return acc;
+                        }, {})
+                    })
                 }
             },
             ReturnConsumedCapacity: "TOTAL",
@@ -126,7 +134,6 @@ const batchGetItems = async (keyPairs, options = {}) => {
 
     return { success: true, data: allItems };
 };
-
 
 
 
@@ -195,7 +202,7 @@ const queryItems = async (params) => {
 };
 
 
-const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet=[]) => {
+const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = []) => {
     const client = getClient();
     let params = {
         TableName: TABLE_NAME,

@@ -39,10 +39,10 @@ paths:
                 properties:
                   data:
                     oneOf:
-                      - $ref: '#/components/schemas/product'
+                      - $ref: '#/components/schemas/product_create'
                       - type: array
                         items:
-                          $ref: '#/components/schemas/product'
+                          $ref: '#/components/schemas/product_create'
                     description: >
                       If `vendor_sku` is provided, `data` is a single product object.
                       Otherwise, `data` is an array of product objects.

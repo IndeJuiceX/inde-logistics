@@ -5,7 +5,7 @@ import { generateOrderId, cleanResponseData } from '@/services/utils';
 import { executeDataQuery } from '@/services/external/athena';
 import { createShipmentAndUpdateOrder } from './order-shipment';
 import { getLoggedInUser } from '@/app/actions';
-import { queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
+import { queryItemsWithPkAndSk, batchGetItems } from '@/services/external/dynamo/wrapper';
 import { getCourierDetails, validateOrderShippingCode } from '@/services/data/courier';
 import { getExpectedDeliveryDate } from '@/services/utils';
 export const createOrder = async (vendorId, order) => {
@@ -13,7 +13,7 @@ export const createOrder = async (vendorId, order) => {
         const errors = [];
         const transactionItems = [];
         const validShippingCode = await validateOrderShippingCode(vendorId, order)
-      
+
         if (!validShippingCode.success) {
             return { success: false, error: validShippingCode?.error || 'Could not validate order shipping code', details: validShippingCode?.details || 'Order Shipping code validation failed' }
         }
@@ -405,7 +405,7 @@ export const getOrderDetails = async (vendorId, vendorOrderId) => {
 
 
 
-export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
+/*export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
     const orderData = await getOrder(vendorId, orderId);
     if (!orderData.success) {
         return { success: false, error: orderData?.error || 'Order not found ' };
@@ -451,4 +451,95 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
         data: cleanOrder
     };
 
-}
+}*/
+export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields = []) => {
+    // Fetch the order data
+    const orderData = await getOrder(vendorId, orderId);
+    if (!orderData.success) {
+        return { success: false, error: orderData?.error || 'Order not found' };
+    }
+    const order = orderData.data;
+
+    // Fetch the order items data
+    const orderItemsData = await queryItemsWithPkAndSk(`VENDORORDERITEM#${vendorId}`, `ORDER#${orderId}#ITEM#`);
+    if (!orderItemsData.success) {
+        return { success: false, error: orderItemsData?.error || 'Order Items not found' };
+    }
+
+    const orderItems = orderItemsData.data;
+
+    // Extract unique vendor_sku values from orderItems
+    const vendorSkus = orderItems.map((item) => item.vendor_sku);
+    const uniqueVendorSkus = [...new Set(vendorSkus)];
+
+    // Build keyPairs for batch fetching
+    const keyPairs = uniqueVendorSkus.map((sku) => ({
+        pk: `VENDORPRODUCT#${vendorId}`,
+        sk: `PRODUCT#${sku}`,
+    }));
+
+    // Attributes to fetch from products
+    const attributesToFetch = [
+        'vendor_sku',
+        'name',
+        'brand_name',
+        'attributes',
+        'image',
+        'sale_price',
+        'cost_price',
+        'warehouse',
+        'barcodes',
+        'customs_code',
+    ];
+
+    // Fetch products in batch
+    const batchResult = await batchGetItems(keyPairs, { attributes: attributesToFetch });
+
+    if (!batchResult.success) {
+        return { success: false, error: 'Failed to fetch product data' };
+    }
+
+    const products = batchResult.data;
+
+    // Build a map of products for quick lookup
+    const productDataMap = {};
+    for (const product of products) {
+        productDataMap[product.vendor_sku] = product;
+    }
+
+    // Map order items with their corresponding product details
+    const cleanOrderItems = orderItems.map((orderItem) => {
+        const product = productDataMap[orderItem.vendor_sku];
+        if (product) {
+            return {
+                vendor_sku: orderItem.vendor_sku,
+                quantity: orderItem.quantity,
+                name: product.name,
+                brand_name: product.brand_name,
+                attributes: product.attributes,
+                image: product.image,
+                sale_price: product.sale_price,
+                cost_price: product.cost_price,
+                warehouse: product.warehouse || null,
+                barcodes: product.barcodes || null,
+                customs_code: product.customs_code || null,
+            };
+        } else {
+            // Handle case where product data is missing
+            return {
+                vendor_sku: orderItem.vendor_sku,
+                quantity: orderItem.quantity,
+                // Other fields could be set to null or default values
+            };
+        }
+    });
+
+    // Clean the order data
+    const cleanOrder = cleanResponseData(order);
+    cleanOrder.items = cleanOrderItems;
+
+    return {
+        success: true,
+        data: cleanOrder,
+    };
+};
