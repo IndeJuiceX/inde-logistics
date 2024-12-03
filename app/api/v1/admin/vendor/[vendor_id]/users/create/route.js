@@ -4,7 +4,7 @@ import { saveUser } from '@/services/data/user';     // DynamoDB utility functio
 
 export async function POST(request, { params }) {
   try {
-    const vendorId = params.vendorId; // Get vendorId from URL parameters
+    const vendorId = params.vendor_id; // Get vendorId from URL parameters
 
     const body = await request.json();  // Parse JSON body
 
