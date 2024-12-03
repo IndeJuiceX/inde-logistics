@@ -12,6 +12,7 @@ export default function VendorOnboarding() {
     email: '',
     //shippingCode: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const [submissionResult, setSubmissionResult] = useState(null);
 
@@ -22,7 +23,7 @@ export default function VendorOnboarding() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setIsLoading(true);
     // Send form data to the backend API route to process
     const res = await fetch('/api/v1/admin/vendor/onboard', {
       method: 'POST',
@@ -34,10 +35,12 @@ export default function VendorOnboarding() {
 
     if (res.ok) {
       const data = await res.json();
-      setSubmissionResult(`Vendor Onboarded. Vendor ID: ${data.vendorId}, API Key: ${data.apiKey}`);
+      window.location.href = '/onboarding-complete';
     } else {
       setSubmissionResult('Error during vendor onboarding');
+      setIsLoading(false);
     }
+    
   };
 
   return (
@@ -60,8 +63,10 @@ export default function VendorOnboarding() {
           <label className="form-label">Email:</label>
           <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-input" required />
         </div>
-       
-        <button type="submit" className="submit-button">Submit</button>
+
+        <button type="submit" className="submit-button" disabled={isLoading}>
+          {isLoading ? 'Submitting...' : 'Submit'}
+        </button>
       </form>
       {submissionResult && <p className="result-message">{submissionResult}</p>}
     </div>
