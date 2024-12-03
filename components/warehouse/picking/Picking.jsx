@@ -157,7 +157,7 @@ export default function Picking({ order, order_id }) {
                             </div>
                             {/* <div className={styles.infoSection}>
                                 <p className={styles.label}>Vendor</p>
-                                <p className={styles.value}>{order.vendor_id || 'INVITERI'}</p>
+                                <p className={styles.value}>{order.vendor_id ||  'INVITERI'}</p>
                             </div> */}
                             <div className={styles.infoSection}>
                                 <p className={styles.label}>Delivery</p>
