@@ -1,5 +1,5 @@
 import { getItem, queryItems, putItem, deleteItem } from '../external/dynamo/wrapper';
-
+import { getLoggedInUser } from '@/app/actions';
 // Function to retrieve a single vendor by ID
 export const getUserByEmail = async (email) => {
   return await getItem(`USER#${email}`, `USER#${email}`);
@@ -56,3 +56,13 @@ export const getVendorUsers = async (vendorId) => {
   // Query the DynamoDB index
   return await queryItems(params);
 };
+
+export const getUserProfile = async (vendorId) => {
+  const userData = await getLoggedInUser()
+  const vendorData = await getItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`);
+  const vendor = vendorData?.data || null
+  if (!vendor) {
+    return { success: false, error: 'Vendor not found' }
+  }
+  return {success:true , data :{user_email : userData?.email||null, api_key:vendor.api_key, company_name:vendor.company_name, company_number: vendor.company_number}}
+}
