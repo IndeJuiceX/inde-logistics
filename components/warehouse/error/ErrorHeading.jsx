@@ -25,14 +25,16 @@ export default function ErrorHeading() {
             </div>
 
             <div className="flex flex-col items-start w-full sm:w-auto mb-2 sm:mb-0">
+                <div className="text-sm text-gray-500">Order</div>
+                <div className="font-semibold">{currentErrorOrder?.vendor_order_id}</div>
+            </div>
+
+            <div className="flex flex-col items-start w-full sm:w-auto mb-2 sm:mb-0">
                 <div className="text-sm text-red-600 font-semibold">{currentErrorOrderIndex + 1} of {totalErrorOrders}</div>
                 <div className="text-sm text-red-600 font-semibold "> IN QUEUE</div>
             </div>
 
-            <div className="flex flex-col items-start w-full sm:w-auto mb-2 sm:mb-0">
-                <div className="text-sm text-gray-500">Customer</div>
-                <div className="font-semibold">INVITEXGG</div>
-            </div> 
+
 
             <div className="flex items-center w-full sm:w-auto">
                 <div className="h-8 w-8 bg-gray-200 flex items-center justify-center rounded-full">≡</div>

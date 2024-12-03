@@ -3,17 +3,26 @@
 import { useErrorAppContext } from '@/contexts/ErrorAppContext';
 
 export default function NextPreviousButton() {
-    const { currentErrorOrderIndex, setCurrentErrorOrderIndex, totalErrorOrders } = useErrorAppContext();
+    const { errorOrders, currentErrorOrderIndex, setCurrentErrorOrderIndex, totalErrorOrders, setCurrentErrorOrder } = useErrorAppContext();
 
     const handlePrevious = () => {
         if (currentErrorOrderIndex > 0) {
+            const previousOrder = errorOrders[currentErrorOrderIndex - 1];
             setCurrentErrorOrderIndex(currentErrorOrderIndex - 1);
+            setCurrentErrorOrder(previousOrder);
         }
     };
 
     const handleNext = () => {
-        if (currentErrorOrderIndex < totalErrorOrders - 1) {
-            setCurrentErrorOrderIndex(currentErrorOrderIndex + 1);
+        console.log('currentErrorOrderIndex', currentErrorOrderIndex);
+        console.log('currentErrorOrderIndex', currentErrorOrderIndex);
+        if (errorOrders && currentErrorOrderIndex < totalErrorOrders - 1) { // Added check for errorOrders
+            const nextOrderIndex = currentErrorOrderIndex + 1;
+            console.log('nextOrderIndex', nextOrderIndex);
+            const nextOrder = errorOrders[nextOrderIndex];
+            console.log('nextOrder', nextOrder);
+            setCurrentErrorOrderIndex(nextOrderIndex);
+            setCurrentErrorOrder(nextOrder);
         }
     };
 

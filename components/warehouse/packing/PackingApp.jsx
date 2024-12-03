@@ -12,7 +12,7 @@ import PageSpinner from "@/components/loader/PageSpinner";
 import PackingNoOrders from "@/components/warehouse/packing/PackingNoOrders";
 
 export default function PackingApp({ orderData }) {
-
+    
     return (
         <>
             {Array.isArray(orderData?.data) && orderData.data.length === 0 && (
