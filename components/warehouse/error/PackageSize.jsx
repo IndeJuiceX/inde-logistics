@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useErrorAppContext } from "@/contexts/ErrorAppContext";
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
-import DialPad from "../keypad/DialPad";
-
+import DialPad from "@/components/warehouse/keypad/DialPad";
+import { getParcelDimensions } from "@/services/utils/warehouse/indePackageDimensions";
 
 
 export default function PackageSize() {
@@ -20,8 +20,9 @@ export default function PackageSize() {
 
         } else if (input === 'ok') {
             // On 'ok', reset activeField and numberInput
-            setPayloadCourier({ ...payloadCourier, [selectedParcelOption]: numberInput });
+            setPayloadCourier({ ...payloadCourier, [activeField]: numberInput });
             setNumberInput('');
+            setIsOpenModal(false);
         } else {
             const newNumberInput = numberInput + input;
             const parsedValue = parseInt(newNumberInput, 10);
@@ -36,6 +37,10 @@ export default function PackageSize() {
 
     const handleFieldClick = (field) => {
         setActiveField(field);
+        // if(selectedParcelOption)
+        // const parcelDimensions = getParcelDimensions(selectedParcelOption);
+        setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
+
         setIsOpenModal(true);
     }
 
@@ -47,7 +52,7 @@ export default function PackageSize() {
                     value="29.1cm"
                     className="bg-gray-100 text-sm text-gray-700 w-24 p-2 rounded border focus:outline-none focus:ring focus:ring-blue-300"
                 >
-                    29.1cm
+                    {payloadCourier['length'] || '0'}cm
                 </div>
                 <span className="font-semibold text-gray-600 text-sm">LENGTH</span>
             </div>
@@ -57,17 +62,17 @@ export default function PackageSize() {
                     value="19.5cm"
                     className="bg-gray-100 text-sm text-gray-700 w-24 p-2 rounded border focus:outline-none focus:ring focus:ring-blue-300"
                 >
-                    19.5cm
+                    {payloadCourier['width'] || '0'}cm
                 </div>
                 <span className="font-semibold text-gray-600 text-sm">WIDTH</span>
             </div>
-            <div className="bg-white p-4 rounded shadow flex items-center justify-between" onClick={() => handleFieldClick('height')} >
+            <div className="bg-white p-4 rounded shadow flex items-center justify-between" onClick={() => handleFieldClick('depth')} >
                 <div
                     type="text"
                     value="2.4cm"
                     className="bg-gray-100 text-sm text-gray-700 w-24 p-2 rounded border focus:outline-none focus:ring focus:ring-blue-300"
                 >
-                    2.4cm
+                    {payloadCourier['depth'] || '0'}cm
                 </div>
                 <span className="font-semibold text-gray-600 text-sm">HEIGHT</span>
             </div>
@@ -77,7 +82,7 @@ export default function PackageSize() {
                     value="174.5g"
                     className="bg-gray-100 text-sm text-gray-700 w-24 p-2 rounded border focus:outline-none focus:ring focus:ring-blue-300"
                 >
-                    174.5g
+                    {payloadCourier['weight'] || '0'}g
                 </div>
                 <span className="font-semibold text-gray-600 text-sm">WEIGHT</span>
             </div>

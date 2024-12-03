@@ -8,7 +8,6 @@ export default function PackingOptions() {
     const { selectedParcelOption, setSelectedParcelOption } = useErrorAppContext();
 
     const handleParcelOptionClick = (option) => {
-        console.log('option', option);
         const updateParcelOption = selectedParcelOption === option ? '' : option ;
         setSelectedParcelOption(updateParcelOption);
     }
