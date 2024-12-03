@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
 export default function ShippingOptionsView({ shippingCodes, countries }) {
     const shippingOptions = [
         { code: 'RM-24', deliveryTime: 'Next Day' },
@@ -12,51 +10,54 @@ export default function ShippingOptionsView({ shippingCodes, countries }) {
     return (
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Shipping Codes</h2>
-            <p className="text-gray-600 mb-4">We require the "shipping_code" in your order request to have one of the values indicated below when creating orders in our system.</p>
+            <p className="text-gray-600 mb-4">
+                We require the "shipping_code" in your order request to have one of the values indicated below when creating orders in our system.
+            </p>
             {shippingCodes.length > 0 ? (
-                <table className="min-w-full bg-white">
-                    <thead>
-                        <tr>
-                            <th className="border py-2">Delivery Time</th>
-                            <th className="border py-2">Code</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {shippingCodes.map((code, index) => {
-                            const option = shippingOptions.find(opt => opt.code === code);
-                            return option ? (
-                                <tr key={index} className="text-gray-600">
-                                    <td className="border px-4 py-2">{option.deliveryTime}</td>
-                                    <td className="border px-4 py-2">{option.code}</td>
-
-                                </tr>
-                            ) : null;
-                        })}
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border-collapse">
+                        <thead>
+                            <tr>
+                                <th className="border py-2 px-4 bg-gray-100 text-left">Delivery Time</th>
+                                <th className="border py-2 px-4 bg-gray-100 text-left">Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {shippingCodes.map((code, index) => {
+                                const option = shippingOptions.find(opt => opt.code === code);
+                                return option ? (
+                                    <tr key={index} className="text-gray-600">
+                                        <td className="border px-4 py-2">{option.deliveryTime}</td>
+                                        <td className="border px-4 py-2">{option.code}</td>
+                                    </tr>
+                                ) : null;
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
                 <p className="text-gray-600">No shipping codes available.</p>
             )}
 
             <h2 className="text-2xl font-semibold text-gray-800 mt-8 mb-4">Countries</h2>
-            <table className="min-w-full bg-white">
-                <thead>
-                    <tr>
-                        <th className="border py-2">Code</th>
-                        <th className="border py-2">Country</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {countries.map((country, index) => (
-                        <tr key={index} className="text-gray-600">
-                            <td className="border px-4 py-2">{country.code}</td>
-                            <td className="border px-4 py-2">{country.name}</td>
+            <div className="max-h-80 overflow-y-auto border rounded-lg">
+                <table className="min-w-full bg-white border-collapse">
+                    <thead>
+                        <tr>
+                            <th className="border py-2 px-4 bg-gray-100 text-left">Code</th>
+                            <th className="border py-2 px-4 bg-gray-100 text-left">Country</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {countries.map((country, index) => (
+                            <tr key={index} className="text-gray-600">
+                                <td className="border px-4 py-2">{country.code}</td>
+                                <td className="border px-4 py-2">{country.name}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
     );
 }
