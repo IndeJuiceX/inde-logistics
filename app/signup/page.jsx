@@ -35,17 +35,17 @@ export default function VendorOnboarding() {
 
     if (res.ok) {
       const data = await res.json();
-      window.location.href = '/onboarding-complete';
+      window.location.href = '/signup-complete';
     } else {
       setSubmissionResult('Error during vendor onboarding');
       setIsLoading(false);
     }
-    
+
   };
 
   return (
     <div className="form-container">
-      <h1 className="form-title">Vendor Onboarding</h1>
+      <h1 className="form-title">Your Details</h1>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">Company Name:</label>
