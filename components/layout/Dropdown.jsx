@@ -42,7 +42,7 @@ const ProfileDropdown = () => {
 
         {profileDropdownOpen && (
           <div className="absolute right-0 top-full mt-2 w-48 bg-white border rounded shadow-lg z-10">
-            <Link href="/admin/profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+            <Link href="profile" className="block px-4 py-2 text-gray-800 hover:bg-gray-100">
               Profile
             </Link>
             <button
