@@ -15,6 +15,7 @@ import {
   XMarkIcon,
   ChevronRightIcon,
   ClipboardDocumentListIcon,
+  EnvelopeIcon
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ vendor, vendorId }) {
@@ -203,6 +204,11 @@ export default function Sidebar({ vendor, vendorId }) {
           ],
         },
       ],
+    },
+    {
+      label: "Order Shipping Options",
+      href: `/vendor/${vendorId}/shipping-options`,
+      icon: <EnvelopeIcon className="w-5 h-5" />,
     },
     {
       label: "Activity Logs",
