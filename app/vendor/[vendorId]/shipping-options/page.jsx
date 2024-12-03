@@ -7,13 +7,13 @@ export default async function ShippingOptionsPage({ params }) {
     const vendorId = params.vendorId;
     let results = [];
     const shippingCodes = await getVendorShippingCodes(vendorId);
-    console.log('shipping codes', shippingCodes);
+ 
     if (shippingCodes.success) {
         results = shippingCodes.data;
     }
 
     const countries = getAllCountriesWithNames();
-    console.log('countries', countries);
+ 
 
     return <ShippingOptionsView shippingCodes={results.shipping_codes} countries={countries} courierCodes={countries} />;
 }
