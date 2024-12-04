@@ -8,7 +8,7 @@ import { getParcelDimensions } from "@/services/utils/warehouse/indePackageDimen
 
 
 export default function PackageSize() {
-    const { selectedParcelOption, setPayloadCourier, payloadCourier } = useErrorAppContext();
+    const { selectedParcelOption, setPayloadCourier, payloadCourier, updateWeightAndDimensions } = useErrorAppContext();
     const [numberInput, setNumberInput] = useState('');
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [activeField, setActiveField] = useState('');
@@ -23,6 +23,11 @@ export default function PackageSize() {
             setPayloadCourier({ ...payloadCourier, [activeField]: numberInput });
             setNumberInput('');
             setIsOpenModal(false);
+            if (activeField === 'weight') {
+                console.log('activeField', activeField);
+                setActiveField('');
+                updateWeightAndDimensions();
+            }
         } else {
             const newNumberInput = numberInput + input;
             const parsedValue = parseInt(newNumberInput, 10);
@@ -32,18 +37,36 @@ export default function PackageSize() {
     };
 
     useEffect(() => {
-        console.log(payloadCourier);
-    }, [payloadCourier]);
+        console.log(selectedParcelOption);
+        if (selectedParcelOption !== 'custom') {
+            const parcelDimensions = getParcelDimensions(selectedParcelOption);
+            console.log('parcelDimensions', parcelDimensions);
+            setPayloadCourier(
+                {
+                    ...payloadCourier,
+                    length: parcelDimensions.length,
+                    width: parcelDimensions.width,
+                    depth: parcelDimensions.depth
+
+                });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedParcelOption]);
 
     const handleFieldClick = (field) => {
         setActiveField(field);
         if (selectedParcelOption !== 'custom') {
-            const parcelDimensions = getParcelDimensions(selectedParcelOption);
-            console.log('parcelDimensions', parcelDimensions);
-            setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
-        }
+            if (field !== 'weight') {
+                const parcelDimensions = getParcelDimensions(selectedParcelOption);
+                setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
+            }
+            else {
+                setIsOpenModal(true);
+            }
+        } else {
 
-        setIsOpenModal(true);
+            setIsOpenModal(true);
+        }
     }
 
     return (
