@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUniqueBrandNames } from '@/services/data/brand';  // Import the updated function
-import { authenticateAndAuthorize } from '@/services/utils';  // Auth helper
+import { authenticateAndAuthorize } from '@/services/utils/apiMiddleware';
 
 export async function GET(request) {
   try {

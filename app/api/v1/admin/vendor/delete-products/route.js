@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { queryItems, batchWriteItems } from '@/lib/dynamodb';  // Import your DynamoDB helper functions
-import { authenticateAndAuthorize } from '@/services/utils';  // Auth helper
+import { authenticateAndAuthorize } from '@/services/utils/apiMiddleware';
 
 export async function DELETE(request) {
   try {
