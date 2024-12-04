@@ -53,7 +53,7 @@ export default function Vendors() {
               </thead>
               <tbody className="text-gray-600 text-sm">
                 {vendors.map((vendor) => (
-                  <tr key={vendor.pk} className="border-b border-gray-200 hover:bg-gray-100">
+                  <tr key={vendor.vendor_id} className="border-b border-gray-200 hover:bg-gray-100">
                     <td className="py-3 px-6">{vendor.company_name}</td>
                     <td className="py-3 px-6">{vendor.company_number}</td>
                     <td className="py-3 px-6">{vendor.phone}</td>
