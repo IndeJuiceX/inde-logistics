@@ -5,13 +5,18 @@ import ParcelDetails from '@/components/warehouse/packing/ParcelDetails';
 import WeightAndPrint from '@/components/warehouse/packing/WeightAndPrint';
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
 import { FaCog } from 'react-icons/fa';
+import RequireAttention from '@/components/warehouse/packing/RequireAttention';
 
 export default function ParcelOptions() {
-  const { order, packedData, setPackedData } = usePackingAppContext();
+  const { order, packedData, setPackedData, isGeneratedLabel } = usePackingAppContext();
 
   const handleParcelOptionClick = (parcelOption) => {
-    const selectedOption = parcelOption === packedData.parcelOption ? '' : parcelOption;
-    setPackedData({ ...packedData, parcelOption: selectedOption });
+    if (isGeneratedLabel) {
+      setPackedData({ ...packedData, parcelOption: parcelOption });
+    } else {
+      const selectedOption = parcelOption === packedData.parcelOption ? '' : parcelOption;
+      setPackedData({ ...packedData, parcelOption: selectedOption });
+    }
   }
   return (
     <div className={styles.parcelOptions}>
@@ -68,15 +73,7 @@ export default function ParcelOptions() {
           <FaCog alt="Settings" />
           CUSTOM
         </div>
-        <div className={`${styles.action} ${styles.customSize} `}>
-
-          {/* eslint-disable-next-line */}
-          <img
-            src="https://dev.indejuice.com/img/wh/warning.png"
-            alt="Extra Large Parcel"
-          />
-          REPORT
-        </div>
+        <RequireAttention styles={styles} />
 
       </div>
 

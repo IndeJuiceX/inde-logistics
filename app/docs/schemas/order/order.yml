@@ -9,6 +9,7 @@ Order:
           example: Cost of the shipping charged to the customer by vendor.
         shipping_code:
           type: string
+          example: We currently support RM-24 , RM-48 for nationwide orders and RM-INT for international orders.
         buyer:
           $ref: '#/components/schemas/Buyer'
         items:

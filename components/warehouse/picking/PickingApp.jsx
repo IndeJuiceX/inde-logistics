@@ -21,7 +21,7 @@ export default function PickingApp({ unPickedResult }) {
     return (
         <>
             {Array.isArray(unPickedResult?.data) && unPickedResult.data.length === 0 && (
-                // <div>No orders found </div>
+               
                 <NoOrders />
 
             )}

@@ -1,4 +1,3 @@
-
 const sortRules = [
     { property: 'aisle', condition: 'order', value: ['★', 'Ψ', 'A', 'B', 'C'], priority: 1 },
     { property: 'aisle', condition: 'order', value: ['D', 'E', 'F'], priority: 2 },
@@ -52,12 +51,14 @@ export const processCustomConditions = (orders, sortRules) => {
         const { start, end } = aisle_number_range;
 
         // Find orders that match the custom condition
-        const matchingOrders = remainingOrders.filter(
-            (order) =>
-                order.warehouse.aisle === aisle &&
-                parseInt(order.warehouse.aisle_number) >= start &&
-                parseInt(order.warehouse.aisle_number) <= end
-        );
+        const matchingOrders = remainingOrders.filter((order) => {
+            const aisleNumber = parseInt(order?.warehouse?.aisle_number);
+            return (
+                order?.warehouse?.aisle === aisle &&
+                aisleNumber >= start &&
+                aisleNumber <= end
+            );
+        });
 
         // Remove matching orders from remainingOrders
         matchingOrders.forEach((order) => {
@@ -83,12 +84,12 @@ export const sortOrders = (orders) => {
 
     // Initial sort based on sortOrderMap and aisle_number
     let sortedOrders = [...orders].sort((a, b) => {
-        const orderA = sortOrderMap[a.warehouse.aisle] || 9999; // Default high value if not specified
-        const orderB = sortOrderMap[b.warehouse.aisle] || 9999;
+        const orderA = a?.warehouse?.aisle ? sortOrderMap[a.warehouse.aisle] : 9999; // Default high value if not specified
+        const orderB = b?.warehouse?.aisle ? sortOrderMap[b.warehouse.aisle] : 9999;
         if (orderA !== orderB) {
             return orderA - orderB;
         } else {
-            return parseInt(a.warehouse.aisle_number) - parseInt(b.warehouse.aisle_number);
+            return parseInt(a?.warehouse?.aisle_number || 0) - parseInt(b?.warehouse?.aisle_number || 0);
         }
     });
 
@@ -101,7 +102,7 @@ export const sortOrders = (orders) => {
 
         let insertIndex = -1;
         for (let i = remainingOrders.length - 1; i >= 0; i--) {
-            if (positionAfter.includes(remainingOrders[i].warehouse.aisle)) {
+            if (positionAfter.includes(remainingOrders[i]?.warehouse?.aisle)) {
                 insertIndex = i + 1;
                 break;
             }

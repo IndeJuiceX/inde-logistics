@@ -26,8 +26,6 @@ export const getBuyerSchema = () => Joi.object({
     address_line_4: Joi.string().allow('', null).label('address_line_4'),
     city: Joi.string().required().label('city'),
     postcode: Joi.string().required().label('postcode'),
-    //country: Joi.string().required().label('country'),
-    // Use the country schema from the utility module
     country_code: getCountryCodeSchema(),
 });
 

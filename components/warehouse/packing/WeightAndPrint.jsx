@@ -1,17 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React  from 'react';
 import styles from '@/styles/warehouse/packing/WeightAndPrint.module.scss';
 
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import PackingKeyPad from '@/components/warehouse/packing/PackingKeyPad';
 import LabelPrintButton from '@/components/warehouse/packing/LabelPrintButton';
+import PickedAndLabeled from '@/components/warehouse/packing/PickedAndLabeled';
 export default function WeightAndPrint() {
-    const { order, packedData, setPackedData,  isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, printLabel } = usePackingAppContext();
+    const { order, packedData, setPackedData, isOpenModal, setIsOpenModal, enteredValue, setEnteredValue, setCurrentClicked, currentClicked, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, isGeneratedLabel } = usePackingAppContext();
     const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
 
     const handleWeightChange = () => {
+        if (isGeneratedLabel) {
+            return;
+        }
         setIsValidForPrintLabel(false);
         setCurrentClicked('weight');
         setPackedData(prevState => ({
@@ -25,20 +29,13 @@ export default function WeightAndPrint() {
         setIsOpenModal(true);
     }
 
-    const handleComplete = async () => {
-        console.log('handleComplete');
-        const vendorId = order.vendorId;
-        const vendorOrderId = order.vendorOrderId;
-        const updateFields = {
-            status: 'dispatched'
-        }
-        const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
-    }
-
+   
+   
+    const weight = isGeneratedLabel ? order?.shipment?.weight_grams : packedData?.courier?.weight;
     return (
         <div className={styles.parcelDetails}>
             <div className={styles.detailItem} onClick={handleWeightChange}>
-                <div className={styles.detailValue}>{packedData.courier.weight ? packedData.courier.weight : 0}<small>g</small></div>
+                <div className={styles.detailValue}>{weight ? weight : 0}<small>g</small></div>
                 <div className={styles.detailLabel}>WEIGHT</div>
             </div>
 
@@ -46,19 +43,12 @@ export default function WeightAndPrint() {
             <div className={styles.actions}>
                 <PackingKeyPad enteredValue={enteredValue} setEnteredValue={setEnteredValue} setIsOpenModal={setIsOpenModal} isOpenModal={isOpenModal} />
             </div>
-            {isValidForPrintLabel && (
+            {(isValidForPrintLabel || isGeneratedLabel) && (
                 <LabelPrintButton styles={styles} />
             )}
-            {/* {isReadyForDispatch && ( */}
-                <div className={styles.complete} onClick={handleComplete}>
-                    {/* eslint-disable-next-line */}
-                    <img
-                        src="https://dev.indejuice.com/img/wh/label_added.png"
-                        alt="Letter"
-                    />
-                    <span>PACKED & LABELLED</span>
-                </div>
-            {/* )} */}
+            {isReadyForDispatch && (
+                <PickedAndLabeled />
+            )}
 
 
         </div>

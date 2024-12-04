@@ -5,16 +5,7 @@ import { getStationId, setStationId } from '@/services/utils/warehouse/packingSt
 
 export default function CheckSetStationId() {
     const {  isSetStationId, setIsSetStationId } = usePackingAppContext();
-    // useEffect(() => {
-    //     const checkSetStationId = getStationId();
-    //     if (checkSetStationId === null) {
-    //         setIsSetStationId(false);
-    //     }
-    //     if (checkSetStationId) {
-    //         setIsSetStationId(true);
-    //     }
-
-    // }, [setIsSetStationId]);
+    
 
     const handleSetStationId = (stationId) => {
         const response = setStationId(stationId);

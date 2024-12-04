@@ -11,7 +11,7 @@ export default async function HomePage() {
         <div className="flex justify-center space-x-4 mt-6">
           {/* Vendor Signup Button */}
           <a
-            href="/onboarding"
+            href="/signup"
             className="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
           >
             Vendor Signup

@@ -276,7 +276,7 @@ export const getNextUnPickedOrderShipment = async () => {
   }
 
   const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id)
-  console.log('orderDetailsData', orderDetailsData)
+  // console.log('orderDetailsData', orderDetailsData)
   if (!orderDetailsData || !orderDetailsData?.success) {
     return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
   }
@@ -323,3 +323,42 @@ export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
   // Use the updateItem wrapper function to update the item
   return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
 };
+
+export const getOrderShipmentsWithErrors = async () => {
+  const query1 = `
+  SELECT pk,sk
+  FROM order_shipments
+  WHERE status = 'picked' OR status = 'processing' AND error =1
+  ORDER BY created_at ASC
+`;
+  const data = await executeDataQuery({ query: query1 });
+  const orderDataKeys = data?.data || null
+  if (!orderDataKeys) {
+    return { success: true, data: [] }
+  }
+  const ordersWithErrors = [];
+
+  // Loop over each key and get the order data
+  for (const { pk, sk } of orderDataKeys) {
+    // Extract vendorId and orderId from pk and sk
+    const vendorId = getIdFromDynamoKey(pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = getIdFromDynamoKey(sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+
+    // Fetch the order details
+    const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
+    const orderData = orderDetailsData?.data || null
+    const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
+    const orderShipment = orderShipmentData?.data || null
+  
+    const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
+    const courierData = courierDetailsData?.data || null
+    orderData.shipment = orderShipment
+    orderData.shipment.courier = courierData
+    if (orderDetailsData.success) {
+      // Add the order data to the array
+      ordersWithErrors.push(orderData);
+    } 
+  }
+
+  return { success: true, data: ordersWithErrors };
+}

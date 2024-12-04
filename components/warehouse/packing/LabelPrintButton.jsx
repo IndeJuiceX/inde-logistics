@@ -2,7 +2,8 @@
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function LabelPrintButton({ styles }) {
-    const { printLabel } = usePackingAppContext();
+    const { printLabel, isGeneratedLabel } = usePackingAppContext();
+  
     return (
         <div className={styles.detailItem} onClick={printLabel}>
             {/* eslint-disable-next-line */}
@@ -10,7 +11,7 @@ export default function LabelPrintButton({ styles }) {
                 src="https://dev.indejuice.com/img/wh/print.png"
                 alt="Letter"
             />
-            LABEL
+            {isGeneratedLabel ? 'REPRINT LABEL' : 'LABEL'}
         </div>
     )
 }

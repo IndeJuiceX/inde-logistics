@@ -20,6 +20,11 @@ export const getOrderItemSchema = () => Joi.object({
     then: Joi.any().strip(), // Remove customs_code when country_code is 'GB' //Joi.string().optional().label('customs_code')
     otherwise: Joi.string().required().label('customs_code'),
   }),
+  customs_description: Joi.alternatives().conditional(Joi.ref('$country_code'), {
+    is: 'GB',
+    then: Joi.any().strip(), // Remove customs_code when country_code is 'GB' //Joi.string().optional().label('customs_code')
+    otherwise: Joi.string().required().label('customs_description'),
+  }),
 });
 
 // Function to validate a single order item
@@ -46,11 +51,24 @@ export const validateOrderItem = (item, country_code) => {
 export const validateOrderItems = (items, countryCode) => {
   const validatedItems = [];
   const invalidItems = [];
+  const seenSkus = new Set();
 
   items.forEach((item, index) => {
     const result = validateOrderItem(item, countryCode);
     if (result.success) {
-      validatedItems.push(result.value);
+      const sku = item.vendor_sku;
+
+      // Check for duplicate vendor_sku
+      if (seenSkus.has(sku)) {
+        invalidItems.push({
+          index: index,
+          field: 'vendor_sku',
+          message: `Duplicate vendor_sku found: ${sku}`,
+        });
+      } else {
+        seenSkus.add(sku);
+        validatedItems.push(result.value);
+      }
     } else {
       // For each error in the item, include the index and field path
       result.errors.forEach((error) => {

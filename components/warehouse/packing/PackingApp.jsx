@@ -9,35 +9,34 @@ import { GlobalStateProvider } from "@/contexts/GlobalStateContext";
 import PackingFooter from "@/components/warehouse/packing/PackingFooter";
 import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
 import PageSpinner from "@/components/loader/PageSpinner";
+import PackingNoOrders from "@/components/warehouse/packing/PackingNoOrders";
 
 export default function PackingApp({ orderData }) {
-
+    
     return (
-        <div className={styles.layout}>
+        <>
+            {Array.isArray(orderData?.data) && orderData.data.length === 0 && (
+                
+                <PackingNoOrders />
 
-            <GlobalStateProvider>
-                <ErrorModal />
-                <PageSpinner />
-                <PackingAppProvider orderData={orderData}>
-                  
+            )}
+            {orderData?.data && !Array.isArray(orderData.data) && (
+                <div className={styles.layout}>
 
-                    <PackingHeader />
-
-                    {/* Main Section */}
-                    <div className={styles.main}>
-                        {/* Product List */}
-
-                        <PackingItems />
-
-                        {/* Parcel Options */}
-                        <ParcelOptions />
-                        {/* <ParcelDetails /> */}
-                    </div>
-
-                    <PackingFooter />
-
-                </PackingAppProvider>
-            </GlobalStateProvider>
-        </div>
+                    <GlobalStateProvider>
+                        <ErrorModal />
+                        <PageSpinner />
+                        <PackingAppProvider orderData={orderData.data}>
+                            <PackingHeader />
+                            <div className={styles.main}>
+                                <PackingItems />
+                                <ParcelOptions />
+                            </div>
+                            <PackingFooter />
+                        </PackingAppProvider>
+                    </GlobalStateProvider>
+                </div>
+            )}
+        </>
     );
 }

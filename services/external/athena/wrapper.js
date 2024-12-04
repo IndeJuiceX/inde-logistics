@@ -41,7 +41,7 @@ import {
      */
     async runQuery({ queryString, limit = 1000, nextToken = null, queryExecutionId = null, database = null }) {
       try {
-        console.log('Executing Query:', queryString);
+        // console.log('Executing Query:', queryString);
   
         const queryDatabase = database || this.defaultDatabase;
   

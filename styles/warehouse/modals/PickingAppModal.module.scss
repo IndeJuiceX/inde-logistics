@@ -18,6 +18,10 @@
         background-color: rgba(0, 0, 0, 0.5); // Red background for error
     }
 
+    &.error {
+        background-color: red; // Orange background for warning
+        color: white;
+    }
 
 }
 

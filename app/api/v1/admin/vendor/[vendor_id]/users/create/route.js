@@ -4,7 +4,7 @@ import { saveUser } from '@/services/data/user';     // DynamoDB utility functio
 
 export async function POST(request, { params }) {
   try {
-    const vendorId = params.vendorId; // Get vendorId from URL parameters
+    const vendorId = params.vendor_id; // Get vendorId from URL parameters
 
     const body = await request.json();  // Parse JSON body
 
@@ -28,7 +28,7 @@ export async function POST(request, { params }) {
       email,
       phone,
       password: hashedPassword,
-      user_type: 'vendor_user',  // Fixed user type for vendor users
+      user_type: 'vendor',  // Fixed user type for vendor users
       vendor_id: vendorId,       // Vendor ID from the URL parameter
       entity_type: 'User',       // Additional attribute to indicate the entity type
       createdAt: new Date().toISOString(),

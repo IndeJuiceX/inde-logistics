@@ -1,8 +1,141 @@
 // dynamoFunctions.js
 import { getClient } from './client';
-import { PutCommand, GetCommand, QueryCommand, DeleteCommand, BatchWriteCommand, ScanCommand, UpdateCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
-
+import { PutCommand, GetCommand, QueryCommand, DeleteCommand, BatchWriteCommand, ScanCommand, UpdateCommand, TransactWriteCommand, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
+import pLimit from 'p-limit';
 const TABLE_NAME = '3pl-v3'; // Replace with your actual table name
+
+// Configuration for BatchGetItem
+const MAX_BATCH_GET_SIZE = 100; // Maximum items per BatchGetItem request
+const CONCURRENCY_LIMIT = 10; // Number of parallel BatchGetItem requests
+const RETRY_LIMIT = 5; // Maximum number of retries for unprocessed keys
+const BACKOFF_BASE_DELAY_MS = 100; // Base delay for exponential backoff in milliseconds
+
+// Existing functions: putItem, getItem, queryItems, deleteItem, etc.
+
+// ... [Existing functions] ...
+
+// Helper Functions
+const chunkArray = (array, size) => {
+    const result = [];
+    for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size));
+    }
+    return result;
+};
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Retrieves multiple items from DynamoDB using BatchGetItem with parallel fetching and retries.
+ * @param {Array} keyPairs - Array of objects containing 'pk' and 'sk' for each item to retrieve.
+ * @param {Object} options - Optional configurations.
+ * @param {number} options.concurrencyLimit - Number of parallel BatchGetItem requests.
+ * @param {number} options.retryLimit - Maximum number of retries for unprocessed keys.
+ * @returns {Promise<Object>} - An object containing 'success' status and 'data' or 'error'.
+ */
+const batchGetItems = async (keyPairs, options = {}) => {
+    const client = getClient();
+
+    const {
+        concurrencyLimit = CONCURRENCY_LIMIT,
+        retryLimit = RETRY_LIMIT,
+        attributes = null, // Accept attributes to fetch
+    } = options;
+
+    // Split the keys into batches of MAX_BATCH_GET_SIZE
+    const batches = chunkArray(keyPairs, MAX_BATCH_GET_SIZE);
+
+    // Initialize p-limit with the specified concurrency limit
+    const limit = pLimit(concurrencyLimit);
+
+    // Shared array to collect all retrieved items
+    const allItems = [];
+    // Shared array to collect any errors
+    const allErrors = [];
+
+    /**
+     * Fetches a single batch of items, handling retries for unprocessed keys.
+     * @param {Array} batch - Array of key objects for BatchGetItem.
+     * @param {number} attempt - Current retry attempt.
+     * @returns {Promise<void>}
+     */
+    const fetchBatch = async (batch, attempt = 1) => {
+        const params = {
+            RequestItems: {
+                [TABLE_NAME]: {
+                    Keys: batch,
+                    // Add ProjectionExpression and ExpressionAttributeNames if attributes are provided
+                    ...(attributes && {
+                        ProjectionExpression: attributes.map((attr, idx) => `#attr${idx}`).join(', '),
+                        ExpressionAttributeNames: attributes.reduce((acc, attr, idx) => {
+                            acc[`#attr${idx}`] = attr;
+                            return acc;
+                        }, {})
+                    })
+                }
+            },
+            ReturnConsumedCapacity: "TOTAL",
+        };
+
+        try {
+            const response = await client.send(new BatchGetCommand(params));
+            const retrievedItems = response.Responses[TABLE_NAME] || [];
+            allItems.push(...retrievedItems);
+
+            // Check for UnprocessedKeys
+            const unprocessedKeys = response.UnprocessedKeys && response.UnprocessedKeys[TABLE_NAME]
+                ? response.UnprocessedKeys[TABLE_NAME].Keys
+                : [];
+
+            if (unprocessedKeys.length > 0) {
+                if (attempt <= retryLimit) {
+                    console.warn(`BatchGetItem: Attempt ${attempt} - Retrying ${unprocessedKeys.length} unprocessed keys.`);
+                    // Calculate exponential backoff with jitter
+                    const delay = BACKOFF_BASE_DELAY_MS * Math.pow(2, attempt - 1) + Math.random() * 100;
+                    await sleep(delay);
+                    // Retry the unprocessed keys
+                    await fetchBatch(unprocessedKeys, attempt + 1);
+                } else {
+                    console.error(`BatchGetItem: Attempt ${attempt} - Failed to process ${unprocessedKeys.length} keys.`);
+                    allErrors.push({
+                        batch: unprocessedKeys,
+                        error: `Failed to retrieve ${unprocessedKeys.length} items after ${retryLimit} retries.`,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error(`BatchGetItem: Attempt ${attempt} - Error fetching batch:`, error);
+            if (attempt <= retryLimit) {
+                console.warn(`BatchGetItem: Attempt ${attempt} - Retrying due to error.`);
+                // Calculate exponential backoff with jitter
+                const delay = BACKOFF_BASE_DELAY_MS * Math.pow(2, attempt - 1) + Math.random() * 100;
+                await sleep(delay);
+                // Retry the same batch
+                await fetchBatch(batch, attempt + 1);
+            } else {
+                console.error(`BatchGetItem: Attempt ${attempt} - Failed to fetch batch due to error.`);
+                allErrors.push({
+                    batch,
+                    error: error.message || 'Unknown error',
+                });
+            }
+        }
+    };
+
+    // Create an array of promise-returning functions with concurrency control
+    const promises = batches.map(batch => limit(() => fetchBatch(batch)));
+
+    // Execute all batch fetches
+    await Promise.all(promises);
+
+    if (allErrors.length > 0) {
+        return { success: false, error: allErrors };
+    }
+
+    return { success: true, data: allItems };
+};
+
+
 
 // Put an item in the table with condition
 const putItem = async (item) => {
@@ -60,7 +193,7 @@ const queryItems = async (params) => {
             success: true,
             data: data.Items,
             lastEvaluatedKey: data.LastEvaluatedKey || null,
-            hasMore :hasMore
+            hasMore: hasMore
         };
     } catch (error) {
         console.error('DynamoDB QueryItems Error:', error);
@@ -69,7 +202,7 @@ const queryItems = async (params) => {
 };
 
 
-const queryItemsWithPkAndSk = async (pkValue, skPrefix = null) => {
+const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = []) => {
     const client = getClient();
     let params = {
         TableName: TABLE_NAME,
@@ -77,6 +210,8 @@ const queryItemsWithPkAndSk = async (pkValue, skPrefix = null) => {
         ExpressionAttributeValues: {
             ':pkValue': pkValue,
         },
+        ProjectionExpression: attributesToGet.length > 0 ? attributesToGet.join(', ') : undefined,
+
     };
 
     if (skPrefix) {
@@ -616,7 +751,8 @@ export {
     transactWriteItems,
     queryItemsWithPkAndSk,
     updateItemIfExists,
-    deleteItemWithPkAndSk
+    deleteItemWithPkAndSk,
+    batchGetItems
 };
 
 

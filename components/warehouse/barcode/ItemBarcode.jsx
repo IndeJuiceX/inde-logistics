@@ -11,7 +11,6 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
 
-    // console.log('currentItem', currentItem);
 
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -50,14 +49,9 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
         setIsNewBarcode(true);
     }
 
-    // create the callback function for the button onClick event
-    // vendor_id, vendor_sku, barcode
+
     const addNewBarcode = async () => {
-        // const payload = {
-        //     vendor_id: order.vendor_id,
-        //     vendor_sku: currentItem.vendor_sku,
-        //     barcode: barcodeValue
-        // }
+
 
         if (!order.vendor_id || !currentItem.vendor_sku || !barcodeValue) {
             console.log('addNewBarcode error', order.vendor_id, currentItem.vendor_sku, barcodeValue);
@@ -73,26 +67,43 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
         else {
             console.log('addNewBarcode error', response.error);
         }
-      
+
     }
     return (
         <>
-            {barcodeError &&
-                <>
-                    <div className={styles.barcodeError}>
-                        <button disabled={isNewBarcode} onClick={handleAddNewBarcode}><MdAddCircleOutline /> New</button>
-                        <span style={{ textAlign: 'center' }}>Barcode error.<br />Select option.</span>
-                        <button><MdUpdate /> Override</button>
+            <div className="flex items-center justify-between p-2 transition-all duration-200">
+                <FaBarcode className="text-slate-500 text-xl transition-colors duration-200" />
+                <div className="flex-1 mx-2">
+                    {barcodeError ? (
+                        <div className="flex justify-between items-center">
+                            <button
+                                disabled={isNewBarcode}
+                                onClick={handleAddNewBarcode}
+                                className="text-blue-600 px-2 py-1 text-sm flex items-center disabled:opacity-50 hover:text-blue-800 transition-colors duration-200"
+                            >
+                                <MdAddCircleOutline className="mr-1" /> New
+                            </button>
+                            <span className="text-red-500 text-xs text-center mx-2 transition-colors duration-200">
+                                Barcode error.<br />Select option.
+                            </span>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-500 transition-colors duration-200">
+                            Scan barcode...
+                        </p>
+                    )}
+                </div>
+            </div>
+            <PickingAppModal isOpen={isNewBarcode} onClose={() => setIsNewBarcode(false)} statusClass="noOrder">
+                <div className="p-4">
+                    <p className="text-center text-slate-600 mb-4">
+                        Please re-scan the barcode for confirmation
+                    </p>
+                    <div className="flex justify-center items-center space-x-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite_0.3s]"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite_0.6s]"></span>
                     </div>
-                </>
-            }
-            {
-                !barcodeError &&
-                <FaBarcode className={styles.barcodeImage} />
-            }
-            <PickingAppModal isOpen={isNewBarcode} onClose={() => setIsNewBarcode(false)}>
-                <div>
-                    <p>Please re-scan the barcode for confirmation</p>
                 </div>
             </PickingAppModal>
         </>
