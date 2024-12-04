@@ -15,7 +15,8 @@ import {
   XMarkIcon,
   ChevronRightIcon,
   ClipboardDocumentListIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  BookOpenIcon
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ vendor, vendorId }) {
@@ -111,7 +112,7 @@ export default function Sidebar({ vendor, vendorId }) {
     });
   };
 
-  // Menu Data with icons
+  // Menu Data with icons (excluding Documentation)
   const menuData = [
     {
       label: "Products",
@@ -163,6 +164,11 @@ export default function Sidebar({ vendor, vendorId }) {
           href: `/vendor/${vendorId}/orders/create`,
           icon: <PlusCircleIcon className="w-5 h-5" />,
         },
+        {
+          label: "Shipping Options",
+          href: `/vendor/${vendorId}/shipping-options`,
+          icon: <EnvelopeIcon className="w-5 h-5" />,
+        },
       ],
 
     },
@@ -205,18 +211,22 @@ export default function Sidebar({ vendor, vendorId }) {
         },
       ],
     },
-    {
-      label: "Order Shipping Options",
-      href: `/vendor/${vendorId}/shipping-options`,
-      icon: <EnvelopeIcon className="w-5 h-5" />,
-    },
+    
     {
       label: "Activity Logs",
       href: `/vendor/${vendorId}/api-logs`,
       icon: <ClipboardDocumentListIcon className="w-5 h-5" />,
       // You can add subMenu or match properties if needed
     },
+
   ];
+
+  // Documentation item
+  const documentationItem = {
+    label: "API Docs",
+    href: `/vendor/${vendorId}/api-docs`,
+    icon: <BookOpenIcon className="w-5 h-5" />,
+  };
 
   return (
     <>
@@ -243,24 +253,33 @@ export default function Sidebar({ vendor, vendorId }) {
       {/* Sidebar */}
       <div
         className={`w-64 bg-white shadow-lg h-screen fixed top-0 left-0 z-20 overflow-y-auto transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0`}
+          } md:translate-x-0 flex flex-col justify-between`}
       >
-        <div className="p-6 border-b border-gray-200">
-          {/* Vendor Logo and Name */}
-          <div className="flex items-center">
-            {/* {vendor?.logoUrl && (
-              <img
-                src={vendor.logoUrl}
-                alt="Vendor Logo"
-                className="w-10 h-10 rounded-full mr-3"
-              />
-            )} */}
-            <h2 className="text-xl font-semibold text-gray-800">
-              {vendor?.company_name || "Vendor"}
-            </h2>
+        <div>
+          <div className="p-6 border-b border-gray-200">
+            {/* Vendor Logo and Name */}
+            <div className="flex items-center">
+              {/* {vendor?.logoUrl && (
+                <img
+                  src={vendor.logoUrl}
+                  alt="Vendor Logo"
+                  className="w-10 h-10 rounded-full mr-3"
+                />
+              )} */}
+              <h2 className="text-xl font-semibold text-gray-800">
+                {vendor?.company_name || "Vendor"}
+              </h2>
+            </div>
           </div>
+          <ul>{renderMenuItems(menuData)}</ul>
         </div>
-        <ul>{renderMenuItems(menuData)}</ul>
+        {/* Render Documentation at the bottom */}
+        <ul className="mb-4" style={{
+          paddingLeft: '16px',
+          borderColor: '#beadad',
+          borderWidth: '1px',
+          borderRadius: '9px',
+        }}>{renderMenuItems([documentationItem])}</ul>
       </div>
     </>
   );

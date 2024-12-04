@@ -6,6 +6,9 @@ export default function ProductList({ products, onSelectionChange }) {
   const [selectAll, setSelectAll] = useState(false);
   const [quantities, setQuantities] = useState({});
 
+  console.log('products', products);
+  
+
   // Handle individual product selection
   const handleSelectProduct = (product) => {
     const isSelected = selectedItems.some(
@@ -84,24 +87,30 @@ export default function ProductList({ products, onSelectionChange }) {
 
       {/* Product List */}
       <ul className="divide-y divide-gray-200">
-        {products.map((product) => {
-          const isSelected = selectedItems.some(
-            (item) => item.vendor_sku === product.vendor_sku
-          );
+      {products.length === 0 ? (
+          <li>No products available.</li>
+        ) : (
+          products
+            .filter((product) => product.status === 'Active') // Filter active products
+            .map((product, index) => {
+              const isSelected = selectedItems.some(
+                (item) => item.vendor_sku === product.vendor_sku
+              );
 
-          const quantity = quantities[product.vendor_sku] || 1;
+              const quantity = quantities[product.vendor_sku] || 1;
 
-          return (
-            <ProductCardSlim
-              key={product.vendor_sku}
-              product={product}
-              isSelected={isSelected}
-              onSelect={handleSelectProduct}
-              quantity={quantity}
-              onQuantityChange={handleQuantityChange}
-            />
-          );
-        })}
+              return (
+                <ProductCardSlim
+                  key={`${index}-${product.vendor_sku}`}
+                  product={product}
+                  isSelected={isSelected}
+                  onSelect={handleSelectProduct}
+                  quantity={quantity}
+                  onQuantityChange={handleQuantityChange}
+                />
+              );
+            })
+        )}
       </ul>
     </div>
   );
