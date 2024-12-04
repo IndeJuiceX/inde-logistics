@@ -11,7 +11,7 @@ export default function ShippingOptionsView({ shippingCodes, countries }) {
         <div className="bg-white shadow-md rounded-lg p-6 mb-6">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Shipping Codes</h2>
             <p className="text-gray-600 mb-4">
-                We require the "shipping_code" in your order request to have one of the values indicated below when creating orders in our system.
+                We require the &ldquo;shipping_code&rdquo; in your order request to have one of the values indicated below when creating orders in our system.
             </p>
             {shippingCodes.length > 0 ? (
                 <div className="overflow-x-auto">
