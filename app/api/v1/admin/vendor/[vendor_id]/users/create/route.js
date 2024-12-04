@@ -31,7 +31,7 @@ export async function POST(request, { params }) {
       user_type: 'vendor',  // Fixed user type for vendor users
       vendor_id: vendorId,       // Vendor ID from the URL parameter
       entity_type: 'User',       // Additional attribute to indicate the entity type
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
 
     // Add the user to the DynamoDB table
