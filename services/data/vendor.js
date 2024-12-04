@@ -37,6 +37,6 @@ export const deleteVendor = async (vendorId) => {
     return await deleteItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`);
 };
 
-export const toggleVendorStatus = async (vendorId, statusNow) => {
-    return await updateItemIfExists(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`, { status: statusNow })
+export const updateVendor = async (vendorId, updatedFields={}) => {
+    return await updateItemIfExists(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`, updatedFields)
 }

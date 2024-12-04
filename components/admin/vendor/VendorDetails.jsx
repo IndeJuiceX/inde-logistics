@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import VendorMenu from '@/components/admin/VendorMenu';
-import { toggleVendorStatus, getVendorById } from '@/services/data/vendor';
+import { updateVendor, getVendorById } from '@/services/data/vendor';
 export default function VendorDetails({ vendorDataFromSever }) {
   const { vendorId } = useParams(); // Get the vendor ID from the URL
   const [vendor, setVendor] = useState(vendorDataFromSever);
@@ -32,7 +32,7 @@ export default function VendorDetails({ vendorDataFromSever }) {
       const payload = {
         status: newStatus
       }
-      const response = await toggleVendorStatus(vendorId, newStatus);
+      const response = await updateVendor(vendorId, {status:newStatus});
       if (response.success) {
         const getVendor = await getVendorById(vendorId);
         if (getVendor.success) {
@@ -90,7 +90,7 @@ export default function VendorDetails({ vendorDataFromSever }) {
                   <strong>Phone:</strong> {vendor.phone}
                 </p>
                 <p className="text-gray-700">
-                  <strong>Shipping Code:</strong> {vendor.shipping_code}
+                  <strong>Courier:</strong> {vendor.courier}
                 </p>
               </div>
             </div>
