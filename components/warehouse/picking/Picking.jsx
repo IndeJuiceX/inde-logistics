@@ -126,7 +126,7 @@ export default function Picking({ order }) {
             reason: 'Missing Item',
             details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
         }
-        // Validate that vendor_id, stock_shipment_id, and item are present
+        // Validate that vendor_id, stock_shipment_id, and  item are present
         if (!vendor_id || !vendor_order_id) {
             setError(true);
             setErrorMessage('Something went wrong, Please reload the page');
