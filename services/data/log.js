@@ -24,7 +24,7 @@ export async function getFilteredLogs(vendorId, startTimestamp, endTimestamp) {
 
   try {
     // Execute the query using the reusable function
-    const result = await executeLogsQuery(queryString)//runAthenaQuery({ queryString });
+    const result = await executeLogsQuery({query:queryString})//runAthenaQuery({ queryString });
     console.log('result', result);
 
     // Return the first record or null if not found
@@ -69,7 +69,7 @@ export async function getVendorLogById(vendorId, logId) {
 
   try {
     // Execute the query using the reusable function
-    const result = await runAthenaQuery({ queryString });
+    const result = await executeLogsQuery({ query:queryString });
     console.log('result', result);
 
     // Return the first record or null if not found
@@ -141,13 +141,15 @@ export async function getLogs({
       ORDER BY timestamp DESC
     `;
 
+    console.log('EXECUTING QUERY STRING---')
+    console.log(queryString)
   try {
     // Step 1: Run MSCK REPAIR TABLE
     //await runAthenaRepairTable();
 
     // Step 2: Run the actual log query using the reusable function
-    const result = await runAthenaQuery({
-      queryString,
+    const result = await executeLogsQuery({
+      query:queryString,
       limit,
       nextToken,
       queryExecutionId: paramQueryExecutionId,
