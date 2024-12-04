@@ -164,6 +164,11 @@ export default function Sidebar({ vendor, vendorId }) {
           href: `/vendor/${vendorId}/orders/create`,
           icon: <PlusCircleIcon className="w-5 h-5" />,
         },
+        {
+          label: "Shipping Options",
+          href: `/vendor/${vendorId}/shipping-options`,
+          icon: <EnvelopeIcon className="w-5 h-5" />,
+        },
       ],
 
     },
@@ -206,11 +211,7 @@ export default function Sidebar({ vendor, vendorId }) {
         },
       ],
     },
-    {
-      label: "Order Shipping Options",
-      href: `/vendor/${vendorId}/shipping-options`,
-      icon: <EnvelopeIcon className="w-5 h-5" />,
-    },
+    
     {
       label: "Activity Logs",
       href: `/vendor/${vendorId}/api-logs`,

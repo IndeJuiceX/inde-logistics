@@ -9,7 +9,8 @@ export default function ShippingOptionsView({ shippingCodes, countries, vendorId
 
     const breadCrumbLinks = [
         { text: 'Home', url: `/vendor/${vendorId}/dashboard` },
-        { text: 'Order Shipping Options' }
+        { text: 'Orders', url: `/vendor/${vendorId}/orders` },
+        { text: 'Shipping Options' }
     ];
 
     return (
