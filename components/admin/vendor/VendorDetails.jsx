@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import VendorMenu from '@/components/admin/VendorMenu';
 import { updateVendor, getVendorById } from '@/services/data/vendor';
+import { PencilIcon } from '@heroicons/react/24/solid'; // Import the edit icon
+
 export default function VendorDetails({ vendorDataFromSever }) {
   const { vendorId } = useParams(); // Get the vendor ID from the URL
   const [vendor, setVendor] = useState(vendorDataFromSever);
@@ -13,7 +15,14 @@ export default function VendorDetails({ vendorDataFromSever }) {
   const [error, setError] = useState('');
   const [isCopied, setIsCopied] = useState(false); // For copy status
 
+  // State variables for editing the courier field
+  const [isEditingCourier, setIsEditingCourier] = useState(false);
+  const [editedCourierValue, setEditedCourierValue] = useState(vendor.courier);
 
+  useEffect(() => {
+    // Update the editedCourierValue when vendor.courier changes
+    setEditedCourierValue(vendor.courier);
+  }, [vendor.courier]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -29,25 +38,33 @@ export default function VendorDetails({ vendorDataFromSever }) {
     if (confirmChange) {
       setVendorData({ ...vendorData, status: newStatus });
 
-      const payload = {
-        status: newStatus
-      }
-      const response = await updateVendor(vendorId, {status:newStatus});
+      const response = await updateVendor(vendorId, { status: newStatus });
       if (response.success) {
         const getVendor = await getVendorById(vendorId);
         if (getVendor.success) {
           setVendor(getVendor.data);
-        }
-        else {
+        } else {
           console.error('Error fetching vendor:', getVendor.error);
         }
-      }
-      else {
+      } else {
         console.error('Error toggling vendor status:', response.error);
       }
     }
+  };
 
-    // You can call an API to update the status in the backend here
+  // Function to handle courier update
+  const handleCourierUpdate = async () => {
+    const updatedCourier = editedCourierValue.toLowerCase();
+
+    const response = await updateVendor(vendorId, { courier: updatedCourier });
+    if (response.success) {
+      // Update the vendor state
+      setVendor({ ...vendor, courier: updatedCourier });
+      setIsEditingCourier(false);
+    } else {
+      console.error('Error updating courier:', response.error);
+      // Optionally, show an error message to the user
+    }
   };
 
   // Copy API Key to Clipboard
@@ -89,8 +106,43 @@ export default function VendorDetails({ vendorDataFromSever }) {
                 <p className="text-gray-700">
                   <strong>Phone:</strong> {vendor.phone}
                 </p>
-                <p className="text-gray-700">
-                  <strong>Courier:</strong> {vendor.courier}
+                <p className="text-gray-700 flex items-center">
+                  <strong>Courier:</strong>
+                  {isEditingCourier ? (
+                    <>
+                      <input
+                        type="text"
+                        className="ml-2 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={editedCourierValue}
+                        onChange={(e) => setEditedCourierValue(e.target.value)}
+                      />
+                      <button
+                        className="ml-2 text-green-500 hover:text-green-700"
+                        onClick={handleCourierUpdate}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="ml-2 text-red-500 hover:text-red-700"
+                        onClick={() => {
+                          setIsEditingCourier(false);
+                          setEditedCourierValue(vendor.courier);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="ml-2">{vendor.courier}</span>
+                      <button
+                        className="ml-2 text-blue-500 hover:text-blue-700"
+                        onClick={() => setIsEditingCourier(true)}
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
             </div>
