@@ -1,8 +1,8 @@
 import { getVendorById } from '@/services/data/vendor';
 import { NextResponse } from 'next/server';
-
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 // Fetch the vendor by their ID
-export async function GET(request, { params }) {
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
   try {
     const { vendor_id } = params; // Extract vendorId from the URL
     const vendorId = vendor_id
@@ -21,4 +21,4 @@ export async function GET(request, { params }) {
     console.error('Error fetching vendor:', error);
     return NextResponse.json({ error: 'Failed to fetch vendor' }, { status: 500 });
   }
-}
+},['admin'])

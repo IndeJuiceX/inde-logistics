@@ -1,7 +1,9 @@
 // app/api/v1/admin/vendor/[vendorId]/product/[productUUID]/route.js
 import { getProductById } from '@/services/data/product';
 import { NextResponse } from 'next/server';
-export async function GET(request, { params }) {
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
     const { vendorId, productId } = params;
 
     try {
@@ -15,4 +17,4 @@ export async function GET(request, { params }) {
         console.error('Error in GET /product:', error);
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
-}
+},['admin'])
