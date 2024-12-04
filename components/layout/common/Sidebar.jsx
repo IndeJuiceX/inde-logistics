@@ -222,7 +222,7 @@ export default function Sidebar({ vendor, vendorId }) {
 
   // Documentation item
   const documentationItem = {
-    label: "Documentation",
+    label: "API Docs",
     href: `/vendor/${vendorId}/api-docs`,
     icon: <BookOpenIcon className="w-5 h-5" />,
   };
