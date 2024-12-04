@@ -15,5 +15,5 @@ export default async function ShippingOptionsPage({ params }) {
     const countries = getAllCountriesWithNames();
  
 
-    return <ShippingOptionsView shippingCodes={results.shipping_codes} countries={countries} courierCodes={countries} />;
+    return <ShippingOptionsView shippingCodes={results.shipping_codes} countries={countries} courierCodes={countries} vendorId={vendorId} />;
 }
