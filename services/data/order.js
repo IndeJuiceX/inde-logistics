@@ -612,8 +612,7 @@ export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
         const productsResult = await batchGetItems(productKeyPairs, {
             attributes: ['vendor_sku', 'name', 'brand_name'],
         });
-        console.log('PRODUCTS RESULTS ---')
-        console.log(productsResult)
+       
         const productsData = productsResult.success ? productsResult.data : [];
 
         const productsMap = {};
@@ -640,7 +639,7 @@ export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
             const enrichedItems = items.map((item) => {
                 const product = productsMap[item.vendor_sku] || {};
                 return {
-                    ...item,
+                    ...cleanResponseData(item,['order_id','vendor_order_id']),
                     ...product,
                 };
             });
