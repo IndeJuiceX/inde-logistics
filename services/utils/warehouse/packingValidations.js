@@ -2,6 +2,9 @@ import { getParcelType } from '@/services/utils/warehouse/courier';
 
 
 export const parcelPayloadValidation = (order, payload, packedData) => {
+    console.log('payload', payload);
+    console.log('packedData', packedData);
+
     const isAllowedWeight = checkAllowedWeight(order, packedData);
     const isValidParcelDimensions = checkParcelDimensions(order, payload, packedData);
     if (isAllowedWeight.error || isValidParcelDimensions.error) {

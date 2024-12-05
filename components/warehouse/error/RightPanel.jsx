@@ -4,7 +4,9 @@ import NextPreviousButton from '@/components/warehouse/error/NextPreviousButton'
 import { useErrorAppContext } from '@/contexts/ErrorAppContext';
 
 export default function RightPanel() {
-    const { currentErrorOrder, currentOrderShipment, selectedParcelOption } = useErrorAppContext();
+    const { currentErrorOrder, currentOrderShipment, selectedParcelOption, isValidForPrintLabel, printLabel } = useErrorAppContext();
+
+    const isGeneratedLabel = currentOrderShipment?.label_key != null && currentOrderShipment?.tracking != null;
     return (
         <div className="w-1/3 bg-green-100 p-4 space-y-4">
             {/* Length/Width/Height/Weight */}
@@ -14,19 +16,20 @@ export default function RightPanel() {
             )}
 
 
-            {/* Label and Tick Section */}
-            <div className="flex space-x-4">
-                <div className="flex items-center bg-white p-4 rounded shadow justify-center w-1/2">
-                    {/* eslint-disable-next-line */}
-                    <img src="https://dev.indejuice.com/img/wh/print.png" alt="Label Icon" className="ml-2 h-8" />
-                    LABEL
+            {isValidForPrintLabel && (
+                <div className="flex space-x-4" onClick={printLabel}>
+                    <div className="flex items-center bg-white p-4 rounded shadow justify-center w-1/2">
+                        {/* eslint-disable-next-line */}
+                        <img src="https://dev.indejuice.com/img/wh/print.png" alt="Label Icon" className="ml-2 h-8" />
+                        LABEL
+                    </div>
+                    {/* Tick Button */}
+                    <div className="flex items-center bg-white p-4 rounded shadow justify-center w-1/2">
+                        {/* eslint-disable-next-line */}
+                        <img src="https://dev.indejuice.com/img/wh/tick_green_large.png" alt="Tick Icon" className="ml-2 h-9" />
+                    </div>
                 </div>
-                {/* Tick Button */}
-                <div className="flex items-center bg-white p-4 rounded shadow justify-center w-1/2">
-                    {/* eslint-disable-next-line */}
-                    <img src="https://dev.indejuice.com/img/wh/tick_green_large.png" alt="Tick Icon" className="ml-2 h-9" />
-                </div>
-            </div>
+            )}
 
             {/* New Section: Warning and Navigation */}
 

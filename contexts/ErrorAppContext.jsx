@@ -4,6 +4,11 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { getStationId } from '@/services/utils/warehouse/packingStation';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
+import { getServiceCode } from '@/services/utils/warehouse/courier';
+import { updateOrderShipment } from '@/services/data/order-shipment';
+import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValidations';
+import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
+
 export const ErrorAppContext = createContext();
 
 export const ErrorAppProvider = ({ children, errorData }) => {
@@ -16,6 +21,8 @@ export const ErrorAppProvider = ({ children, errorData }) => {
     const [currentErrorOrder, setCurrentErrorOrder] = useState(errorData[currentErrorOrderIndex]);
     const [currentOrderShipment, setCurrentOrderShipment] = useState(null);
     const [selectedParcelOption, setSelectedParcelOption] = useState('');
+    const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
+
     const [payloadCourier, setPayloadCourier] = useState({
         width: '0',
         length: '0',
@@ -27,6 +34,12 @@ export const ErrorAppProvider = ({ children, errorData }) => {
         if (currentErrorOrder) {
             setCurrentOrderShipment(currentErrorOrder.shipment);
             console.log(currentErrorOrder.shipment);
+            setPayloadCourier({
+                width: currentErrorOrder.shipment.width_cm,
+                length: currentErrorOrder.shipment.height_cm,
+                depth: currentErrorOrder.shipment.depth_cm,
+                weight: currentErrorOrder.shipment.weight_grams,
+            });
         }
     }, [currentErrorOrder]);
     useEffect(() => {
@@ -40,81 +53,75 @@ export const ErrorAppProvider = ({ children, errorData }) => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    const updateWeightAndDimensions = async () => {
+    const updateWeightAndDimensions = async (updatedCourier) => {
         // setLoading(true);
-        const payload = {
-            vendor_id: currentErrorOrder.vendor_id,
-            vendor_order_id: currentErrorOrder.vendor_order_id,
+        let service_code = await getServiceCode(currentErrorOrder, selectedParcelOption);
+        const validationFormate = {
+            parcelOption: selectedParcelOption,
             courier: {
-                width: payloadCourier.width,
-                length: payloadCourier.length,
-                depth: payloadCourier.depth,
-                weight: payloadCourier.weight,
+                ...updatedCourier,
+                service_code: service_code,
+                weight: updatedCourier.weight,
             }
         }
-        console.log('payload', payload);
-        // if (packedData.parcelOption === 'custom') {
-        //     payload.courier = packedData.courier;
-        // }
-        // else {
-        //     payload.courier = getParcelDimensions(packedData.parcelOption);
-        // }
-        // // payload.weight.courier = packedData.weight;
-        // payload.courier = {
-        //     ...payload.courier,
-        //     weight: packedData.courier.weight,
-        //     service_code: await getServiceCode(order, packedData.parcelOption),
-        // };
+        const validationResult = parcelPayloadValidation(currentErrorOrder, validationFormate, validationFormate);
+        if (validationResult.error) {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(validationResult.message);
+            setIsErrorReload(false);
+            return;
+        }
 
-        // let service_code = payload.courier.service_code;
+        const formattedCourier = {
+            service_code: service_code,
+            weight_grams: updatedCourier.weight,
+            depth_cm: updatedCourier.depth,
+            width_cm: updatedCourier.width,
+            height_cm: updatedCourier.length,
+        };
 
-        // const validationResult = parcelPayloadValidation(order, payload, packedData);
-        // if (validationResult.error) {
-        //     setLoading(false);
-        //     setLoaded(true);
-        //     setError(true);
-        //     setErrorMessage(validationResult.message);
-        //     setIsErrorReload(false);
-        //     setPackedData({
-        //         ...packedData,
-        //         courier: {
-        //             ...packedData.courier,
-        //             weight: 0,
-        //             parcelOption: '',
-        //             width: 0,
-        //             height: 0,
-        //             depth: 0,
-        //         }
-        //     });
-        //     return;
-        // }
+        const updateResult = await updateOrderShipment(currentErrorOrder.vendor_id, currentErrorOrder.vendor_order_id, formattedCourier);
 
-        // const formattedCourier = {
-        //     service_code: service_code,
-        //     weight_grams: payload.courier.weight,
-        //     depth_cm: payload.courier.depth,
-        //     width_cm: payload.courier.width,
-        //     height_cm: payload.courier.length,
-        // };
+        if (updateResult.success) {
+            setLoading(false);
+            setLoaded(true);
+            setIsValidForPrintLabel(true);
+        }
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(updateResult.error);
+            setIsErrorReload(true);
+        }
+    }
+    const printLabel = async () => {
+        setLoading(true);
+        const stationId = getStationId();
+        if (stationId === null) {
+            setIsSetStationId(false);
+            return;
+        }
+        const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
 
-        // const updateResult = await updateOrderShipment(order.vendor_id, order.vendor_order_id, formattedCourier);
-
-
-        // if (updateResult.success) {
-        //     setLoading(false);
-        //     setLoaded(true);
-        //     setIsValidForPrintLabel(true);
-        // }
-        // else {
-        //     setLoading(false);
-        //     setLoaded(true);
-        //     setError(true);
-        //     setErrorMessage(updateResult.error);
-        //     setIsErrorReload(true);
-        // }
+        if (printLabelResult.success) {
+            setIsGeneratedLabel(true);
+            setIsReadyForDispatch(true);
+            setLoading(false);
+            setLoaded(true);
+        }
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(printLabelResult.error);
+            setIsErrorReload(true);
+        }
     }
     return (
-        <ErrorAppContext.Provider value={{ errorOrders, setErrorOrders, totalErrorOrders, setTotalErrorOrders, currentErrorOrder, setCurrentErrorOrder, currentErrorOrderIndex, setCurrentErrorOrderIndex, selectedParcelOption, setSelectedParcelOption, currentOrderShipment, setCurrentOrderShipment, payloadCourier, setPayloadCourier, updateWeightAndDimensions }}>
+        <ErrorAppContext.Provider value={{ errorOrders, setErrorOrders, totalErrorOrders, setTotalErrorOrders, currentErrorOrder, setCurrentErrorOrder, currentErrorOrderIndex, setCurrentErrorOrderIndex, selectedParcelOption, setSelectedParcelOption, currentOrderShipment, setCurrentOrderShipment, payloadCourier, setPayloadCourier, updateWeightAndDimensions, isValidForPrintLabel, printLabel }}>
             {children}
         </ErrorAppContext.Provider>
     );

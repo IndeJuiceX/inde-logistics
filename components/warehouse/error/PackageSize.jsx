@@ -8,10 +8,12 @@ import { getParcelDimensions } from "@/services/utils/warehouse/indePackageDimen
 
 
 export default function PackageSize() {
-    const { selectedParcelOption, setPayloadCourier, payloadCourier, updateWeightAndDimensions } = useErrorAppContext();
+    const { selectedParcelOption, setPayloadCourier, payloadCourier, updateWeightAndDimensions, currentOrderShipment } = useErrorAppContext();
     const [numberInput, setNumberInput] = useState('');
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [activeField, setActiveField] = useState('');
+
+    console.log('currentOrderShipment', currentOrderShipment);
 
     const handleNumberEntered = (input) => {
         if (input === 'backspace') {
@@ -20,13 +22,19 @@ export default function PackageSize() {
 
         } else if (input === 'ok') {
             // On 'ok', reset activeField and numberInput
-            setPayloadCourier({ ...payloadCourier, [activeField]: numberInput });
+            setPayloadCourier(prevState => {
+                const updatedCourier = { ...prevState, [activeField]: parseFloat(numberInput) };
+                if (activeField === 'weight') {
+                    updateWeightAndDimensions(updatedCourier);
+                }
+                return updatedCourier;
+            });
             setNumberInput('');
             setIsOpenModal(false);
             if (activeField === 'weight') {
                 console.log('activeField', activeField);
                 setActiveField('');
-                updateWeightAndDimensions();
+                // updateWeightAndDimensions();
             }
         } else {
             const newNumberInput = numberInput + input;
@@ -61,10 +69,23 @@ export default function PackageSize() {
                 setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
             }
             else {
+                setPayloadCourier({
+                    ...payloadCourier,
+                    weight: 0,
+                    length: 0,
+                    width: 0,
+                    depth: 0
+                });
                 setIsOpenModal(true);
             }
         } else {
-
+            setPayloadCourier({
+                ...payloadCourier,
+                weight: 0,
+                length: 0,
+                width: 0,
+                depth: 0
+            });
             setIsOpenModal(true);
         }
     }
@@ -104,7 +125,7 @@ export default function PackageSize() {
             <div className="bg-white p-4 rounded shadow flex items-center justify-between" onClick={() => handleFieldClick('weight')} >
                 <div
                     type="text"
-                    value="174.5g"
+                    value={`${payloadCourier['weight'] || '0'}g`}
                     className="bg-gray-100 text-sm text-gray-700 w-24 p-2 rounded border focus:outline-none focus:ring focus:ring-blue-300"
                 >
                     {payloadCourier['weight'] || '0'}g
