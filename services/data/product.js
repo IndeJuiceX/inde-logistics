@@ -269,11 +269,10 @@ export const getMultipleProductsByIds = async (vendorId, vendorSkus, attributes 
     //     // You can add other options like concurrencyLimit, retryLimit if needed
     // };
     
-    console.log(keyPairs)
+   
     // Call batchGetItems with the constructed keyPairs
     const result = await batchGetItems(keyPairs);
 
-    console.log(result)
     // Handle the result
     if (result.success) {
         return { success: true, data: cleanResponseData(result.data,['warehouse']) };
