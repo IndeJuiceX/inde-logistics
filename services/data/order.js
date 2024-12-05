@@ -558,7 +558,7 @@ export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
         }));
 
         const ordersResult = await batchGetItems(orderKeyPairs, {
-            attributes: ['vendor_order_id', 'created_at', 'updated_at', 'buyer', 'shipping_cost', 'shipping_code', 'status'],
+            attributes: ['vendor_order_id', 'created_at', 'updated_at', 'buyer', 'shipping_cost', 'shipping_code', 'status','expected_delivery_date'],
         });
 
         if (!ordersResult.success) {
