@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllOrders, getOrderDetails } from '@/services/data/order';
+import { getAllOrders, getMultipleOrdersByIds } from '@/services/data/order';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { getVendorIdFromRequest } from '@/services/utils';
 
