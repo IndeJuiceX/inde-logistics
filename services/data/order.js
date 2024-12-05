@@ -543,3 +543,145 @@ export const getOrderWithItemDetails = async (vendorId, orderId, excludeFields =
         data: cleanOrder,
     };
 };
+
+export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
+    try {
+        const vendorOrderKey = `VENDORORDER#${vendorId}`;
+        const vendorOrderShipmentKey = `VENDORORDERSHIPMENT#${vendorId}`;
+        const vendorOrderItemKey = `VENDORORDERITEM#${vendorId}`;
+        const vendorProductKey = `VENDORPRODUCT#${vendorId}`;
+
+        // Step 1: Fetch Orders
+        const orderKeyPairs = vendorOrderIds.map((orderId) => ({
+            pk: vendorOrderKey,
+            sk: `ORDER#${orderId}`,
+        }));
+
+        const ordersResult = await batchGetItems(orderKeyPairs, {
+            attributes: ['vendor_order_id', 'created_at', 'updated_at', 'buyer', 'shipping_cost', 'shipping_code', 'status'],
+        });
+
+        if (!ordersResult.success) {
+            return { success: false, error: ordersResult.error };
+        }
+
+        const ordersData = ordersResult.data;
+
+        // Step 2: Fetch Order Shipments
+        const orderShipmentKeyPairs = vendorOrderIds.map((orderId) => ({
+            pk: vendorOrderShipmentKey,
+            sk: `ORDERSHIPMENT#${orderId}`,
+        }));
+
+        const shipmentsResult = await batchGetItems(orderShipmentKeyPairs, {
+            attributes: ['sk', 'status', 'tracking'],
+        });
+
+        const shipmentsData = shipmentsResult.success ? shipmentsResult.data : [];
+
+        // Map shipments by orderId for easy lookup
+        const shipmentsMap = {};
+        shipmentsData.forEach((shipment) => {
+            const orderId = shipment.sk.replace('ORDERSHIPMENT#', '');
+            shipmentsMap[orderId] = shipment;
+        });
+
+        // Step 3: Fetch Order Items
+        const orderItemsResult = await fetchOrderItems(vendorId, vendorOrderIds);
+
+        if (!orderItemsResult.success) {
+            return { success: false, error: orderItemsResult.error };
+        }
+
+        const orderItemsData = orderItemsResult.data;
+
+        // Step 4: Fetch Vendor Products
+        const vendorSkusSet = new Set();
+        orderItemsData.forEach((item) => {
+            if (item.vendor_sku) {
+                vendorSkusSet.add(item.vendor_sku);
+            }
+        });
+        const vendorSkus = Array.from(vendorSkusSet);
+
+        const productKeyPairs = vendorSkus.map((sku) => ({
+            pk: vendorProductKey,
+            sk: `PRODUCT#${sku}`,
+        }));
+
+        const productsResult = await batchGetItems(productKeyPairs, {
+            attributes: ['vendor_sku', 'name', 'brand_name'],
+        });
+        console.log('PRODUCTS RESULTS ---')
+        console.log(productsResult)
+        const productsData = productsResult.success ? productsResult.data : [];
+
+        const productsMap = {};
+        productsData.forEach((product) => {
+            productsMap[product.vendor_sku] = product;
+        });
+
+        // Step 5: Assemble Final Response
+        const finalOrders = ordersData.map((order) => {
+            const orderId = order.vendor_order_id;
+
+            // Get shipment info
+            const shipment = shipmentsMap[orderId];
+            if (shipment && shipment.status === 'dispatched' && shipment.tracking) {
+                order.shipment_tracking = shipment.tracking;
+            }
+
+            // Get order items for this order
+            const items = orderItemsData.filter(
+                (item) => item.order_id === orderId
+            );
+    
+            // Enrich items with product data
+            const enrichedItems = items.map((item) => {
+                const product = productsMap[item.vendor_sku] || {};
+                return {
+                    ...item,
+                    ...product,
+                };
+            });
+
+            return {
+                ...order,
+                items: enrichedItems,
+            };
+        });
+
+        return { success: true, data: finalOrders };
+    } catch (error) {
+        console.error('Error fetching orders by IDs:', error);
+        return { success: false, error: 'Failed to fetch orders' };
+    }
+};
+
+// Helper function to fetch order items
+const fetchOrderItems = async (vendorId, vendorOrderIds) => {
+    try {
+        const vendorOrderItemKey = `VENDORORDERITEM#${vendorId}`;
+        const allItems = [];
+        // Use Promise.all to fetch order items in parallel
+        const promises = vendorOrderIds.map(async (orderId) => {
+            const result = await queryItemsWithPkAndSk(vendorOrderItemKey, `ORDER#${orderId}#ITEM#`, ['quantity', 'sales_value','vendor_sku', 'vendor_order_id'])
+            if (!result.success) {
+                throw new Error(`Failed to fetch items for order ${orderId}`);
+            }
+            // Add order_id to each item
+            const itemsWithOrderId = result.data.map((item) => ({
+                ...item,
+                order_id: orderId,
+            }));
+            allItems.push(...itemsWithOrderId);
+        });
+
+        await Promise.all(promises);
+
+        return { success: true, data: allItems };
+    } catch (error) {
+        console.error('Error fetching order items:', error);
+        return { success: false, error: 'Failed to fetch order items' };
+    }
+};
