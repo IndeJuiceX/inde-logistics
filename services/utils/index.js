@@ -136,6 +136,10 @@ export const getIdFromDynamoKey = (key = null) => {
   return key;
 }
 
+export const getDynamoKeyFromId = (prefix,id) => {
+  return `${prefix}#${id}`
+}
+
 export const getShippingDuration = (shipping_code) => {
   return shipping_code.split('-')[1];
 }
