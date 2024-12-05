@@ -4,7 +4,7 @@ paths:
       summary: Retrieve product(s)
       description: >
         Fetch one or multiple products for the authenticated vendor. If `vendor_sku` is provided,
-        retrieves a specific product. Otherwise, retrieves a paginated list of products.
+        retrieves specific products matching the SKUs. Otherwise, retrieves a paginated list of products.
       tags:
         - Product
       security:
@@ -12,10 +12,14 @@ paths:
       parameters:
         - name: vendor_sku
           in: query
-          description: The vendor SKU of the product to retrieve.
+          description: >
+            A comma-separated list of up to 75 vendor SKUs to retrieve products for.
+            Example: "sku1,sku2,sku3".
           required: false
           schema:
             type: string
+            pattern: "^([^,]+,){0,74}[^,]+$"
+            maxLength: 750
         - name: page_size
           in: query
           description: Number of products to retrieve per page (defaults to 25).
@@ -44,8 +48,8 @@ paths:
                         items:
                           $ref: '#/components/schemas/product_create'
                     description: >
-                      If `vendor_sku` is provided, `data` is a single product object.
-                      Otherwise, `data` is an array of product objects.
+                      If `vendor_sku` is provided, `data` is an array of product objects corresponding to the provided SKUs.
+                      Otherwise, `data` is a paginated array of product objects.
                   success:
                     type: boolean
                     example: true
