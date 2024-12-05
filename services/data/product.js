@@ -1,7 +1,7 @@
 'use server'
 
 
-import { getItem, queryItems, putItem, deleteItem, queryItemsWithPkAndSk, updateItem } from '@/services/external/dynamo/wrapper';
+import { getItem, queryItems,batchGetItems, putItem, deleteItem, queryItemsWithPkAndSk, updateItem } from '@/services/external/dynamo/wrapper';
 import { cleanResponseData } from '@/services/utils';
 // Function to retrieve a single vendor by ID
 export const getProductById = async (vendorId, productUUID, excludeFields = []) => {
@@ -263,15 +263,17 @@ export const getMultipleProductsByIds = async (vendorId, vendorSkus, attributes 
         sk: `PRODUCT#${vendorSku}`,
     }));
 
-    // Options for batchGetItems
-    const options = {
-        attributes, // Optional: specify attributes to retrieve
-        // You can add other options like concurrencyLimit, retryLimit if needed
-    };
-
+    // // Options for batchGetItems
+    // const options = {
+    //     attributes, // Optional: specify attributes to retrieve
+    //     // You can add other options like concurrencyLimit, retryLimit if needed
+    // };
+    
+    console.log(keyPairs)
     // Call batchGetItems with the constructed keyPairs
-    const result = await batchGetItems(keyPairs, options);
+    const result = await batchGetItems(keyPairs);
 
+    console.log(result)
     // Handle the result
     if (result.success) {
         return { success: true, data: cleanResponseData(result.data,['warehouse']) };
