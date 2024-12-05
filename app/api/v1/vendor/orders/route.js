@@ -6,9 +6,10 @@ import { getVendorIdFromRequest } from '@/services/utils';
 const handler = async (request, { params, user }) => {
     try {
         const { searchParams } = new URL(request.url);
-        const vendorOrderId = searchParams.get('vendor_order_id');
+        const vendorOrderIdParam = searchParams.get('vendor_order_id');
+        const MAX_ORDER_IDS = 10;
         // console.log('vender');
-        
+
         const pageSize = parseInt(searchParams.get('page_size')) || 25;
         const lastEvaluatedKeyParam = searchParams.get('last_evaluated_key');
 
@@ -17,7 +18,7 @@ const handler = async (request, { params, user }) => {
             exclusiveStartKey = JSON.parse(Buffer.from(lastEvaluatedKeyParam, 'base64').toString('utf-8'));
         }
 
-        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+        let vendorId = getVendorIdFromRequest(user, searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
 
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
@@ -25,9 +26,25 @@ const handler = async (request, { params, user }) => {
         }
 
         let result = null;
-        if (vendorOrderId) {
-            // Fetch specific order details
-            result = await getOrderDetails(vendorId, vendorOrderId);
+        if (vendorOrderIdParam) {
+            const vendorOrderIds = vendorOrderIdParam
+                .split(',')
+                .map((id) => id.trim())
+                .filter((id) => id);
+
+            if (vendorOrderIds.length > MAX_ORDER_IDS) {
+                return NextResponse.json(
+                    { error: `Maximum of ${MAX_ORDER_IDS} vendor_order_id values allowed per request` },
+                    { status: 400 }
+                );
+            }
+
+            if (vendorOrderIds.length > 0) {
+                // Fetch multiple orders
+                result = await getMultipleOrdersByIds(vendorId, vendorOrderIds);
+            } else {
+                return NextResponse.json({ error: 'Invalid vendor_order_id parameter' }, { status: 400 });
+            }
         } else {
             // Fetch all orders with pagination
             result = await getAllOrders(vendorId, pageSize, exclusiveStartKey);

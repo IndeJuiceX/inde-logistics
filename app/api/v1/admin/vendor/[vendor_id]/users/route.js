@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getVendorUsers } from '@/services/data/user';  // Your DynamoDB helper
-
-export async function GET(request, { params }) {
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+export const GET = withAuthAndLogging(async (request, { params, user }) => {
   try {
     const { searchParams } = new URL(request.url);
     const { vendor_id } = params;
@@ -19,4 +19,4 @@ export async function GET(request, { params }) {
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
-}
+},['admin'])

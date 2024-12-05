@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { validateOrder } from '@/services/schema';  // Changed to validateOrder
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { toggleVendorStatus } from '@/services/data/vendor';  // Changed to saveVendor
 
-const MAX_SIZE_BYTES = 2 * 1024 * 1024;  // 2MB in bytes
 
 export const POST = withAuthAndLogging(async (request, { params, user }) => {
     try {

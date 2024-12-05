@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
 import { queryItems, batchWriteItems } from '@/lib/dynamodb';  // Import your DynamoDB helper functions
-import { authenticateAndAuthorize } from '@/services/utils/apiMiddleware';
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 
-export async function DELETE(request) {
+export const DELETE = withAuthAndLogging(async (request, { params, user }) => {
   try {
-    // Extract vendorId from query parameters
-
-    const { authorized, user, status } = await authenticateAndAuthorize(request);
-
-    // If not authorized, return an appropriate response
-    if (!authorized) {
-      return NextResponse.json({ error: 'Access denied' }, { status });
-    }
+   
 
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get('vendorId');
@@ -51,4 +44,4 @@ export async function DELETE(request) {
     console.error('Error in /delete-products endpoint:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
-}
+},['admin'])

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { hashPassword } from '@/services/utils/password';  // Utility function to hash the password
 import { saveUser } from '@/services/data/user';     // DynamoDB utility function for adding user
-
-export async function POST(request, { params }) {
+import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
+export const POST = withAuthAndLogging(async (request, { params, user }) => {
   try {
     const vendorId = params.vendor_id; // Get vendorId from URL parameters
 
@@ -31,7 +31,7 @@ export async function POST(request, { params }) {
       user_type: 'vendor',  // Fixed user type for vendor users
       vendor_id: vendorId,       // Vendor ID from the URL parameter
       entity_type: 'User',       // Additional attribute to indicate the entity type
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
 
     // Add the user to the DynamoDB table
@@ -47,4 +47,4 @@ export async function POST(request, { params }) {
     console.error('Error in registering user:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
-}
+},['admin'])

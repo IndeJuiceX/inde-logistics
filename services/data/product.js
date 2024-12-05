@@ -255,3 +255,29 @@ export async function addBarcodeToProduct(vendorId, vendorSku, newBarcode) {
         throw error;
     }
 }
+
+export const getMultipleProductsByIds = async (vendorId, vendorSkus, attributes = []) => {
+    // Construct the keyPairs for batchGetItems
+    const keyPairs = vendorSkus.map((vendorSku) => ({
+        pk: `VENDORPRODUCT#${vendorId}`,
+        sk: `PRODUCT#${vendorSku}`,
+    }));
+
+    // Options for batchGetItems
+    const options = {
+        attributes, // Optional: specify attributes to retrieve
+        // You can add other options like concurrencyLimit, retryLimit if needed
+    };
+
+    // Call batchGetItems with the constructed keyPairs
+    const result = await batchGetItems(keyPairs, options);
+
+    // Handle the result
+    if (result.success) {
+        return { success: true, data: cleanResponseData(result.data,['warehouse']) };
+    } else {
+        // Optionally, process the error further or log it
+        console.error('Error fetching products:', result.error);
+        return { success: false, error: result.error };
+    }
+};
