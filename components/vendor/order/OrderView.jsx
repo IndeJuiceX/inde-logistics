@@ -1,84 +1,30 @@
 'use client';
 
 import Breadcrumbs from '@/components/layout/common/Breadcrumbs';
-import { useState, useEffect } from 'react';
+import { formatDate } from '@/services/utils/convertTime';
+import { useState } from 'react';
 
 
-export default function OrderView({ vendorId, vendorOrderId }) {
-    //   const { vendorId, vendorOrderId } = useParams();
-    //   const router = useRouter();
+export default function OrderView({ vendorId, vendorOrderId, orderData }) {
 
-    const [order, setOrder] = useState(null);
+    
+
+    const [order, setOrder] = useState(orderData ? orderData[0] : null);
     const [orderItems, setOrderItems] = useState([]);
     const [buyerInfo, setBuyerInfo] = useState({
-        name: '',
-        phone: '',
-        email: '',
-        address_line_1: '',
-        address_line_2: '',
-        address_line_3: '',
-        address_line_4: '',
-        city: '',
-        postcode: '',
-        country: '',
+        name: order?.buyer?.name || '',
+        phone: order?.buyer?.phone || '',
+        email: order?.buyer?.email || '',
+        address_line_1: order?.buyer?.address_line_1 || '',
+        address_line_2: order?.buyer?.address_line_2 || '',
+        address_line_3: order?.buyer?.address_line_3 || '',
+        address_line_4: order?.buyer?.address_line_4 || '',
+        city: order?.buyer?.city || '',
+        postcode: order?.buyer?.postcode || '',
+        country_code: order?.buyer?.country_code || '',
     });
-    const [loading, setLoading] = useState(true);
     const [updatingBuyer, setUpdatingBuyer] = useState(false);
 
-    useEffect(() => {
-        // Fetch the order details from the backend API
-        const fetchOrderDetails = async () => {
-            try {
-                const response = await fetch(
-                    `/api/v1/vendor/orders?vendor_order_id=${vendorOrderId}`
-                );
-                const data = await response.json();
-                console.log(data);
-                if (response.ok && data.success) {
-                    // Destructure the response based on the API response format
-                    const { buyer, items, ...orderDetails } = data.data;
-
-                    setOrder(orderDetails); // Contains order_id, status, etc.
-                    setOrderItems(items || []);
-                    setBuyerInfo(buyer || {});
-                } else {
-                    console.error('Error fetching order details:', data.error);
-                }
-            } catch (error) {
-                console.error('Error fetching order details:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (vendorOrderId && vendorId) {
-            fetchOrderDetails();
-        }
-    }, [vendorOrderId, vendorId]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-gray-500">Loading order details...</div>
-            </div>
-        );
-    }
-
-    if (!order) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-red-500">Failed to load order details.</div>
-            </div>
-        );
-    }
-
-    const {
-        order_id,
-        created_at,
-        status,
-        //shipping_cost,
-        expected_delivery_date,
-    } = order;
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -120,6 +66,11 @@ export default function OrderView({ vendorId, vendorOrderId }) {
         { text: 'Orders', url: `/vendor/${vendorId}/orders` },
         { text: 'Order Details' }
     ];
+    const totalItems = order?.items.reduce((acc, item) => acc + item.quantity, 0);
+    const dateCreated = order?.created_at ? formatDate(order.created_at, 'number') : null;
+    const expected_delivery_date = order?.expected_delivery_date ? order.expected_delivery_date : null;
+
+
     return (
         <>
             <Breadcrumbs breadCrumbLinks={breadCrumbLinks} />
@@ -134,33 +85,33 @@ export default function OrderView({ vendorId, vendorOrderId }) {
                             {/* Left Column */}
                             <div>
                                 <p className="text-gray-600">
-                                    <span className="font-semibold">Order ID:</span> {order_id}
+                                    <span className="font-semibold">Order ID:</span> {order?.vendor_order_id}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-semibold">Date Created:</span>{' '}
-                                    {new Date(created_at).toLocaleDateString()}
+                                    {dateCreated ? dateCreated : 'N/A'}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-semibold">
                                         Expected Delivery Date:
                                     </span>{' '}
-                                    {expected_delivery_date || 'N/A'}
+                                    {expected_delivery_date ? expected_delivery_date : 'N/A'}
                                 </p>
                                 <p className="text-gray-600">
                                     <span className="font-semibold">Status:</span>{' '}
                                     <span
-                                        className={`inline-block px-2 py-1 text-sm font-semibold rounded ${status === 'Accepted'
+                                        className={`inline-block px-2 py-1 text-sm font-semibold rounded ${order?.status === 'Accepted'
                                             ? 'bg-green-100 text-green-800'
-                                            : status === 'Pending'
+                                            : order?.status === 'Pending'
                                                 ? 'bg-yellow-100 text-yellow-800'
-                                                : status === 'Confirmed'
+                                                : order?.status === 'Confirmed'
                                                     ? 'bg-blue-100 text-blue-800'
-                                                    : status === 'Shipped'
+                                                    : order?.status === 'Shipped'
                                                         ? 'bg-orange-100 text-orange-800'
                                                         : 'bg-gray-100 text-gray-800'
                                             }`}
                                     >
-                                        {status}
+                                        {order?.status}
                                     </span>
                                 </p>
                             </div>
@@ -168,9 +119,9 @@ export default function OrderView({ vendorId, vendorOrderId }) {
                             <div>
                                 <p className="text-gray-600">
                                     <span className="font-semibold">Total Items:</span>{' '}
-                                    {orderItems.length}
+                                    {totalItems || 0}
                                 </p>
-                               {/*} <p className="text-gray-600">
+                                {/*} <p className="text-gray-600">
                                     <span className="font-semibold">Shipping Cost:</span>{' '}
                                     £{shipping_cost?.toFixed(2) || '0.00'}
                                 </p>*/}
@@ -308,12 +259,12 @@ export default function OrderView({ vendorId, vendorOrderId }) {
                             {/* Country */}
                             <div>
                                 <label className="block text-gray-700 font-medium mb-2">
-                                    Country
+                                    Country Code
                                 </label>
                                 <input
                                     type="text"
-                                    name="country"
-                                    value={buyerInfo.country || ''}
+                                    name="country_code"
+                                    value={buyerInfo.country_code || ''}
                                     onChange={handleInputChange}
                                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
                                     required
@@ -352,8 +303,8 @@ export default function OrderView({ vendorId, vendorOrderId }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orderItems.length > 0 ? (
-                                        orderItems.map((item, index) => (
+                                    {order?.items && order.items.length > 0 ? (
+                                        order.items.map((item, index) => (
                                             <tr key={index} className="border-t hover:bg-gray-50">
                                                 {/* SKU */}
                                                 <td className="px-4 py-2 text-gray-700">

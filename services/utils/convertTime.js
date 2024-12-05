@@ -91,12 +91,14 @@ function getRelativeTime(seconds) {
 }
 
 //31st October 2024
-export function formatDate(timestamp) {
+export function formatDate(timestamp, format = 'default') {
     const date = new Date(timestamp);
     const day = date.getDate();
     const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getFullYear();
-
+    if (format === 'number') {
+        return date.toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
     const daySuffix = (day) => {
         if (day > 3 && day < 21) return 'th';
         switch (day % 10) {
