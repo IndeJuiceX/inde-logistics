@@ -52,7 +52,7 @@ export const createShipmentAndUpdateOrder = async (vendorId, orderId) => {
         pk: `VENDORORDER#${vendorId}`, // Replace with your actual PK format
         sk: `ORDER#${orderId}`, // Replace with your actual SK format
       },
-      UpdateExpression: 'SET update_at = :updateAt, #st = :status',
+      UpdateExpression: 'SET updated_at = :updateAt, #st = :status',
       ExpressionAttributeValues: {
         ':updateAt': timestamp,
         ':status': 'processing',
