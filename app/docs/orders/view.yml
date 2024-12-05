@@ -3,8 +3,10 @@ paths:
     get:
       summary: Retrieve order(s)
       description: >
-        Fetch one or multiple orders for the authenticated vendor. If `vendor_order_id` is provided,
-        retrieves the specific order's details. Otherwise, retrieves a paginated list of orders.
+        Fetch one or multiple orders for the authenticated vendor. If `vendor_order_id` is provided, retrieves details
+        for the specified orders (up to 10 comma-separated IDs). Additionally, if an order shipment has been dispatched 
+        and tracking information is set, the `shipment_tracking` key in the main order object will include tracking details.
+        If `vendor_order_id` is not provided, retrieves a paginated list of orders.
       tags:
         - Order
       security:
@@ -12,10 +14,14 @@ paths:
       parameters:
         - name: vendor_order_id
           in: query
-          description: The vendor's order ID to retrieve a specific order.
+          description: >
+            Comma-separated list of up to 10 vendor order IDs to retrieve details for. 
+            Example: "order1,order2,order3".
           required: false
           schema:
             type: string
+            pattern: "^([^,]+,){0,9}[^,]+$"
+            maxLength: 500
         - name: page_size
           in: query
           description: Number of orders to retrieve per page (defaults to 25).
@@ -45,8 +51,8 @@ paths:
                         items:
                           $ref: '#/components/schemas/Order'
                     description: >
-                      If `vendor_order_id` is provided, `data` is a single order object.
-                      Otherwise, `data` is an array of order objects.
+                      If `vendor_order_id` is provided, `data` is an array of order objects corresponding 
+                      to the provided IDs. Otherwise, `data` is a paginated array of order objects.
                   success:
                     type: boolean
                     example: true
@@ -58,6 +64,23 @@ paths:
                     type: boolean
                     description: Indicates if more results are available.
                     example: true
+                  tracking:
+                    type: object
+                    description: Contains tracking information if the order shipment has been dispatched.
+                    properties:
+                      shipment_tracking:
+                        type: object
+                        description: Details of the shipment tracking.
+                        properties:
+                          carrier:
+                            type: string
+                            example: "FedEx"
+                          tracking_number:
+                            type: string
+                            example: "123456789"
+                          status:
+                            type: string
+                            example: "In Transit"
         '403':
           description: Forbidden - User not authorized.
           content:
