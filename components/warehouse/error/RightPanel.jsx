@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+
 import PackingOptions from '@/components/warehouse/error/PackingOptions';
 import PackageSize from '@/components/warehouse/error/PackageSize';
 import NextPreviousButton from '@/components/warehouse/error/NextPreviousButton';
@@ -9,15 +9,7 @@ import ErrorResolved from '@/components/warehouse/error/ErrorResolved';
 
 
 export default function RightPanel() {
-    const { currentErrorOrder, currentOrderShipment, selectedParcelOption, isValidForPrintLabel, printLabel, isGeneratedLabel } = useErrorAppContext();
-
-
-
-
-    useEffect(() => {
-        console.log('isValidForPrintLabel', isValidForPrintLabel);
-
-    }, [isValidForPrintLabel]);
+    const { selectedParcelOption, isValidForPrintLabel, printLabel, isGeneratedLabel } = useErrorAppContext();
 
     return (
         <div className="w-1/3 bg-green-100 p-4 space-y-4">
@@ -41,8 +33,6 @@ export default function RightPanel() {
             )
             }
 
-            {/* New Section: Warning and Navigation */}
-
             <div className="fixed bottom-10 right-0 w-1/3 p-4 bg-green-100 flex space-x-4" style={{ backgroundColor: '#FFCECE' }}>
                 {/* Warning Icon Section */}
                 <div className="flex items-center justify-center bg-white p-4 rounded shadow w-1/2">
@@ -53,8 +43,6 @@ export default function RightPanel() {
                         className="h-12 w-12"
                     />
                 </div>
-
-                {/* Next/Previous Buttons */}
                 <NextPreviousButton />
             </div>
         </div >

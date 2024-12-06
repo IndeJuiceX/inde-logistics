@@ -1,6 +1,5 @@
 'use client';
 
-
 import { createContext, useState, useContext, useEffect } from 'react';
 import { getStationId } from '@/services/utils/warehouse/packingStation';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
@@ -8,8 +7,6 @@ import { getServiceCode } from '@/services/utils/warehouse/courier';
 import { updateOrderShipment } from '@/services/data/order-shipment';
 import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValidations';
 import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
-
-
 
 export const ErrorAppContext = createContext();
 

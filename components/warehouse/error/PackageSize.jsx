@@ -13,7 +13,6 @@ export default function PackageSize() {
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [activeField, setActiveField] = useState('');
 
-    console.log('currentOrderShipment', currentOrderShipment);
 
     const handleNumberEntered = (input) => {
         if (input === 'backspace') {
@@ -32,7 +31,7 @@ export default function PackageSize() {
             setNumberInput('');
             setIsOpenModal(false);
             if (activeField === 'weight') {
-                console.log('activeField', activeField);
+              
                 setActiveField('');
                 // updateWeightAndDimensions();
             }
@@ -40,15 +39,15 @@ export default function PackageSize() {
             const newNumberInput = numberInput + input;
             const parsedValue = parseInt(newNumberInput, 10);
             setNumberInput(newNumberInput);
-            // updateQuantity(activeField, parsedValue);
+            
         }
     };
 
     useEffect(() => {
-        console.log(selectedParcelOption);
+       
         if (selectedParcelOption !== 'custom') {
             const parcelDimensions = getParcelDimensions(selectedParcelOption);
-            console.log('parcelDimensions', parcelDimensions);
+          
             setPayloadCourier(
                 {
                     ...payloadCourier,
@@ -63,7 +62,7 @@ export default function PackageSize() {
 
     const handleFieldClick = (field) => {
         if (isGeneratedLabel) return;
-        
+
         setActiveField(field);
         if (selectedParcelOption !== 'custom') {
             if (field !== 'weight') {

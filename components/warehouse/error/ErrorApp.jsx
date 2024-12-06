@@ -9,12 +9,6 @@ import ErrorModal from '@/components/warehouse/errorModal/ErrorModal';
 import PageSpinner from '@/components/loader/PageSpinner';
 
 export default function ErrorApp({ errorsData }) {
- 
-
-    useEffect(() => {
-        console.log('errorsData', errorsData);
-    }, [errorsData]);
-
     return (
         <div className="h-screen flex flex-col bg-gray-100">
             <GlobalStateProvider>

@@ -14,13 +14,10 @@ export default function NextPreviousButton() {
     };
 
     const handleNext = () => {
-        console.log('currentErrorOrderIndex', currentErrorOrderIndex);
-        console.log('currentErrorOrderIndex', currentErrorOrderIndex);
+        
         if (errorOrders && currentErrorOrderIndex < totalErrorOrders - 1) { // Added check for errorOrders
             const nextOrderIndex = currentErrorOrderIndex + 1;
-            console.log('nextOrderIndex', nextOrderIndex);
             const nextOrder = errorOrders[nextOrderIndex];
-            console.log('nextOrder', nextOrder);
             setCurrentErrorOrderIndex(nextOrderIndex);
             setCurrentErrorOrder(nextOrder);
         }
