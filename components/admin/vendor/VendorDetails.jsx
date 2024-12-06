@@ -158,8 +158,8 @@ export default function VendorDetails({ vendorDataFromSever }) {
                   value={vendorData.status}
                   onChange={(e) => handleStatusChange(e.target.value)}
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
                 </select>
               </div>
 
