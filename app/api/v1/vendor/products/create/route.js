@@ -15,19 +15,19 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
         // Extract API token from headers
         const { searchParams } = new URL(request.url);
 
-        let vendorId = getVendorIdFromRequest(user,searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
+        let vendorId = getVendorIdFromRequest(user, searchParams)//user.role === 'admin' ? searchParams.get('vendor_id') : user?.vendor;
         if (!vendorId) {
             // If the role is neither 'vendor' nor 'admin', return Forbidden
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
         // Lookup vendor by API token
         const result = await getItem(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`);
-        if (!result.success || result?.data?.status != 'Active') {
+        if (!result.success || result?.data?.status.toLowerCase() !== 'active') {
             return NextResponse.json({ error: 'Vendor not found or inactive' }, { status: 403 });
         }
 
         const vendor = result.data;
-        if (!vendor || vendor.status !== 'Active') {
+        if (!vendor || vendor.status.toLowerCase() !== 'active') {
             return NextResponse.json({ error: 'Vendor is inactive or not found' }, { status: 403 });
         }
 
@@ -85,7 +85,9 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
                 sk: sk,
                 entity_type: 'Product',
                 product_id: productId,
-                stock_available : process.env.APP_ENV != 'Production'? Math.floor(Math.random() * 50) :0,
+                stock_available: process.env.APP_ENV != 'production' ? Math.floor(Math.random() * 50) : 0,
+                name: product.name?.toLowerCase(),
+                brand_name: product.brand_name?.toLowerCase(),
                 ...product
             };
         });

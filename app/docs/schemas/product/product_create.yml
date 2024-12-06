@@ -14,7 +14,7 @@ product_create:
       example: "12345678"
     status:
       type: string
-      example: "Active"
+      example: "active"
     name:
       type: string
       example: "Example Product"
@@ -26,7 +26,7 @@ product_create:
       example: 126.98
     brand_name:
       type: string
-      example: "Brand 1"
+      example: "brand 1"
     image:
       type: string
       example: "https://cdn.indejuice.com/image1.jpg"
