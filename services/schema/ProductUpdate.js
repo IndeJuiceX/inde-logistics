@@ -50,6 +50,12 @@ export const validateProductUpdate = (product) => {
       errors: error.details.map((err) => err.message),
     };
   }
+  if (value.name) {
+    value.name = value.name.toLowerCase();
+  }
+  if (value.brand_name) {
+    value.brand_name = value.brand_name.toLowerCase();
+  }
 
   return { success: true, value };
 };

@@ -13,7 +13,7 @@ export const getProductSchema = () => Joi.object({
   attributes: Joi.object().pattern(
     Joi.string(),
     Joi.string()
-   // Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
+    // Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string()))
   ).optional().label('attributes'),
   warehouse: Joi.alternatives().try(
     Joi.array().empty(),
@@ -31,6 +31,12 @@ export const validateProduct = (product) => {
       success: false,
       errors: error.details.map((err) => err.message),
     };
+  }
+  if (value.name) {
+    value.name = value.name.toLowerCase();
+  }
+  if (value.brand_name) {
+    value.brand_name = value.brand_name.toLowerCase();
   }
 
   return { success: true, value };
