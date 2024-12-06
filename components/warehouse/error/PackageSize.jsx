@@ -8,7 +8,7 @@ import { getParcelDimensions } from "@/services/utils/warehouse/indePackageDimen
 
 
 export default function PackageSize() {
-    const { selectedParcelOption, setPayloadCourier, payloadCourier, updateWeightAndDimensions, currentOrderShipment } = useErrorAppContext();
+    const { selectedParcelOption, setPayloadCourier, payloadCourier, updateWeightAndDimensions, currentOrderShipment, isGeneratedLabel } = useErrorAppContext();
     const [numberInput, setNumberInput] = useState('');
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [activeField, setActiveField] = useState('');
@@ -62,6 +62,8 @@ export default function PackageSize() {
     }, [selectedParcelOption]);
 
     const handleFieldClick = (field) => {
+        if (isGeneratedLabel) return;
+        
         setActiveField(field);
         if (selectedParcelOption !== 'custom') {
             if (field !== 'weight') {

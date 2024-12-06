@@ -1,12 +1,24 @@
+'use client';
+
+import { useEffect } from 'react';
 import PackingOptions from '@/components/warehouse/error/PackingOptions';
 import PackageSize from '@/components/warehouse/error/PackageSize';
 import NextPreviousButton from '@/components/warehouse/error/NextPreviousButton';
 import { useErrorAppContext } from '@/contexts/ErrorAppContext';
+import ErrorResolved from '@/components/warehouse/error/ErrorResolved';
+
 
 export default function RightPanel() {
-    const { currentErrorOrder, currentOrderShipment, selectedParcelOption, isValidForPrintLabel, printLabel } = useErrorAppContext();
+    const { currentErrorOrder, currentOrderShipment, selectedParcelOption, isValidForPrintLabel, printLabel, isGeneratedLabel } = useErrorAppContext();
 
-    const isGeneratedLabel = currentOrderShipment?.label_key != null && currentOrderShipment?.tracking != null;
+
+
+
+    useEffect(() => {
+        console.log('isValidForPrintLabel', isValidForPrintLabel);
+
+    }, [isValidForPrintLabel]);
+
     return (
         <div className="w-1/3 bg-green-100 p-4 space-y-4">
             {/* Length/Width/Height/Weight */}
@@ -17,19 +29,17 @@ export default function RightPanel() {
 
 
             {isValidForPrintLabel && (
-                <div className="flex space-x-4" onClick={printLabel}>
-                    <div className="flex items-center bg-white p-4 rounded shadow justify-center w-1/2">
+                <div className="flex space-x-4">
+                    <div className={`flex items-center bg-white p-4 rounded shadow justify-center w-1/21 ${isGeneratedLabel ? 'opacity-50 cursor-not-allowed' : ''}`} onClick={!isGeneratedLabel ? printLabel : undefined}>
                         {/* eslint-disable-next-line */}
                         <img src="https://dev.indejuice.com/img/wh/print.png" alt="Label Icon" className="ml-2 h-8" />
                         LABEL
                     </div>
                     {/* Tick Button */}
-                    <div className="flex items-center bg-white p-4 rounded shadow justify-center w-1/2">
-                        {/* eslint-disable-next-line */}
-                        <img src="https://dev.indejuice.com/img/wh/tick_green_large.png" alt="Tick Icon" className="ml-2 h-9" />
-                    </div>
+                    <ErrorResolved />
                 </div>
-            )}
+            )
+            }
 
             {/* New Section: Warning and Navigation */}
 
@@ -47,6 +57,6 @@ export default function RightPanel() {
                 {/* Next/Previous Buttons */}
                 <NextPreviousButton />
             </div>
-        </div>
+        </div >
     );
 }
