@@ -4,7 +4,7 @@ export const getProductUpdateSchema = () => Joi.object({
   vendor_sku: Joi.string().required().label('vendor_sku'), // Current vendor SKU
   // Uncomment if you want to allow updating the SKU
   // new_vendor_sku: Joi.string().optional().label('new_vendor_sku'), // For updating the SKU
-  status: Joi.string().valid('Active', 'Inactive').optional().label('status'),
+  status: Joi.string().valid('active', 'inactive').optional().label('status'),
   stock_available: Joi.number().integer().min(0).optional().label('stock_available'),
   name: Joi.string().optional().label('name'),
   cost_price: Joi.number().optional().label('cost_price'),
@@ -49,6 +49,12 @@ export const validateProductUpdate = (product) => {
       success: false,
       errors: error.details.map((err) => err.message),
     };
+  }
+  if (value.name) {
+    value.name = value.name.toLowerCase();
+  }
+  if (value.brand_name) {
+    value.brand_name = value.brand_name.toLowerCase();
   }
 
   return { success: true, value };

@@ -35,7 +35,7 @@ export async function POST(req) {
       phone: phone,
       email: email,
       api_key: apiKey,
-      status: 'Inactive',
+      status: 'inactive',
     };
 
     const result = await putItem(vendorData);

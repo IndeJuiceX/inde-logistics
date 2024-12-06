@@ -219,8 +219,8 @@ export default function EditProduct({ vendorId, productData, isVendorDashboard =
                                 onChange={handleInputChange}
                                 className="w-full mt-1 p-2 border border-gray-300 rounded-md"
                             >
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
                             </select>
                         </div>
 

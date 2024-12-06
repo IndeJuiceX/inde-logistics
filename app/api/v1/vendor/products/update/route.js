@@ -117,7 +117,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
             // If update is successful, then upload the history to S3
             const historyArray = existingProduct.history || [];
             const historyVersion = historyArray.length + 1;
-            const historyS3Key = `${vendorId}/product-history/${productUUID}/product-${historyVersion}.json`;
+            const historyS3Key = `data/${process.env.APP_ENV}/product-history/${vendorId}/${productUUID}/product-${historyVersion}.json`;
 
             // Prepare history object for tracking changes
             const historySnapshot = {

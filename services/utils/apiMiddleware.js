@@ -40,7 +40,7 @@ export async function authenticateAndAuthorize(request) {
     if (user) {
         if (user.vendor) {
             const vendor = await getVendorById(user.vendor)
-            if (vendor && vendor?.data?.status === 'Active') {
+            if (vendor && vendor?.data?.status.toLowerCase() === 'active') {
                 return { authorized: true, user, source, status: 200 };
             }
         }

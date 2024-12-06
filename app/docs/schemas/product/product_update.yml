@@ -11,14 +11,14 @@ product_update:
       example: "987654321"
     status:
       type: string
-      enum: [Active, Inactive]
-      example: "Active"
+      enum: [active, inactive]
+      example: "active"
     stock_available:
       type: integer
       example: 100
     name:
       type: string
-      example: "Updated Product Name"
+      example: "updated product name"
     cost_price:
       type: number
       example: 80.99
@@ -27,7 +27,7 @@ product_update:
       example: 120.50
     brand_name:
       type: string
-      example: "Updated Brand"
+      example: "updated brand"
     image:
       type: string
       example: "https://cdn.indejuice.com/updated_image.jpg"
