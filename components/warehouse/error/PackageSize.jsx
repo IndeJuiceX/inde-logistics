@@ -31,7 +31,7 @@ export default function PackageSize() {
             setNumberInput('');
             setIsOpenModal(false);
             if (activeField === 'weight') {
-              
+
                 setActiveField('');
                 // updateWeightAndDimensions();
             }
@@ -39,15 +39,13 @@ export default function PackageSize() {
             const newNumberInput = numberInput + input;
             const parsedValue = parseInt(newNumberInput, 10);
             setNumberInput(newNumberInput);
-            
+
         }
     };
 
     useEffect(() => {
-       
-        if (selectedParcelOption !== 'custom') {
-            const parcelDimensions = getParcelDimensions(selectedParcelOption);
-          
+        const fetchParcelDimensions = async () => {
+            const parcelDimensions = await getParcelDimensions(selectedParcelOption);
             setPayloadCourier(
                 {
                     ...payloadCourier,
@@ -57,16 +55,19 @@ export default function PackageSize() {
 
                 });
         }
+        if (selectedParcelOption !== 'custom') {
+            fetchParcelDimensions();
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedParcelOption]);
 
-    const handleFieldClick = (field) => {
+    const handleFieldClick = async (field) => {
         if (isGeneratedLabel) return;
 
         setActiveField(field);
         if (selectedParcelOption !== 'custom') {
             if (field !== 'weight') {
-                const parcelDimensions = getParcelDimensions(selectedParcelOption);
+                const parcelDimensions = await getParcelDimensions(selectedParcelOption);
                 setPayloadCourier({ ...payloadCourier, [field]: parcelDimensions[field] });
             }
             else {

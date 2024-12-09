@@ -1,12 +1,18 @@
+'use server';
+
 import { getParcelType } from '@/services/utils/warehouse/courier';
 
 
-export const parcelPayloadValidation = (order, payload, packedData) => {
-    console.log('payload', payload);
-    console.log('packedData', packedData);
+export const parcelPayloadValidation = async (order, payload) => {
+    console.log('parcelPayloadValidation payload', payload);
 
-    const isAllowedWeight = checkAllowedWeight(order, packedData);
-    const isValidParcelDimensions = checkParcelDimensions(order, payload, packedData);
+    const isValidParcelDimensions = await checkParcelDimensions(order, payload);
+
+
+    const isAllowedWeight = await checkAllowedWeight(order, payload);
+    console.log('parcelPayloadValidation isAllowedWeight', isAllowedWeight);
+   
+
     if (isAllowedWeight.error || isValidParcelDimensions.error) {
         return { error: true, message: isAllowedWeight.message || isValidParcelDimensions.message };
     }
@@ -39,16 +45,23 @@ export const parcelPayloadValidation = (order, payload, packedData) => {
 
 
 
-export const checkAllowedWeight = (order, packedData) => {
+export const checkAllowedWeight = async (order, payload) => {
+    const parcelType = payload.courier.courier_type;
+    const weight = payload.courier.weight;
+    const width = payload.courier.width;
+    const length = payload.courier.length;
+    const depth = payload.courier.depth;
 
-    const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
-    if (packedData.courier.weight <= 0) {
+
+
+    const isParcelTypeValid = await getParcelType(order, parcelType);
+    if (weight <= 0) {
         return { error: true, message: 'Weight cannot be less than 0g. Please enter a valid weight' };
     }
 
     if (isParcelTypeValid) {
         const maxWeight = isParcelTypeValid.max_weight_g;
-        if (packedData.courier.weight > maxWeight) {
+        if (weight > maxWeight) {
 
             return { error: true, message: `Weight exceeds the limit of ${maxWeight}g. Please select the correct parcel type` };
         }
@@ -57,24 +70,40 @@ export const checkAllowedWeight = (order, packedData) => {
     }
 
 }
-export const checkParcelDimensions = (order, payload, packedData) => {
-    const isParcelTypeValid = getParcelType(order, packedData.parcelOption);
-    if (packedData.parcelOption === 'custom') {
-        if (packedData.courier.width > isParcelTypeValid.max_width_cm
-            || packedData.courier.length > isParcelTypeValid.max_length_cm
-            || packedData.courier.depth > isParcelTypeValid.max_depth_cm) {
-            return { error: true, message: `Dimensions exceed the limit of ${isParcelTypeValid.max_width_cm}x${isParcelTypeValid.max_length_cm}x${isParcelTypeValid.max_depth_cm}cm. Please select the correct parcel type` };
+export const checkParcelDimensions = async (order, payload) => {
+
+    const getSelectedCourier = await getParcelType(order, payload.courier.courier_type);
+
+    if (getSelectedCourier.error || !getSelectedCourier) {
+        return { error: true, message: 'Parcel type is not found' };
+    }
+
+    const payloadWidth = payload.courier.width;
+    const payloadLength = payload.courier.length;
+    const payloadDepth = payload.courier.depth;
+    const payloadWeight = payload.courier.weight;
+    const payloadCourierType = payload.courier.courier_type;
+
+    const maxWidth = getSelectedCourier.max_width_cm;
+    const maxLength = getSelectedCourier.max_length_cm;
+    const maxDepth = getSelectedCourier.max_depth_cm;
+
+    if (payloadCourierType === 'custom') {
+        if (payloadWidth > maxWidth
+            || payloadLength > maxLength
+            || payloadDepth > maxDepth) {
+            return { error: true, message: `Dimensions exceed the limit of ${maxWidth}x${maxLength}x${maxDepth}cm. Please select the correct parcel type` };
         }
     }
     if (order?.shipping_code === 'RM-INT') {
-        if (payload.courier.weight > 2000) //grams
+        if (payloadWeight > 2000) //grams
         {
             return { error: true, message: `Weight exceeds the limit of 2000g. Please select the correct parcel type` };
         }
-        if (payload.courier.length + payload.courier.depth + payload.courier.width > 90) {
+        if (payloadLength + payloadDepth + payloadWidth > 90) {
             return { error: true, message: `Height exceeds the limit of 90cm. Please select the correct parcel type` };
         }
-        if (payload.courier.length > 60 || payload.courier.depth > 60 || payload.courier.width > 60) {
+        if (payloadLength > 60 || payloadDepth > 60 || payloadWidth > 60) {
             return { error: true, message: `Height exceeds the limit of 60cm. Please select the correct parcel type` };
         }
     }

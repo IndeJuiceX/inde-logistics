@@ -17,6 +17,7 @@ export default function PackingItems() {
                     {/* Image column */}
                     <div className="w-1/4 relative h-full">
                         <div className="absolute inset-0 flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={item.image || 'https://cdn.indejuice.com/images/4j6.jpg'}
                                 alt={item.name}

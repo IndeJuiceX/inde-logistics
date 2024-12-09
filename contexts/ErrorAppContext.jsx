@@ -71,7 +71,7 @@ export const ErrorAppProvider = ({ children, errorData }) => {
                 weight: updatedCourier.weight,
             }
         }
-        const validationResult = parcelPayloadValidation(currentErrorOrder, validationFormate, validationFormate);
+        const validationResult = await parcelPayloadValidation(currentErrorOrder, validationFormate, validationFormate);
         if (validationResult.error) {
             setLoading(false);
             setLoaded(true);

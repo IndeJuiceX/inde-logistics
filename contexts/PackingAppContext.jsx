@@ -57,19 +57,21 @@ export const PackingAppProvider = ({ children, orderData }) => {
             payload.courier = packedData.courier;
         }
         else {
-            payload.courier = getParcelDimensions(packedData.parcelOption);
+            payload.courier = await getParcelDimensions(packedData.parcelOption);
 
         }
         // payload.weight.courier = packedData.weight;
         payload.courier = {
             ...payload.courier,
+            courier_type: packedData.parcelOption,
             weight: packedData.courier.weight,
             service_code: await getServiceCode(order, packedData.parcelOption),
         };
 
         let service_code = payload.courier.service_code;
 
-        const validationResult = parcelPayloadValidation(order, payload, packedData);
+        const validationResult = await parcelPayloadValidation(order, payload);
+
         if (validationResult.error) {
             setLoading(false);
             setLoaded(true);
@@ -83,7 +85,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
                     weight: 0,
                     parcelOption: '',
                     width: 0,
-                    height: 0,
+                    length: 0,
                     depth: 0,
                 }
             });
