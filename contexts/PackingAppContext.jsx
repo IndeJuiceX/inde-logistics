@@ -15,7 +15,7 @@ import { updateOrderShipmentError } from '@/services/data/order-shipment';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
-    const { setError, setErrorMessage, setIsErrorReload, setLoading, setLoaded } = useGlobalContext();
+    const { setError, setErrorMessage, setIsErrorReload, setLoading, loading, setLoaded } = useGlobalContext();
     const [order, setOrder] = useState(orderData);
 
     const [packedData, setPackedData] = useState({

@@ -3,7 +3,7 @@
 import { usePackingAppContext } from "@/contexts/PackingAppContext";
 import LabelPrintButton from "@/components/warehouse/packing/LabelPrintButton";
 import PickedAndLabeled from "@/components/warehouse/packing/PickedAndLabeled";
-import { ArrowLeftRight, ArrowUpDown, MoveVertical, Weight, Delete, Check } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpDown, MoveVertical, Weight, Delete, Check, Settings2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -124,32 +124,40 @@ export default function ParcelDetails() {
 
     return (
         <div className="w-full space-y-4 pt-4">
-            {!isReadyForDispatch && (
-                <div className="w-full space-y-4">
-                    <DetailItem
-                        value={depth}
-                        dimension="depth"
-                        label="LENGTH"
-                        onClick={() => handleCustomSize('depth')}
-                        icon={ArrowLeftRight}
-                    />
-                    <DetailItem
-                        value={width}
-                        dimension="width"
-                        label="WIDTH"
-                        onClick={() => handleCustomSize('width')}
-                        icon={ArrowUpDown}
-                    />
-                    <DetailItem
-                        value={length}
-                        dimension="length"
-                        label="HEIGHT"
-                        onClick={() => handleCustomSize('length')}
-                        icon={MoveVertical}
-                    />
+            <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-3">
+                    <Settings2 className="w-6 h-6 text-gray-400" strokeWidth={2} />
+                    <span className="text-gray-700 font-bold">CUSTOM</span>
                 </div>
-            )}
+                <Button
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                    onClick={() => setPackedData(prev => ({ ...prev, parcelOption: '' }))}
+                >
+                    Back
+                </Button>
+            </div>
 
+            <DetailItem
+                value={depth}
+                dimension="depth"
+                label="LENGTH"
+                onClick={() => handleCustomSize('depth')}
+                icon={ArrowLeftRight}
+            />
+            <DetailItem
+                value={width}
+                dimension="width"
+                label="WIDTH"
+                onClick={() => handleCustomSize('width')}
+                icon={ArrowUpDown}
+            />
+            <DetailItem
+                value={length}
+                dimension="length"
+                label="HEIGHT"
+                onClick={() => handleCustomSize('length')}
+                icon={MoveVertical}
+            />
             <DetailItem
                 value={weight}
                 dimension="weight"

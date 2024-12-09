@@ -20,7 +20,6 @@ export default function PackingApp({ orderData }) {
                 <div className="h-screen flex flex-col">
                     <GlobalStateProvider>
                         <ErrorModal />
-                        <PageSpinner />
                         <PackingAppProvider orderData={orderData.data}>
                             <PackingHeader />
                             <div className="flex-1 overflow-hidden grid grid-cols-3">

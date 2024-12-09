@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Mail, Package, Settings2, Check } from 'lucide-react';
+import { Mail, Package, Settings2, Check, Loader } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
@@ -9,6 +9,7 @@ import ParcelDetails from './ParcelDetails';
 import LabelPrintButton from './LabelPrintButton';
 import PickedAndLabeled from './PickedAndLabeled';
 import RequireAttention from '@/components/warehouse/packing/RequireAttention';
+import { useGlobalContext } from '@/contexts/GlobalStateContext';
 
 export default function ParcelOptions() {
   const {
@@ -20,6 +21,7 @@ export default function ParcelOptions() {
     isReadyForDispatch
   } = usePackingAppContext();
   const [currentClicked, setCurrentClicked] = useState('');
+  const { loading } = useGlobalContext();
 
   const handleParcelOptionClick = (parcelOption) => {
     if (isGeneratedLabel) {
@@ -122,9 +124,14 @@ export default function ParcelOptions() {
                 <Button
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                   onClick={handleWeightConfirm}
+                  disabled={loading}
                 >
-                  <Check className="h-4 w-4 mr-2" />
-                  Confirm
+                  {loading ? (
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4 mr-2" />
+                  )}
+                  {loading ? 'Loading...' : 'Confirm'}
                 </Button>
               </div>
             </div>
