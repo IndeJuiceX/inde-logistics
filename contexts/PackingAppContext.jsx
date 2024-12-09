@@ -15,7 +15,7 @@ import { updateOrderShipmentError } from '@/services/data/order-shipment';
 export const PackingAppContext = createContext();
 
 export const PackingAppProvider = ({ children, orderData }) => {
-    const { setError, setErrorMessage, setIsErrorReload, setLoading, setLoaded } = useGlobalContext();
+    const { setError, setErrorMessage, setIsErrorReload, setLoading, loading, setLoaded } = useGlobalContext();
     const [order, setOrder] = useState(orderData);
 
     const [packedData, setPackedData] = useState({
@@ -39,7 +39,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         } else {
             setIsSetStationId(false);
         }
-        
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -116,45 +116,6 @@ export const PackingAppProvider = ({ children, orderData }) => {
     }
 
 
-    const handleNumberEntered = (input) => {
-        if (input === 'backspace') {
-            const newInput = enteredValue.length > 0 ? enteredValue.slice(0, -1) : '';
-            setPackedData(prevState => ({
-                ...prevState,
-                courier: {
-                    ...prevState.courier,
-                    [currentClicked]: newInput
-                }
-            }));
-            setEnteredValue(newInput);
-        } else if (input === 'ok') {
-            setPackedData(prevState => ({
-                ...prevState,
-                courier: {
-                    ...prevState.courier,
-                    [currentClicked]: parseInt(enteredValue)
-                }
-            }));
-
-            setIsOpenModal(false);
-            if (currentClicked === 'weight') {
-                updateWeightAndDimensions();
-            }
-        } else {
-            const newNumberInput = enteredValue + input;
-
-            const parsedValue = parseInt(newNumberInput, 10);
-            setPackedData(prevState => ({
-                ...prevState,
-                courier: {
-                    ...prevState.courier,
-                    [currentClicked]: parsedValue
-                }
-            }));
-            setEnteredValue(newNumberInput);
-        }
-    };
-
     const printLabel = async () => {
         setLoading(true);
         const stationId = getStationId();
@@ -178,7 +139,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setIsErrorReload(true);
         }
     }
- 
+
     const handleCompleteOrder = async (withSignOut = false) => {
         setLoading(true);
         const vendorId = order.vendor_id;
@@ -240,7 +201,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     }
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue }}>
+            value={{ handleSignOut, order, packedData, setPackedData, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue, updateWeightAndDimensions }}>
             {!isSetStationId && <CheckSetStationId />}
             {isSetStationId && children}
 
