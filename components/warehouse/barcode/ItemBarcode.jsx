@@ -15,7 +15,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.key === 'Enter') {
-                console.log('barcodeValue 1', barcodeValue);
+                // console.log('barcodeValue 1', barcodeValue);
                 if (isNewBarcode) {
                     setIsNewBarcode(false);
                     addNewBarcode();
@@ -54,7 +54,7 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
 
 
         if (!order.vendor_id || !currentItem.vendor_sku || !barcodeValue) {
-            console.log('addNewBarcode error', order.vendor_id, currentItem.vendor_sku, barcodeValue);
+            // console.log('addNewBarcode error', order.vendor_id, currentItem.vendor_sku, barcodeValue);
             return;
         }
 

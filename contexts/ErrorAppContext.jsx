@@ -33,7 +33,7 @@ export const ErrorAppProvider = ({ children, errorData }) => {
     useEffect(() => {
         if (currentErrorOrder) {
             setCurrentOrderShipment(currentErrorOrder.shipment);
-            console.log(currentErrorOrder.shipment);
+            // console.log(currentErrorOrder.shipment);
             setPayloadCourier({
                 width: currentErrorOrder.shipment.width_cm,
                 length: currentErrorOrder.shipment.height_cm,

@@ -3,42 +3,26 @@ import { useState } from 'react';
 import Modal from '@/components/warehouse/modal/Modal';
 import { formatDate } from "@/services/utils/convertTime";
 import { useRouter, usePathname, useParams } from 'next/navigation';
-import { urlFormatter } from '@/services/utils/index';
+
 import Link from 'next/link';
 import styles from '@/styles/warehouse/stock-app/shipments.module.scss'
 import { FaCaretDown, FaCartArrowDown } from 'react-icons/fa';
 import { ArrowDownIcon } from '@heroicons/react/24/outline';
+import VendorsDropdown from '@/components/warehouse/VendorsDropdown';
 
 export default function Shipments({ selectedTap = 'shipments', vendors, stockShipments }) {
-    const router = useRouter();
-    const pathname = usePathname();
+    
     const { vendor_id } = useParams();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [allShipments, setAllShipments] = useState(stockShipments);
     const [allVendors, setAllVendors] = useState(vendors);
 
-    // console.log('allShipments', allShipments);
-
-    const handleGetAllVendors = async () => {
-        setIsModalOpen(true);
-    }
-
-    const loadShipments = (vendorId) => async () => {
-        if (!vendorId) {
-            return;
-        }
-        const newPath = urlFormatter(pathname, vendorId);
-        router.push(newPath);
-        setIsModalOpen(false);
-    }
-    const findVendor = (vendorId) => {
-        const vendor = allVendors.find(vendor => vendor.vendor_id === vendorId);
-        return vendor ? vendor.company_name : 'All Vendors';
-    }
+    
     return (
         <div>
-            <div className={styles.vendorSelector}>
+            <VendorsDropdown vendors={allVendors} vendor_id={vendor_id} />
+            {/* <div className={styles.vendorSelector}>
                 <span onClick={handleGetAllVendors} className={styles.vendor}>
                     <span>{findVendor(vendor_id)}</span>
                     <span className={styles.downArrow}><FaCaretDown /></span>
@@ -52,11 +36,11 @@ export default function Shipments({ selectedTap = 'shipments', vendors, stockShi
                     {allVendors.length > 0 ? allVendors.map((vendor, index) => (
                         <li key={index} className="flex justify-between py-3 text-gray-800 hover:bg-gray-100 cursor-pointer text-base border-b border-gray-200" onClick={loadShipments(vendor.vendor_id)}>
                             <span>{vendor.company_name}</span>
-                            {/* <span className="text-sm text-gray-500">{vendor.location}</span> */}
+                            
                         </li>
                     )) : <li className="text-gray-600">No vendors found</li>}
                 </ul>
-            </Modal>
+            </Modal> */}
             <div className="space-y-2 overflow-y-auto ">
 
                 <div className="overflow-x-auto">

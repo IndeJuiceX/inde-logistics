@@ -20,7 +20,7 @@ export default function StockShipmentDetails({ vendorId, stockShipmentId }) {
                     `/api/v1/vendor/stock-shipments?stock_shipment_id=${stockShipmentId}`
                 );
                 const data = await response.json();
-                console.log(data)
+                // console.log(data)
                 if (response.ok && data.success) {
                     // const {
                     //     stock_shipment,

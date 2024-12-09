@@ -12,7 +12,7 @@ export default function GlobalProductLoad({ globalProductsData }) {
 
     useEffect(() => {
         if (globalProductsData) {
-            console.log('globalProductsData', globalProductsData);
+            console.log('globalProductsData');
             setGlobalProducts(globalProductsData);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
