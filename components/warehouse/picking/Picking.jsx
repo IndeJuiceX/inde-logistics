@@ -64,7 +64,8 @@ export default function Picking({ order }) {
         }
     };
 
-    const handleForceTick = (itemIndex) => {
+    const handleForceTick = (index) => {
+        const itemIndex = currentIndex;
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
             newSelectedItem[itemIndex] = itemIndex;
@@ -83,6 +84,12 @@ export default function Picking({ order }) {
             const nextIndex = itemIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (itemIndex === order.items.length - 1) {
+            setTimeout(() => {
+                const confirmationScreen = document.querySelector('.bg-green-500');
+                confirmationScreen?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
     }
     const handlePicked = async () => {
