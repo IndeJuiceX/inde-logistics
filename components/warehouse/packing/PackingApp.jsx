@@ -1,6 +1,5 @@
 'use client';
 import React from "react";
-import styles from '@/styles/warehouse/packing/PackingApp.module.scss';
 import PackingHeader from "@/components/warehouse/packing/PackingHeader";
 import PackingItems from "@/components/warehouse/packing/PackingItems";
 import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
@@ -12,25 +11,25 @@ import PageSpinner from "@/components/loader/PageSpinner";
 import PackingNoOrders from "@/components/warehouse/packing/PackingNoOrders";
 
 export default function PackingApp({ orderData }) {
-    
     return (
         <>
             {Array.isArray(orderData?.data) && orderData.data.length === 0 && (
-                
                 <PackingNoOrders />
-
             )}
             {orderData?.data && !Array.isArray(orderData.data) && (
-                <div className={styles.layout}>
-
+                <div className="h-screen flex flex-col">
                     <GlobalStateProvider>
                         <ErrorModal />
                         <PageSpinner />
                         <PackingAppProvider orderData={orderData.data}>
                             <PackingHeader />
-                            <div className={styles.main}>
-                                <PackingItems />
-                                <ParcelOptions />
+                            <div className="flex-1 overflow-hidden grid grid-cols-3">
+                                <div className="col-span-2 overflow-y-auto">
+                                    <PackingItems />
+                                </div>
+                                <div className="col-span-1 overflow-y-auto">
+                                    <ParcelOptions />
+                                </div>
                             </div>
                             <PackingFooter />
                         </PackingAppProvider>

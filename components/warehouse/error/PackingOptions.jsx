@@ -8,11 +8,11 @@ export default function PackingOptions() {
     const { selectedParcelOption, setSelectedParcelOption } = useErrorAppContext();
 
     const handleParcelOptionClick = (option) => {
-        const updateParcelOption = selectedParcelOption === option ? '' : option ;
+        const updateParcelOption = selectedParcelOption === option ? '' : option;
         setSelectedParcelOption(updateParcelOption);
     }
 
- 
+
     return (
         <div className="space-y-4">
             {(selectedParcelOption === '' || selectedParcelOption === 'letter') && (
