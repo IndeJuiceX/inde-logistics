@@ -4,13 +4,11 @@ import { getParcelType } from '@/services/utils/warehouse/courier';
 
 
 export const parcelPayloadValidation = async (order, payload) => {
-    console.log('parcelPayloadValidation payload', payload);
 
     const isValidParcelDimensions = await checkParcelDimensions(order, payload);
 
 
     const isAllowedWeight = await checkAllowedWeight(order, payload);
-    console.log('parcelPayloadValidation isAllowedWeight', isAllowedWeight);
    
 
     if (isAllowedWeight.error || isValidParcelDimensions.error) {
