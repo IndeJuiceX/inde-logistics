@@ -44,7 +44,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
             // Fetch all products with pagination
             result = await getAllVendorProducts(vendorId, pageSize, exclusiveStartKey);
         }
-        console.log(result)
+        // console.log(result)
         if (result.success) {
             const response = {
                 data: result.data,

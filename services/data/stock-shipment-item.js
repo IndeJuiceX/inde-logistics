@@ -387,7 +387,7 @@ export async function updateStockShipmentItemAsShelved(vendorId, stockShipmentId
         updated_at: new Date().toISOString(),
         warehouse: formattedWarehouse
     };
-    console.log(productUpdateFields)
+    // console.log(productUpdateFields)
     // DynamoDB transaction items
     const transactionItems = [
         {

@@ -78,8 +78,8 @@ export const searchProducts = async (vendorId, query, queryBy = 'name', options)
             }
         }
         const resp = await getVendorProductsByName(vendorId, query, options)
-        console.log('QUER RESP')
-        console.log(resp)
+        // console.log('QUER RESP')
+        // console.log(resp)
         if (resp.success) {
             return { success: true, data: resp.data, hasMore: resp?.hasMore, lastEvaluatedKey: resp?.lastEvaluatedKey }
         }
@@ -188,7 +188,7 @@ export const getAllVendorProducts = async (vendorId, pageSize = 25, exclusiveSta
 
     try {
         const result = await queryItems(params);
-        console.log(result)
+        // console.log(result)
         if (result.success) {
             const hasMore = !!result.lastEvaluatedKey;
 

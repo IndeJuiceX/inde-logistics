@@ -59,7 +59,7 @@ export default function UploadStockShipment({ vendorId }) {
 
             const result = await response.json();
             setUploadResult(result);
-            console.log(result)
+            // console.log(result)
             if (response.ok) {
                 alert('Stock shipments uploaded successfully');
 
