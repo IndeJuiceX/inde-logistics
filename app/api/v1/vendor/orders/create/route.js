@@ -38,7 +38,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         // Validate the order schema
-        const validationResult = validateOrder(order);
+        const validationResult = await validateOrder(order,vendorId);
 
         if (!validationResult.success) {
             return NextResponse.json(
