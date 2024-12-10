@@ -120,6 +120,7 @@ export const createOrder = async (vendorId, order) => {
                     order_id: uniqueOrderId,
                     entity_type: 'Order',
                     status: 'accepted',
+                    add_ons: order.add_ons,
                     created_at: timestamp,
                     updated_at: timestamp,
                     // Include other necessary fields from 'order'
@@ -128,6 +129,31 @@ export const createOrder = async (vendorId, order) => {
             },
         };
 
+        // Process applied_add_ons
+        if (order.applied_add_ons) {
+            for (const [addOnKey, addOnDetails] of Object.entries(order.applied_add_ons)) {
+                const { name, price, cost, key } = addOnDetails;
+
+                transactionItems.push({
+                    Put: {
+                        Item: {
+                            pk: `VENDORADDONCHARGE#${vendorId}`,
+                            sk: `BILLING#${timestamp}#${key}#${order.vendor_order_id}`,
+                            vendor_id: vendorId,
+                            vendor_order_id: order.vendor_order_id,
+                            order_id : uniqueOrderId,
+                            add_on_id: key,
+                            add_on_name: name,
+                            price,
+                            cost,
+                            applied_at: timestamp,
+                            billing_period: timestamp.substring(0, 7), // e.g., "2024-12"
+                            created_at: timestamp,
+                        },
+                    },
+                });
+            }
+        }
         transactionItems.push(orderPutOperation);
 
         // Execute the transaction
@@ -558,7 +584,7 @@ export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
         }));
 
         const ordersResult = await batchGetItems(orderKeyPairs, {
-            attributes: ['vendor_order_id', 'created_at', 'updated_at', 'buyer', 'shipping_cost', 'shipping_code', 'status','expected_delivery_date'],
+            attributes: ['vendor_order_id', 'created_at', 'updated_at', 'buyer', 'shipping_cost', 'shipping_code', 'status', 'expected_delivery_date'],
         });
 
         if (!ordersResult.success) {
@@ -612,7 +638,7 @@ export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
         const productsResult = await batchGetItems(productKeyPairs, {
             attributes: ['vendor_sku', 'name', 'brand_name'],
         });
-       
+
         const productsData = productsResult.success ? productsResult.data : [];
 
         const productsMap = {};
@@ -634,12 +660,12 @@ export const getMultipleOrdersByIds = async (vendorId, vendorOrderIds) => {
             const items = orderItemsData.filter(
                 (item) => item.order_id === orderId
             );
-    
+
             // Enrich items with product data
             const enrichedItems = items.map((item) => {
                 const product = productsMap[item.vendor_sku] || {};
                 return {
-                    ...cleanResponseData(item,['order_id','vendor_order_id']),
+                    ...cleanResponseData(item, ['order_id', 'vendor_order_id']),
                     ...product,
                 };
             });
@@ -664,7 +690,7 @@ const fetchOrderItems = async (vendorId, vendorOrderIds) => {
         const allItems = [];
         // Use Promise.all to fetch order items in parallel
         const promises = vendorOrderIds.map(async (orderId) => {
-            const result = await queryItemsWithPkAndSk(vendorOrderItemKey, `ORDER#${orderId}#ITEM#`, ['quantity', 'sales_value','vendor_sku', 'vendor_order_id'])
+            const result = await queryItemsWithPkAndSk(vendorOrderItemKey, `ORDER#${orderId}#ITEM#`, ['quantity', 'sales_value', 'vendor_sku', 'vendor_order_id'])
             if (!result.success) {
                 throw new Error(`Failed to fetch items for order ${orderId}`);
             }

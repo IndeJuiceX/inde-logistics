@@ -268,6 +268,7 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
             name: addOnMetadata.name,
             price,
             cost,
+            key : addOnMetadata.pk
         };
     }
 
