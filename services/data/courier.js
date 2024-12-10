@@ -28,6 +28,10 @@ export const validateOrderShippingCode = async (vendorId, order) => {
             return { success: false, error: 'Invalid shipping_code for international shipment, Please check shipping_code and try again' }
 
         }
+        if (order.buyer.country_code == 'GB' && order.shipping_code.includes('-INT')) {
+            return { success: false, error: 'Invalid shipping_code for nationwide shipment, Please check shipping_code and try again' }
+
+        }
         return { success: true }
 
     } catch (error) {
