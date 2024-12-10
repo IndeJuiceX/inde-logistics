@@ -193,7 +193,7 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
 
     // Validate each add-on
     for (const [addOnKey, addOnValue] of Object.entries(addOns)) {
-        const addOnId = generateAddOnKey(addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
+        const addOnId = generateAddOnKey('ORDER',addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
 
         // Check if the add-on exists
         const addOnMetadata = vendorAddons.find((addon) => addon.add_on_id === addOnId);
