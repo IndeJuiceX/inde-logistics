@@ -39,11 +39,11 @@ export default function NoOrders() {
 
 
     return (
-        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={status} >
-         
+        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(true)} statusClass={status} >
+
             <div>
                 <h1>{statusHeading}</h1>
-                {isNewOrder && <Link className={styles.viewOrderLink} href = {'/warehouse/picking'}>View Order</Link>}
+                {isNewOrder && <Link className={styles.viewOrderLink} href={'/warehouse/picking'}>View Order</Link>}
                 <button onClick={handleSignOut}>Sign Out</button>
 
             </div>
