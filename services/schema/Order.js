@@ -62,7 +62,7 @@ export const getAddOnsSchema = () =>
 
 
 
-export const getOrderSchema = (vendorAddons) =>
+export const getOrderSchema = () =>
     Joi.object({
         vendor_order_id: Joi.string().required().label('vendor_order_id'),
         shipping_cost: Joi.number().required().label('shipping_cost'),
@@ -73,7 +73,7 @@ export const getOrderSchema = (vendorAddons) =>
             .required()
             .label('buyer'),
 
-        add_ons: getAddOnsSchema(vendorAddons), // Add-ons validation
+        add_ons: getAddOnsSchema(), // Add-ons validation
 
         // Validate 'items' array in detail
         items: Joi.array().min(1).required().label('items'),
@@ -82,21 +82,8 @@ export const getOrderSchema = (vendorAddons) =>
 // Function to validate the entire order, including detailed item-level validation
 export const validateOrder = async (order, vendorId) => {
 
-    // Retrieve vendor's enabled add-ons once
-    const vendorAddonsResponse = await getVendorAddons(vendorId);
-    if (!vendorAddonsResponse.success) {
-        return {
-            success: false,
-            errors: [
-                {
-                    message: 'Failed to retrieve vendor add-ons.',
-                    path: ['add_ons'],
-                },
-            ],
-        };
-    }
-    const vendorAddons = vendorAddonsResponse.data;
-    const orderSchema = getOrderSchema(vendorAddons);
+
+    const orderSchema = getOrderSchema();
     const { error: orderError, value: validatedOrder } = orderSchema.validate(order, { abortEarly: false });
 
     const errors = [];
@@ -111,11 +98,14 @@ export const validateOrder = async (order, vendorId) => {
         });
     }
 
-    // Validate add-ons if provided
+    // Validate and enrich add-ons if provided
+    let appliedAddOns = null;
     if (validatedOrder.add_ons) {
         const addOnValidation = await validateOrderAddOns(validatedOrder.add_ons, vendorId);
         if (!addOnValidation.success) {
             errors.push(...addOnValidation.errors);
+        } else {
+            appliedAddOns = addOnValidation.appliedAddOns;
         }
     }
     const countryCode = validatedOrder.buyer.country_code//getCountryCode(validatedOrder.buyer.country); //
@@ -141,6 +131,10 @@ export const validateOrder = async (order, vendorId) => {
         };
     }
 
+    if (appliedAddOns) {
+        // Append applied add-ons to the validated order
+        validatedOrder.applied_add_ons = appliedAddOns;
+    }
     // Replace the items in validatedOrder with the validated items
     validatedOrder.items = itemValidationResult.validatedItems;
 
@@ -174,8 +168,11 @@ export const validateOrderUpdateSchema = (payload) => {
         value,
     };
 };
+
+
 export const validateOrderAddOns = async (addOns, vendorId) => {
     const errors = [];
+    const appliedAddOns = {}; // To store enriched add-ons
 
     // Retrieve vendor's enabled add-ons
     const vendorAddonsResponse = await getVendorAddons(vendorId);
@@ -194,11 +191,9 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
 
     // Validate each add-on
     for (const [addOnKey, addOnValue] of Object.entries(addOns)) {
-        const addOnId = generateAddOnKey('ORDER', addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
+        const addOnId = generateAddOnKey('ORDER', addOnKey); // Generate PK
 
-        console.log('ADD ON KEY ' + addOnKey)
-        console.log('ADD ON VALUE ' + addOnValue)
-        // Check if the add-on exists
+        // Check if the vendor add-on exists
         const vendorAddOnMetadata = vendorAddons.find((addon) => addon.add_on_id === addOnId);
         if (!vendorAddOnMetadata) {
             errors.push({
@@ -208,7 +203,7 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
             continue;
         }
 
-        if (vendorAddOnMetadata.status != 'enabled') {
+        if (vendorAddOnMetadata.status !== 'enabled') {
             errors.push({
                 message: `Add-on '${addOnKey}' is not enabled for this vendor.`,
                 path: ['add_ons', addOnKey],
@@ -216,30 +211,34 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
             continue;
         }
 
-        // Check required attributes for parameterized add-ons
+        // Fetch add-on metadata for additional details
+        const addOnMetadataResponse = await queryItemsWithPkAndSk(vendorAddOnMetadata.sk, 'TYPE#');
+        const addOnMetadata = addOnMetadataResponse?.data[0] || null;
 
-        const addOnMetadata = await queryItemsWithPkAndSk(vendorAddOnMetadata.sk, 'TYPE#')
-        const addOnItem = addOnMetadata?.data[0] || null
-        console.log('REQUIRED PARAMS---')
-        console.log(addOnItem.required_parameters)
-        // Check required parameters if applicable
-        if (addOnItem?.required_parameters && Array.isArray(addOnItem.required_parameters)) {
-            for (const param of addOnItem.required_parameters) {
+        if (!addOnMetadata) {
+            errors.push({
+                message: `Metadata not found for add-on '${addOnKey}'.`,
+                path: ['add_ons', addOnKey],
+            });
+            continue;
+        }
+
+        // Validate required parameters
+        if (addOnMetadata?.required_parameters && Array.isArray(addOnMetadata.required_parameters)) {
+            for (const param of addOnMetadata.required_parameters) {
                 const paramName = param.name;
 
-                // Ensure addOnValue is an object
-                if (typeof addOnValue !== 'object' || addOnValue === null || !(paramName in addOnValue)) {
-                    if (param.required) {
-                        errors.push({
-                            message: `Missing required parameter '${paramName}' for add-on '${addOnKey}'.`,
-                            path: ['add_ons', addOnKey, paramName],
-                        });
-                    }
-                    continue; // Skip further checks for this parameter
+                if (param.required && (typeof addOnValue !== 'object' || !(paramName in addOnValue))) {
+                    errors.push({
+                        message: `Missing required parameter '${paramName}' for add-on '${addOnKey}'.`,
+                        path: ['add_ons', addOnKey, paramName],
+                    });
+                    continue;
                 }
 
-                // Validate the type of the parameter
+                // Validate parameter type
                 const paramValue = addOnValue[paramName];
+               
                 if (param.type) {
                     if (
                         (param.type === 'number' && typeof paramValue !== 'number') ||
@@ -252,15 +251,29 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
                         });
                     }
                 }
-
-
             }
         }
+
+        // Determine price
+        const price = vendorAddOnMetadata.price || addOnMetadata.price;
+        let cost = price;
+
+        if (addOnValue?.quantity) {
+            cost = price * addOnValue.quantity;
+        }
+
+        // Append enriched add-on to applied_add_ons
+        appliedAddOns[addOnKey] = {
+            ...addOnValue, // Keep original values
+            name: addOnMetadata.name,
+            price,
+            cost,
+        };
     }
 
     return {
         success: errors.length === 0,
         errors,
+        appliedAddOns, // Include enriched add-ons
     };
 };
-
