@@ -46,9 +46,17 @@ export const getAddOnsSchema = () =>
                     })
             )
         )
+        .custom((value, helpers) => {
+            // Ensure the `add_ons` object itself is not empty
+            if (Object.keys(value).length === 0) {
+                return helpers.error('object.base', { message: 'add_ons object must have at least one key.' });
+            }
+            return value;
+        })
         .optional()
         .messages({
-            'object.empty': 'Add-on object must have at least one key.', // Custom error message
+            'object.base': 'add_ons object must have at least one key.', // Custom error for root-level empty `add_ons`
+            'object.empty': 'Add-on object must have at least one key.', // Custom error for empty add-on values
         });
 
 
