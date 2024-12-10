@@ -156,18 +156,16 @@ const putItem = async (item) => {
 };
 
 // Get an item by pk and sk
-const getItem = async (pkVal, skVal=null) => {
+const getItem = async (pkVal, skVal) => {
     const client = getClient()
 
     const params = {
         TableName: TABLE_NAME,
-        Key: { pk: pkVal },
+        Key: { pk: pkVal, sk: skVal },
     };
 
-    if (skVal) {
-        params.Key.sk = skVal;
-    }
-
+    
+    
     try {
         const data = await client.send(new GetCommand(params));
         if (!data || !data.Item) {

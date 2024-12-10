@@ -1,8 +1,9 @@
 import Joi from 'joi';
 import { validateOrderItems } from './OrderItem'; // Import the item schema
 import { getAllCountryCodes } from '@/services/utils/countries.js';
-import { generateAddOnKey } from '@/services/data/add-on';
+import { generateAddOnKey, getAddOnById } from '@/services/data/add-on';
 import { getVendorAddons } from '@/services/data/vendor';
+import { getItem, queryItemsWithPkAndSk } from '@/services/external/dynamo/wrapper';
 export const getCountryCodeSchema = () => {
     return Joi.string()
         .required()
@@ -193,11 +194,13 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
 
     // Validate each add-on
     for (const [addOnKey, addOnValue] of Object.entries(addOns)) {
-        const addOnId = generateAddOnKey('ORDER',addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
+        const addOnId = generateAddOnKey('ORDER', addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
 
+        console.log('ADD ON KEY ' + addOnKey)
+        console.log('ADD ON VALUE ' + addOnValue)
         // Check if the add-on exists
-        const addOnMetadata = vendorAddons.find((addon) => addon.add_on_id === addOnId);
-        if (!addOnMetadata) {
+        const vendorAddOnMetadata = vendorAddons.find((addon) => addon.add_on_id === addOnId);
+        if (!vendorAddOnMetadata) {
             errors.push({
                 message: `Add-on '${addOnKey}' does not exist or is not enabled for this vendor.`,
                 path: ['add_ons', addOnKey],
@@ -205,15 +208,52 @@ export const validateOrderAddOns = async (addOns, vendorId) => {
             continue;
         }
 
+        if (vendorAddOnMetadata.status != 'enabled') {
+            errors.push({
+                message: `Add-on '${addOnKey}' is not enabled for this vendor.`,
+                path: ['add_ons', addOnKey],
+            });
+            continue;
+        }
+
         // Check required attributes for parameterized add-ons
-        if (addOnMetadata.required_attributes && typeof addOnValue === 'object') {
-            for (const attr of addOnMetadata.required_attributes) {
-                if (!(attr in addOnValue)) {
-                    errors.push({
-                        message: `Missing required attribute '${attr}' for add-on '${addOnKey}'.`,
-                        path: ['add_ons', addOnKey, attr],
-                    });
+
+        const addOnMetadata = await queryItemsWithPkAndSk(vendorAddOnMetadata.sk, 'TYPE#')
+        const addOnItem = addOnMetadata?.data[0] || null
+        console.log('REQUIRED PARAMS---')
+        console.log(addOnItem.required_parameters)
+        // Check required parameters if applicable
+        if (addOnItem?.required_parameters && Array.isArray(addOnItem.required_parameters)) {
+            for (const param of addOnItem.required_parameters) {
+                const paramName = param.name;
+
+                // Ensure addOnValue is an object
+                if (typeof addOnValue !== 'object' || addOnValue === null || !(paramName in addOnValue)) {
+                    if (param.required) {
+                        errors.push({
+                            message: `Missing required parameter '${paramName}' for add-on '${addOnKey}'.`,
+                            path: ['add_ons', addOnKey, paramName],
+                        });
+                    }
+                    continue; // Skip further checks for this parameter
                 }
+
+                // Validate the type of the parameter
+                const paramValue = addOnValue[paramName];
+                if (param.type) {
+                    if (
+                        (param.type === 'number' && typeof paramValue !== 'number') ||
+                        (param.type === 'string' && typeof paramValue !== 'string') ||
+                        (param.type === 'boolean' && typeof paramValue !== 'boolean')
+                    ) {
+                        errors.push({
+                            message: `Invalid type for parameter '${paramName}' in add-on '${addOnKey}'. Expected '${param.type}', got '${typeof paramValue}'.`,
+                            path: ['add_ons', addOnKey, paramName],
+                        });
+                    }
+                }
+
+
             }
         }
     }
