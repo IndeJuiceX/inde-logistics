@@ -1,7 +1,7 @@
 'use server'
 
 // services/data/vendor.js
-import { getItem, queryItems, putItem, deleteItem, updateItemIfExists } from '../external/dynamo/wrapper';
+import { getItem, queryItems, putItem, deleteItem, updateItemIfExists, queryItemsWithPkAndSk } from '../external/dynamo/wrapper';
 
 // Function to retrieve a single vendor by ID
 export const getVendorById = async (vendorId) => {
@@ -39,4 +39,9 @@ export const deleteVendor = async (vendorId) => {
 
 export const updateVendor = async (vendorId, updatedFields={}) => {
     return await updateItemIfExists(`VENDOR#${vendorId}`, `VENDOR#${vendorId}`, updatedFields)
+}
+
+export const getVendorAddons = async (vendorId) => {
+    const pkValue = `VENDORADDON#${vendorId}`; // Vendor-specific partition key
+    return await queryItemsWithPkAndSk(pkValue)
 }
