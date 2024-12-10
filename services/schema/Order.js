@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { validateOrderItems } from './OrderItem'; // Import the item schema
 import { getAllCountryCodes } from '@/services/utils/countries.js';
 import { generateAddOnKey } from '@/services/data/add-on';
-import { getVendorAddons } from '@services/data/vendor';
+import { getVendorAddons } from '@/services/data/vendor';
 export const getCountryCodeSchema = () => {
     return Joi.string()
         .required()
