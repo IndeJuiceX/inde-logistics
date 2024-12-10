@@ -1,13 +1,18 @@
 'use client';
 
+import { useState } from 'react';
+
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
+import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
+import Link from 'next/link';
 
 export default function PackingHeader() {
-    const { order, isErrorQueue, currentErrorIndex, totalErrorOrders } = usePackingAppContext();
+    const { order, isErrorQueue, currentErrorIndex, totalErrorOrders, handleSignOut } = usePackingAppContext();
     const couriers = order?.shipment?.courier;
     const shipmentCode = couriers[0]?.shipping_code;
     const shippingCode = shipmentCode?.split('-')[1];
     const quantity = order?.items?.reduce((acc, item) => acc + item.quantity, 0);
+    const [isOpenModal, setIsOpenModal] = useState(false);
 
     return (
         <header className="bg-slate-100 shadow-md py-2 px-4 relative z-10">
@@ -36,6 +41,32 @@ export default function PackingHeader() {
                         <div className="text-xl text-red-500 font-bold">{currentErrorIndex + 1} of {totalErrorOrders}</div>
                     </div>
                 )}
+                <div className="flex items-center w-full sm:w-auto" onClick={() => setIsOpenModal(true)}>
+                    <div className="h-8 w-8 bg-gray-200 flex items-center justify-center rounded-full">≡</div>
+                </div>
+
+                <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} >
+                    <div className="flex flex-col items-center space-y-4">
+                        <h1 className="text-white text-lg">Menu</h1>
+                        {isErrorQueue && (
+                            <Link href={'/warehouse/packing'} className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" >
+                                Resume Packing
+                            </Link>
+                        )}
+                        {!isErrorQueue && (
+                            <Link href={'/warehouse/error'} className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" >
+                                Errors Queue
+                            </Link>
+                        )}
+                        <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md">
+                            Manifest Orders
+                        </button>
+                        <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleSignOut}>
+                            Logout
+                        </button>
+                    </div>
+
+                </PickingAppModal>
             </div>
         </header>
     );

@@ -13,8 +13,6 @@ export default function ErrorApp({ errorsData }) {
         return <div>No errors found</div>
     }
 
-    // const orderData = errorsData.data[0] || null;
-    console.log('error orderData', errorsData)
     return (
         <PackingApp orderData={errorsData.data} errorQueue={true} />
     )

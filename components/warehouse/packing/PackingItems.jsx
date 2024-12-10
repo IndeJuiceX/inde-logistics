@@ -6,7 +6,7 @@ import { PackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function PackingItems() {
     const { order, isErrorQueue } = useContext(PackingAppContext);
-    console.log('PackingItems', order);
+    
 
     const errorMessage = isErrorQueue ? order?.shipment?.error_reason.replace(/"/g, '') : '';
 
