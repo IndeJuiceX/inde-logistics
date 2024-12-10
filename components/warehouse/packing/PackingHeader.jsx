@@ -3,7 +3,7 @@
 import { usePackingAppContext } from '@/contexts/PackingAppContext';
 
 export default function PackingHeader() {
-    const { order } = usePackingAppContext();
+    const { order, isErrorQueue, currentErrorIndex, totalErrorOrders } = usePackingAppContext();
     const couriers = order?.shipment?.courier;
     const shipmentCode = couriers[0]?.shipping_code;
     const shippingCode = shipmentCode?.split('-')[1];
@@ -30,6 +30,12 @@ export default function PackingHeader() {
                         <p className="font-semibold text-sm">#{order.vendor_order_id || '1234'}</p>
                     </div>
                 </div>
+
+                {isErrorQueue && (
+                    <div className="flex flex-col items-start w-full sm:w-auto mb-2 sm:mb-0">
+                        <div className="text-xl text-red-500 font-bold">{currentErrorIndex + 1} of {totalErrorOrders}</div>
+                    </div>
+                )}
             </div>
         </header>
     );

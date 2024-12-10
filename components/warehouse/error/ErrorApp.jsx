@@ -1,41 +1,21 @@
-'use client';
-import { useEffect } from 'react';
-import ErrorHeading from '@/components/warehouse/error/ErrorHeading';
-import { ErrorAppProvider } from '@/contexts/ErrorAppContext';
-import ErrorItems from '@/components/warehouse/error/ErrorItems';
-import RightPanel from '@/components/warehouse/error/RightPanel';
-import { GlobalStateProvider } from '@/contexts/GlobalStateContext';
-import ErrorModal from '@/components/warehouse/errorModal/ErrorModal';
-import PageSpinner from '@/components/loader/PageSpinner';
+'use client'
+
+import PackingApp from "@/components/warehouse/packing/PackingApp";
 
 export default function ErrorApp({ errorsData }) {
+
+    if (!errorsData) {
+        return <div>No errors found</div>
+    }
+
+
+    if (errorsData.success && Array.isArray(errorsData?.data) && errorsData.data.length === 0) {
+        return <div>No errors found</div>
+    }
+
+    // const orderData = errorsData.data[0] || null;
+    console.log('error orderData', errorsData)
     return (
-        <div className="h-screen flex flex-col bg-gray-100">
-            <GlobalStateProvider>
-                <ErrorModal />
-                <PageSpinner />
-                <ErrorAppProvider errorData={errorsData.data}>
-                    {/* Header */}
-                    <ErrorHeading />
-
-                    {/* Main Content */}
-                    <div className="flex flex-1">
-                        {/* Left Panel */}
-                        <div className="w-2/3 p-4">
-                            <div className="bg-red-200 text-red-800 font-semibold p-2 rounded mb-4">PROBLEM: Missing Item</div>
-                            <ErrorItems />
-                        </div>
-
-                        {/* Right Panel */}
-                        <RightPanel />
-                    </div>
-
-                    {/* Footer */}
-                    <footer className="bg-black text-white text-center py-2">
-                        <span>Ali B.</span>
-                    </footer>
-                </ErrorAppProvider>
-            </GlobalStateProvider>
-        </div>
-    );
+        <PackingApp orderData={errorsData.data} errorQueue={true} />
+    )
 }

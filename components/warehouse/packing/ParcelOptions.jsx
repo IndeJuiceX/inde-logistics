@@ -11,17 +11,20 @@ import PickedAndLabeled from './PickedAndLabeled';
 import RequireAttention from '@/components/warehouse/packing/RequireAttention';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
 
-export default function ParcelOptions() {
+export default function ParcelOptions({ packingContext, globalContext }) {
   const {
     packedData,
     setPackedData,
     isGeneratedLabel,
     updateWeightAndDimensions,
     isValidForPrintLabel,
-    isReadyForDispatch
-  } = usePackingAppContext();
+    isReadyForDispatch,
+    isErrorQueue
+  } = packingContext;
+  const { loading } = globalContext;
+
   const [currentClicked, setCurrentClicked] = useState('');
-  const { loading } = useGlobalContext();
+
 
   const handleParcelOptionClick = (parcelOption) => {
     if (isGeneratedLabel) {
@@ -57,7 +60,8 @@ export default function ParcelOptions() {
   };
 
   return (
-    <div className="flex flex-col items-center p-2.5 bg-[#b2f4d3] h-full">
+    // 
+    <div className={`flex flex-col items-center p-2.5   h-full ${isErrorQueue ? 'bg-red-500' : 'bg-[#b2f4d3]'}`}>
       <div className="w-full space-y-4">
         {(packedData.parcelOption === '' || packedData.parcelOption === 'letter') && (
           <Card

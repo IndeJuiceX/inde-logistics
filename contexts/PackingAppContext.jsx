@@ -14,9 +14,14 @@ import { updateOrderShipmentError } from '@/services/data/order-shipment';
 
 export const PackingAppContext = createContext();
 
-export const PackingAppProvider = ({ children, orderData }) => {
+export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
+
+
+
     const { setError, setErrorMessage, setIsErrorReload, setLoading, loading, setLoaded } = useGlobalContext();
-    const [order, setOrder] = useState(orderData);
+    const currentOrder = errorQueue ? orderData[0] : orderData;
+    const [isErrorQueue, setIsErrorQueue] = useState(errorQueue);
+    const [order, setOrder] = useState(currentOrder);
 
     const [packedData, setPackedData] = useState({
         parcelOption: '',
@@ -30,6 +35,8 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [isSetStationId, setIsSetStationId] = useState(true);
     const [isGeneratedLabel, setIsGeneratedLabel] = useState(order?.shipment?.label_key != null && order?.shipment?.tracking != null);
 
+    const [currentErrorIndex, setCurrentIndex] = useState(0);
+    const [totalErrorOrders, setTotalErrorOrders] = useState(isErrorQueue ? orderData.length : 0);
 
     useEffect(() => {
         const checkSetStationId = getStationId();
@@ -148,8 +155,12 @@ export const PackingAppProvider = ({ children, orderData }) => {
         const vendorOrderId = order.vendor_order_id;
         const updateFields = {
             status: 'dispatched'
-        }
 
+        }
+        if (isErrorQueue) {
+            updateFields.error_reason = '';
+            updateFields.error = 0;
+        }
 
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
         if (response.success) {
@@ -172,10 +183,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const addToRequireAttentionQueue = async (reason) => {
         setLoading(true);
 
-        const error_reason = {
-            reason: reason,
-            details: { vendor_id: order.vendor_id, vendor_order_id: order.vendor_order_id }
-        }
+        const error_reason = reason;
         // Validate that vendor_id, stock_shipment_id, and item are present
         if (!order.vendor_id || !order.vendor_order_id) {
             setError(true);
@@ -203,7 +211,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     }
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue, updateWeightAndDimensions }}>
+            value={{ handleSignOut, order, setOrder, packedData, setPackedData, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue, updateWeightAndDimensions, isErrorQueue, setIsErrorQueue, orderData, currentErrorIndex, setCurrentIndex, totalErrorOrders, setTotalErrorOrders }}>
             {!isSetStationId && <CheckSetStationId />}
             {isSetStationId && children}
 

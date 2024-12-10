@@ -3,12 +3,21 @@
 import { useContext } from 'react';
 import { PackingAppContext } from '@/contexts/PackingAppContext';
 
+
 export default function PackingItems() {
-    const { order } = useContext(PackingAppContext);
-    // console.log(order);
+    const { order, isErrorQueue } = useContext(PackingAppContext);
+    console.log('PackingItems', order);
+
+    const errorMessage = isErrorQueue ? order?.shipment?.error_reason.replace(/"/g, '') : '';
 
     return (
         <main className="flex-1 overflow-y-auto p-2 bg-slate-50 h-full">
+
+            {isErrorQueue && (
+                <div className="bg-red-200 text-red-800 font-semibold p-2 rounded mb-4">
+                    {errorMessage}
+                </div>
+            )}
             {order.items.map((item, index) => (
                 <div
                     key={index}
