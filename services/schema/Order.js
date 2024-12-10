@@ -36,7 +36,9 @@ export const getAddOnsSchema = () =>
             Joi.string(), // Add-on keys
             Joi.alternatives().try(
                 Joi.boolean(), // Simple add-ons
-                Joi.object().unknown(true) // Parameterized add-ons (validated dynamically later)
+                Joi.object()
+                    .min(1) // Ensure the object has at least one key
+                    .unknown(true) // Allow unknown keys in the object
             )
         )
         .optional();
