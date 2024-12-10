@@ -37,11 +37,20 @@ export const getAddOnsSchema = () =>
             Joi.alternatives().try(
                 Joi.boolean(), // Simple add-ons
                 Joi.object()
-                    .min(1) // Ensure the object has at least one key
-                    .unknown(true) // Allow unknown keys in the object
+                    .unknown(true) // Allow unknown keys
+                    .custom((value, helpers) => {
+                        if (Object.keys(value).length === 0) {
+                            return helpers.error('object.empty'); // Custom error for empty objects
+                        }
+                        return value; // Valid object
+                    })
             )
         )
-        .optional();
+        .optional()
+        .messages({
+            'object.empty': 'Add-on object must have at least one key.', // Custom error message
+        });
+
 
 
 export const getOrderSchema = (vendorAddons) =>
