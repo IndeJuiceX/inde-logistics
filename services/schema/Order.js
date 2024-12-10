@@ -30,63 +30,16 @@ export const getBuyerSchema = () => Joi.object({
     country_code: getCountryCodeSchema(),
 });
 
-
-export const getAddOnsSchema = (vendorAddons) =>
+export const getAddOnsSchema = () =>
     Joi.object()
         .pattern(
-            Joi.string(), // Add-on keys (e.g., "signature_on_delivery")
-            Joi.alternatives()
-                .try(
-                    Joi.boolean(), // Simple add-ons
-                    Joi.object({
-                        quantity: Joi.number()
-                            .integer()
-                            .positive()
-                            .required()
-                            .label('quantity'),
-                    })
-                )
-                .custom(async (value, helpers) => {
-                    const addOnKey = helpers.state.path[0]; // Get the key (e.g., "signature_on_delivery")
-                    const addOnId = generateAddOnKey(addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
-
-                    const errors = [];
-                    const vendorAddonIds = vendorAddons.map((addon) => addon.add_on_id);
-
-                    // Check if the vendor has the add-on enabled
-                    if (!vendorAddonIds.includes(addOnId)) {
-                        errors.push({
-                            message: `Vendor does not have the '${addOnKey}' add-on enabled.`,
-                            path: ['add_ons', addOnKey],
-                        });
-                    }
-
-                    const addOnMetadata = vendorAddons.find((addon) => addon.add_on_id === addOnId);
-
-                    // Validate required attributes (parameters)
-                    if (addOnMetadata?.required_attributes && typeof value === 'object' && !Array.isArray(value)) {
-                        addOnMetadata.required_attributes.forEach((attr) => {
-                            if (!(attr in value)) {
-                                errors.push({
-                                    message: `Missing required attribute '${attr}' for '${addOnKey}'.`,
-                                    path: ['add_ons', addOnKey, attr],
-                                });
-                            }
-                        });
-                    }
-
-                    if (errors.length > 0) {
-                        // Return errors for further aggregation
-                        return helpers.error('any.invalid', { errors });
-                    }
-
-                    return value; // Validation successful
-                })
+            Joi.string(), // Add-on keys
+            Joi.alternatives().try(
+                Joi.boolean(), // Simple add-ons
+                Joi.object().unknown(true) // Parameterized add-ons (validated dynamically later)
+            )
         )
-        .optional()
-        .messages({
-            'any.invalid': 'Invalid add-on configuration.',
-        });
+        .optional();
 
 
 export const getOrderSchema = (vendorAddons) =>
@@ -136,6 +89,14 @@ export const validateOrder = async (order, vendorId) => {
                 path: err.path,
             });
         });
+    }
+
+    // Validate add-ons if provided
+    if (validatedOrder.add_ons) {
+        const addOnValidation = await validateOrderAddOns(validatedOrder.add_ons, vendorId);
+        if (!addOnValidation.success) {
+            errors.push(...addOnValidation.errors);
+        }
     }
     const countryCode = validatedOrder.buyer.country_code//getCountryCode(validatedOrder.buyer.country); //
     //validatedOrder.buyer.country_code = countryCode;
@@ -193,3 +154,54 @@ export const validateOrderUpdateSchema = (payload) => {
         value,
     };
 };
+export const validateOrderAddOns = async (addOns, vendorId) => {
+    const errors = [];
+
+    // Retrieve vendor's enabled add-ons
+    const vendorAddonsResponse = await getVendorAddons(vendorId);
+    if (!vendorAddonsResponse.success) {
+        return {
+            success: false,
+            errors: [
+                {
+                    message: 'Failed to retrieve vendor add-ons.',
+                    path: ['add_ons'],
+                },
+            ],
+        };
+    }
+    const vendorAddons = vendorAddonsResponse.data;
+
+    // Validate each add-on
+    for (const [addOnKey, addOnValue] of Object.entries(addOns)) {
+        const addOnId = generateAddOnKey(addOnKey); // Generate PK (e.g., "ADDON#ORDER#signatureondelivery")
+
+        // Check if the add-on exists
+        const addOnMetadata = vendorAddons.find((addon) => addon.add_on_id === addOnId);
+        if (!addOnMetadata) {
+            errors.push({
+                message: `Add-on '${addOnKey}' does not exist or is not enabled for this vendor.`,
+                path: ['add_ons', addOnKey],
+            });
+            continue;
+        }
+
+        // Check required attributes for parameterized add-ons
+        if (addOnMetadata.required_attributes && typeof addOnValue === 'object') {
+            for (const attr of addOnMetadata.required_attributes) {
+                if (!(attr in addOnValue)) {
+                    errors.push({
+                        message: `Missing required attribute '${attr}' for add-on '${addOnKey}'.`,
+                        path: ['add_ons', addOnKey, attr],
+                    });
+                }
+            }
+        }
+    }
+
+    return {
+        success: errors.length === 0,
+        errors,
+    };
+};
+
