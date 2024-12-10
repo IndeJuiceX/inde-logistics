@@ -144,7 +144,7 @@ export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
             setLoading(false);
             setLoaded(true);
             setError(true);
-            setErrorMessage(printLabelResult.error);
+            setErrorMessage(printLabelResult.error || 'Something went wrong, Please try again');
             setIsErrorReload(true);
         }
     }
