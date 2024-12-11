@@ -49,7 +49,7 @@ export default function PackingNoOrders() {
                         View Order
                     </button>
                 )}
-                <button className="bg-red-600 border border-white text-white-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={() => window.location.href = '/warehouse/error'}>
+                <button className="bg-red-600 border border-white text-white font-semibold py-2 px-4 rounded-full shadow-md" onClick={() => window.location.href = '/warehouse/error'}>
                     Error Queue
                 </button>
                 <button className="bg-white border border-gray-800 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleManifestOrders}>
