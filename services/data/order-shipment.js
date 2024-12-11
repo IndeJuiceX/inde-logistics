@@ -349,7 +349,7 @@ export const getOrderShipmentsWithErrors = async () => {
     const orderData = orderDetailsData?.data || null
     const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
     const orderShipment = orderShipmentData?.data || null
-  
+
     const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
     const courierData = courierDetailsData?.data || null
     orderData.shipment = orderShipment
@@ -357,8 +357,65 @@ export const getOrderShipmentsWithErrors = async () => {
     if (orderDetailsData.success) {
       // Add the order data to the array
       ordersWithErrors.push(orderData);
-    } 
+    }
   }
 
   return { success: true, data: ordersWithErrors };
 }
+
+export const manifestOrderShipments = async () => {
+  // Query the GSI for all order shipments with status 'dispatched' and ready_for_manifest starts with 'true#'
+  const response = await queryItemsWithPkAndSk(
+    'dispatched',          // pkValue (status)
+    'true#',               // skPrefix (ready_for_manifest prefix)
+    ['pk', 'sk'],          // Only fetch the necessary attributes
+    'order_shipments_ready_for_manifest' // GSI name
+  );
+
+  if (!response.success) {
+    console.error('Error querying order_shipments_ready_for_manifest:', response.error);
+    return { success: false, error: response.error };
+  }
+
+  const orders = response.data;
+
+  if (orders.length === 0) {
+    console.log('No order shipments ready for manifesting.');
+    return { success: true, message: 'No orders to manifest.' };
+  }
+
+  const now = new Date().toISOString();
+  const results = [];
+
+  for (const order of orders) {
+    const { pk, sk } = order;
+
+    try {
+      // Extract vendorId and orderId from pk and sk
+      const vendorId =  getIdFromDynamoKey(pk)//pk.split('#')[1]; // Assuming pk format is `VENDORORDERSHIPMENT#vendorId`
+      const orderId = getIdFromDynamoKey(sk)//sk.split('#')[1];  // Assuming sk format is `ORDERSHIPMENT#orderId`
+
+      // Update the order shipment using the updateOrderShipment function
+      const updatedFields = {
+        manifested_at: now, // Set the current timestamp
+        ready_for_manifest: null, // Explicitly set this to null to trigger removal
+      };
+
+      const updateResponse = await updateOrderShipment(vendorId, orderId, updatedFields);
+      if (updateResponse.success) {
+        console.log(`Order shipment ${pk}#${sk} marked as manifested and ready_for_manifest removed.`);
+        results.push({ pk, sk, success: true });
+      } else {
+        console.error(`Failed to manifest order shipment ${pk}#${sk}:`, updateResponse.error);
+        results.push({ pk, sk, success: false, error: updateResponse.error });
+      }
+    } catch (error) {
+      console.error(`Error processing order shipment ${pk}#${sk}:`, error);
+      results.push({ pk, sk, success: false, error: error.message });
+    }
+  }
+
+  return { success: true, message: 'Orders processed.', data: results };
+};
+
+

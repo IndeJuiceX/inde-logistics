@@ -164,8 +164,8 @@ const getItem = async (pkVal, skVal) => {
         Key: { pk: pkVal, sk: skVal },
     };
 
-    
-    
+
+
     try {
         const data = await client.send(new GetCommand(params));
         if (!data || !data.Item) {
@@ -204,7 +204,7 @@ const queryItems = async (params) => {
 };
 
 
-const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = []) => {
+const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = [], indexName = null) => {
     const client = getClient();
     let params = {
         TableName: TABLE_NAME,
@@ -219,6 +219,10 @@ const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet =
     if (skPrefix) {
         params.KeyConditionExpression += ' AND begins_with(sk, :skPrefix)';
         params.ExpressionAttributeValues[':skPrefix'] = skPrefix;
+    }
+
+    if (indexName) {
+        params.IndexName = indexName
     }
 
     let items = [];
@@ -542,7 +546,7 @@ const queryItemCount = async (pkValue, skPrefix = null) => {
     return { success: true, count: totalCount };
 };
 
-const updateItem = async (pkVal, skVal, updatedFields, expressionAttributeNames) => {
+/*const updateItem = async (pkVal, skVal, updatedFields, expressionAttributeNames) => {
     const client = getClient();
 
     let UpdateExpression = 'SET';
@@ -578,7 +582,59 @@ const updateItem = async (pkVal, skVal, updatedFields, expressionAttributeNames)
         console.error('DynamoDB UpdateItem Error:', error);
         return { success: false, error };
     }
+};*/
+
+const updateItem = async (pkVal, skVal, updatedFields, expressionAttributeNames = {}) => {
+    const client = getClient();
+
+    let setExpressionParts = [];
+    let removeExpressionParts = [];
+    const ExpressionAttributeValues = {};
+    const ExpressionAttributeNames = { ...expressionAttributeNames };
+
+    Object.entries(updatedFields).forEach(([key, value], index) => {
+        const attrName = `#attr${index}`;
+        const attrValue = `:val${index}`;
+
+        // Handle null values by adding to REMOVE clause
+        if (value === null) {
+            removeExpressionParts.push(attrName);
+            ExpressionAttributeNames[attrName] = key;
+        } else {
+            // Add to SET clause
+            setExpressionParts.push(`${attrName} = ${attrValue}`);
+            ExpressionAttributeValues[attrValue] = value;
+            ExpressionAttributeNames[attrName] = key;
+        }
+    });
+
+    // Build the UpdateExpression
+    let UpdateExpression = '';
+    if (setExpressionParts.length > 0) {
+        UpdateExpression += `SET ${setExpressionParts.join(', ')}`;
+    }
+    if (removeExpressionParts.length > 0) {
+        UpdateExpression += (UpdateExpression ? ' ' : '') + `REMOVE ${removeExpressionParts.join(', ')}`;
+    }
+
+    const params = {
+        TableName: TABLE_NAME,
+        Key: { pk: pkVal, sk: skVal },
+        UpdateExpression,
+        ExpressionAttributeValues: Object.keys(ExpressionAttributeValues).length > 0 ? ExpressionAttributeValues : undefined,
+        ExpressionAttributeNames: Object.keys(ExpressionAttributeNames).length > 0 ? ExpressionAttributeNames : undefined,
+        ReturnValues: 'ALL_NEW', // Optionally return all new attributes after update
+    };
+
+    try {
+        const data = await client.send(new UpdateCommand(params));
+        return { success: true, data: data.Attributes };
+    } catch (error) {
+        console.error('DynamoDB UpdateItem Error:', error);
+        return { success: false, error };
+    }
 };
+
 
 /**
  * Appends values to an existing list attribute (e.g., history), or creates the attribute if it doesn't exist.
