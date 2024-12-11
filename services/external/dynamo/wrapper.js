@@ -204,7 +204,7 @@ const queryItems = async (params) => {
 };
 
 
-const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = [], indexName = null) => {
+const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = []) => {
     const client = getClient();
     let params = {
         TableName: TABLE_NAME,
@@ -221,9 +221,6 @@ const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet =
         params.ExpressionAttributeValues[':skPrefix'] = skPrefix;
     }
 
-    if (indexName) {
-        params.IndexName = indexName
-    }
 
     let items = [];
     let lastEvaluatedKey = null;
