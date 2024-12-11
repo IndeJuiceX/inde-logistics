@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
-import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 import { getNextUnPackedOrderShipment } from '@/services/data/order-shipment';
 import { manifestOrderShipments } from '@/services/data/order-shipment';
+import { doLogOut } from '@/app/actions';
+
 export default function PackingNoOrders() {
     // const { handleSignOut } = usePackingAppContext();
     const [isOpenModal, setIsOpenModal] = useState(true);
