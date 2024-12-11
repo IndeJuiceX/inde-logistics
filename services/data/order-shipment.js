@@ -1,6 +1,6 @@
 'use server';
 
-import { transactWriteItems, getItem, updateItem } from "@/services/external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem, queryItemsWithPkAndSk } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
 import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
 import { getCourierDetails } from "@/services/data/courier";
