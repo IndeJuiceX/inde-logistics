@@ -37,12 +37,19 @@ export default function PackingNoOrders() {
 
     return (
         <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(true)} statusClass={status} >
-            {/* background-color: #00d084; */}
-            <div>
-                <h1>{statusHeading}</h1>
-                {isNewOrder && <button className={styles.viewOrderLink} onClick={() => window.location.href = '/warehouse/packing'}>View Order</button>}
-                <button onClick={handleSignOut}>Sign Out</button>
-
+            <div className="flex flex-col items-center space-y-4">
+                <h1 className="text-black text-lg">{statusHeading}</h1>
+                {isNewOrder && (
+                    <button onClick={() => window.location.href = '/warehouse/packing'} className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" >
+                        View Order
+                    </button>
+                )}
+                <button className="bg-red-600 border border-white text-white-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={() => window.location.href = '/warehouse/error'}>
+                    Error Queue
+                </button>
+                <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleSignOut}>
+                    Logout
+                </button>
             </div>
         </ PickingAppModal>
     )
