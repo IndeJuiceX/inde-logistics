@@ -5,7 +5,8 @@ import { doLogOut } from '@/app/actions';
 
 export default function StarterPage() {
 
-    const handleLogout = async () => {
+    const handleLogout = async (e) => {
+        e.preventDefault();
         await doLogOut();
     }
 
@@ -18,7 +19,7 @@ export default function StarterPage() {
                 <MenuCard href="/warehouse/all/unshelved" icon={<FaWarehouse />} title="Unshelved" />
                 <MenuCard href="/warehouse/picking" icon={<FaBoxes />} title="Picking" />
                 <MenuCard href="/warehouse/packing" icon={<FaBox />} title="Packing" />
-                <MenuCard href="/logout" icon={<FaSignOutAlt />} title="Logout" onClick={handleLogout} />
+                <MenuCard href="/logout" icon={<FaSignOutAlt />} title="Logout" onClick={(e) => handleLogout(e)} />
             </div>
         </div>
     );
