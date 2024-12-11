@@ -463,7 +463,6 @@ export const getOrderShipmentsWithErrors = async () => {
 export const manifestOrderShipments = async () => {
   // Query the GSI for all order shipments with status 'dispatched' and ready_for_manifest starts with 'true#'
   const params = {
-    TableName: TABLE_NAME,
     IndexName: 'order_shipments_ready_for_manifest', // GSI name
     KeyConditionExpression: '#status = :status AND begins_with(#readyForManifest, :prefix)',
     ExpressionAttributeValues: {
