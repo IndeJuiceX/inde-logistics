@@ -111,3 +111,15 @@ export function formatDate(timestamp, format = 'default') {
 
     return `${day}${daySuffix(day)} ${month} ${year}`;
 }
+
+
+export function getETA(from, to = null) {
+    if (!to || from === to) {
+        return new Date(from).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+    }
+
+    const fromDate = new Date(from).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const toDate = new Date(to).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+
+    return `${fromDate} - ${toDate}`;
+}
