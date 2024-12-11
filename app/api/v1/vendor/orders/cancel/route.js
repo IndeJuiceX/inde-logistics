@@ -46,7 +46,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         // Check if the order status allows cancellation
-        const nonCancellableStatuses = ['Dispatched', 'Delivered', 'Cancelled'];
+        const nonCancellableStatuses = ['dispatched', 'delivered', 'cancelled'];
         if (nonCancellableStatuses.includes(orderItem.data.status)) {
             return NextResponse.json(
                 {

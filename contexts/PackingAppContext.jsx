@@ -183,8 +183,10 @@ export const PackingAppProvider = ({ children, orderData }) => {
         setLoading(true);
         const vendorId = order.vendor_id;
         const vendorOrderId = order.vendor_order_id;
+        const timestamp = new Date().toISOString()
         const updateFields = {
-            status: 'dispatched'
+            status: 'dispatched',
+            ready_for_manifest : `true#${timestamp}`
         }
 
 

@@ -56,7 +56,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
             );
         }
         // Check if the order status allows updating buyer data
-        const nonUpdatableStatuses = ['Dispatched', 'Delivered', 'Cancelled'];
+        const nonUpdatableStatuses = ['dispatched', 'delivered', 'cancelled'];
         if (nonUpdatableStatuses.includes(orderItem.status)) {
             return NextResponse.json(
                 {
