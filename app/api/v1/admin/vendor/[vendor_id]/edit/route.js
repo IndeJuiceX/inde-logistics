@@ -8,7 +8,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
 
         const { vendorId } = params;
 
-        console.log('Vendor ID:', vendorId);
+        // console.log('Vendor ID:', vendorId);
 
         // Parse request body
         const bodyText = await request.text();
@@ -24,7 +24,7 @@ export const POST = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         const venderUpdate = await updateVendor(vendorId, {status:vendor.status.toLowerCase()});
-        console.log('Vendor updated:', venderUpdate);
+        // console.log('Vendor updated:', venderUpdate);
 
         return NextResponse.json(venderUpdate, { status: 200 });
     } catch (error) {

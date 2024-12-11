@@ -8,7 +8,7 @@ export const GET = withAuthAndLogging(async (request, { params, user }) => {
 
     try {
         const result = await getProductById(vendorId, productId);
-        console.log('Product data:', result);
+        // console.log('Product data:', result);
         if (!result.success) {
             return NextResponse.json({ error: result.error }, { status: 404 });
         }

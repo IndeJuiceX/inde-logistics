@@ -12,6 +12,6 @@ export default async function PackingPage() {
     }
 
     return (
-        <PackingApp orderData={unPackedOrder} />
+        <PackingApp orderData={unPackedOrder.data} errorQueue={false} />
     )
 }

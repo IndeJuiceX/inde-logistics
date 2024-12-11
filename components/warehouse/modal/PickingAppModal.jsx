@@ -4,14 +4,14 @@ export default function PickingAppModal({ isOpen, onClose, statusClass = 'noOrde
     if (!isOpen) return null;
 
     const overlayClasses = {
-        base: 'fixed inset-0 bg-black flex items-center justify-center z-50 transition-opacity duration-200',
+        base: 'fixed inset-0 bg-black flex items-center justify-center z-150 transition-opacity duration-200',
         noOrder: 'bg-opacity-30 backdrop-blur-sm',
         newOrder: 'bg-opacity-40 backdrop-blur-sm',
         error: 'bg-opacity-60 backdrop-blur-sm',
     };
 
     const modalClasses = {
-        base: 'bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 relative transform transition-all duration-200 scale-100',
+        base: 'bg-white z-150 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 relative transform transition-all duration-200 scale-100',
         noOrder: 'border-t-4 border-blue-500',
         newOrder: 'border-t-4 border-green-500',
         error: 'border-t-4 border-red-500',

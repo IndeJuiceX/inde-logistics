@@ -1,4 +1,5 @@
 import ErrorApp from "@/components/warehouse/error/ErrorApp";
+
 import { getOrderShipmentsWithErrors } from "@/services/data/order-shipment";
 
 export default async function ErrorPage() {

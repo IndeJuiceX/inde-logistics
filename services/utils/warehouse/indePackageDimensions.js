@@ -1,3 +1,5 @@
+'use server';
+
 const parcelDimensions = {
     letter: { length: 29.2, width: 19.8, depth: 2 },
     parcel: { length: 23, width: 15.8, depth: 10.7 },
@@ -14,15 +16,15 @@ const shippingCost = {
  * @param {string} type - The parcel type (e.g., 'letter', 'parcel', 'extra parcel').
  * @returns {object|null} Dimensions object or null if not found.
  */
-export function getParcelDimensions(type) {
+export async function getParcelDimensions(type) {
     return parcelDimensions[type] || null;
 }
 
-export function getShippingCost(code) {
+export async function getShippingCost(code) {
     if (!shippingCost.hasOwnProperty(code)) {
         console.error(`Invalid shipping code: ${code}`);
         return null;
     }
-   
+
     return shippingCost[code];
 }

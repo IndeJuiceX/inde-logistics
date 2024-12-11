@@ -64,7 +64,8 @@ export default function Picking({ order }) {
         }
     };
 
-    const handleForceTick = (itemIndex) => {
+    const handleForceTick = (index) => {
+        const itemIndex = currentIndex;
         setSelectedItem(prevSelectedItem => {
             const newSelectedItem = [...prevSelectedItem];
             newSelectedItem[itemIndex] = itemIndex;
@@ -83,6 +84,12 @@ export default function Picking({ order }) {
             const nextIndex = itemIndex + 1;
             setCurrentIndex(nextIndex);
             itemRefs.current[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (itemIndex === order.items.length - 1) {
+            setTimeout(() => {
+                const confirmationScreen = document.querySelector('.bg-green-500');
+                confirmationScreen?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
     }
     const handlePicked = async () => {
@@ -122,10 +129,8 @@ export default function Picking({ order }) {
         const errorItem = order.items[currentIndex];
         const vendor_id = order.vendor_id;
         const vendor_order_id = order.vendor_order_id;
-        const error_reason = {
-            reason: 'Missing Item',
-            details: { vendor_sku: errorItem.vendor_sku, name: errorItem.name }
-        }
+        const error_reason = 'Missing Item';
+
         // Validate that vendor_id, stock_shipment_id, and  item are present
         if (!vendor_id || !vendor_order_id) {
             setError(true);

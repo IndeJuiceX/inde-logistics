@@ -45,7 +45,7 @@ export default function AllOrders() {
         try {
           const response = await fetch(`/api/v1/vendor/stock-shipments?vendor_id=${vendorId}`);
           const data = await response.json();
-          console.log(data);
+          // console.log(data);
           if (data.success) {
             setStockShipments(data.data);
           }

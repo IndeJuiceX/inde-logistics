@@ -9,7 +9,7 @@ const client = new FirehoseClient({
 })
 
 export function sendLogToFirehose(logData) {
-    console.log(logData);
+    // console.log(logData);
     const params = {
         DeliveryStreamName: 'logistics_stream', // Replace with your Firehose delivery stream name
         Record: {

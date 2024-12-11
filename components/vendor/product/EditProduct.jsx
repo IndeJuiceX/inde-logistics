@@ -42,9 +42,9 @@ export default function EditProduct({ vendorId, productData, isVendorDashboard =
     // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('product', product);
-        console.log('updatedFields', updatedFields);
-        console.log('product.attributes', product.attributes);
+        // console.log('product', product);
+        // console.log('updatedFields', updatedFields);
+        // console.log('product.attributes', product.attributes);
         let nicotineAttributes = {};
         if (product.attributes && product.attributes.nicotine && Array.isArray(product.attributes.nicotine)) {
             // Split the value into an array

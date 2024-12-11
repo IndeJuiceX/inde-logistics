@@ -11,7 +11,7 @@ export default function ProductSearch({ vendorId, setProducts, setSearchTerm, se
             // Include the `page` and `pageSize` in the API call
             const response = await fetch(`/api/v1/admin/vendor/products?vendor_id=${vendorId}&page=${page}&page_size=${pageSize}`);
             const data = await response.json();
-            console.log('Search results:', data);
+            // console.log('Search results:', data);
             setAllProducts(data);
             // Set the products and any pagination data if needed
             // setProducts(data.products);  // Assuming data.products is where the product list is stored
@@ -49,7 +49,7 @@ export default function ProductSearch({ vendorId, setProducts, setSearchTerm, se
     const handleSearch = () => {
         // Get the search term
         const inputValue = searchTerm;
-        console.log('inputValue', inputValue);
+        // console.log('inputValue', inputValue);
 
         // Filter products based on the search term
         const matched = allProducts.filter(product =>

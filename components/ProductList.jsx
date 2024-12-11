@@ -6,7 +6,7 @@ export default function ProductList({ products, onSelectionChange }) {
   const [selectAll, setSelectAll] = useState(false);
   const [quantities, setQuantities] = useState({});
 
-  console.log('products', products);
+  // console.log('products', products);
   
 
   // Handle individual product selection

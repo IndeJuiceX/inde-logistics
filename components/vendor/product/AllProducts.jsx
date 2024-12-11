@@ -88,7 +88,7 @@ export default function AllProducts({ vendorId, totalProductsData }) {
     const { searchField, searchTerm } = filter;
     const searchResponse = await fetch(`/api/v1/admin/vendor/products/search?vendor_id=${vendorId}&q=${searchTerm}&query_by=${searchField}`);
     const searchResult = await searchResponse.json();
-    console.log('Search Result:', searchResult);
+    // console.log('Search Result:', searchResult);
     
     if (searchResult.success) {
       setProducts(searchResult.data);

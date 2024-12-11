@@ -14,9 +14,14 @@ import { updateOrderShipmentError } from '@/services/data/order-shipment';
 
 export const PackingAppContext = createContext();
 
-export const PackingAppProvider = ({ children, orderData }) => {
-    const { setError, setErrorMessage, setIsErrorReload, setLoading, setLoaded } = useGlobalContext();
-    const [order, setOrder] = useState(orderData);
+export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
+
+
+
+    const { setError, setErrorMessage, setIsErrorReload, setLoading, loading, setLoaded } = useGlobalContext();
+    const currentOrder = errorQueue ? orderData[0] : orderData;
+    const [isErrorQueue, setIsErrorQueue] = useState(errorQueue);
+    const [order, setOrder] = useState(currentOrder);
 
     const [packedData, setPackedData] = useState({
         parcelOption: '',
@@ -30,6 +35,8 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const [isSetStationId, setIsSetStationId] = useState(true);
     const [isGeneratedLabel, setIsGeneratedLabel] = useState(order?.shipment?.label_key != null && order?.shipment?.tracking != null);
 
+    const [currentErrorIndex, setCurrentIndex] = useState(0);
+    const [totalErrorOrders, setTotalErrorOrders] = useState(isErrorQueue ? orderData.length : 0);
 
     useEffect(() => {
         const checkSetStationId = getStationId();
@@ -39,7 +46,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
         } else {
             setIsSetStationId(false);
         }
-        
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -57,19 +64,21 @@ export const PackingAppProvider = ({ children, orderData }) => {
             payload.courier = packedData.courier;
         }
         else {
-            payload.courier = getParcelDimensions(packedData.parcelOption);
+            payload.courier = await getParcelDimensions(packedData.parcelOption);
 
         }
         // payload.weight.courier = packedData.weight;
         payload.courier = {
             ...payload.courier,
+            courier_type: packedData.parcelOption,
             weight: packedData.courier.weight,
             service_code: await getServiceCode(order, packedData.parcelOption),
         };
 
         let service_code = payload.courier.service_code;
 
-        const validationResult = parcelPayloadValidation(order, payload, packedData);
+        const validationResult = await parcelPayloadValidation(order, payload);
+
         if (validationResult.error) {
             setLoading(false);
             setLoaded(true);
@@ -83,7 +92,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
                     weight: 0,
                     parcelOption: '',
                     width: 0,
-                    height: 0,
+                    length: 0,
                     depth: 0,
                 }
             });
@@ -116,45 +125,6 @@ export const PackingAppProvider = ({ children, orderData }) => {
     }
 
 
-    const handleNumberEntered = (input) => {
-        if (input === 'backspace') {
-            const newInput = enteredValue.length > 0 ? enteredValue.slice(0, -1) : '';
-            setPackedData(prevState => ({
-                ...prevState,
-                courier: {
-                    ...prevState.courier,
-                    [currentClicked]: newInput
-                }
-            }));
-            setEnteredValue(newInput);
-        } else if (input === 'ok') {
-            setPackedData(prevState => ({
-                ...prevState,
-                courier: {
-                    ...prevState.courier,
-                    [currentClicked]: parseInt(enteredValue)
-                }
-            }));
-
-            setIsOpenModal(false);
-            if (currentClicked === 'weight') {
-                updateWeightAndDimensions();
-            }
-        } else {
-            const newNumberInput = enteredValue + input;
-
-            const parsedValue = parseInt(newNumberInput, 10);
-            setPackedData(prevState => ({
-                ...prevState,
-                courier: {
-                    ...prevState.courier,
-                    [currentClicked]: parsedValue
-                }
-            }));
-            setEnteredValue(newNumberInput);
-        }
-    };
-
     const printLabel = async () => {
         setLoading(true);
         const stationId = getStationId();
@@ -174,11 +144,11 @@ export const PackingAppProvider = ({ children, orderData }) => {
             setLoading(false);
             setLoaded(true);
             setError(true);
-            setErrorMessage(printLabelResult.error);
+            setErrorMessage(printLabelResult.error || 'Something went wrong, Please try again');
             setIsErrorReload(true);
         }
     }
- 
+
     const handleCompleteOrder = async (withSignOut = false) => {
         setLoading(true);
         const vendorId = order.vendor_id;
@@ -188,7 +158,6 @@ export const PackingAppProvider = ({ children, orderData }) => {
             status: 'dispatched',
             ready_for_manifest : `true#${timestamp}`
         }
-
 
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
         if (response.success) {
@@ -211,10 +180,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     const addToRequireAttentionQueue = async (reason) => {
         setLoading(true);
 
-        const error_reason = {
-            reason: reason,
-            details: { vendor_id: order.vendor_id, vendor_order_id: order.vendor_order_id }
-        }
+        const error_reason = reason;
         // Validate that vendor_id, stock_shipment_id, and item are present
         if (!order.vendor_id || !order.vendor_order_id) {
             setError(true);
@@ -242,7 +208,7 @@ export const PackingAppProvider = ({ children, orderData }) => {
     }
     return (
         <PackingAppContext.Provider
-            value={{ handleSignOut, order, packedData, setPackedData, handleNumberEntered, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue }}>
+            value={{ handleSignOut, order, setOrder, packedData, setPackedData, isOpenModal, setIsOpenModal, currentClicked, setCurrentClicked, enteredValue, setEnteredValue, isValidForPrintLabel, setIsValidForPrintLabel, isReadyForDispatch, setIsReadyForDispatch, printLabel, isSetStationId, setIsSetStationId, isGeneratedLabel, handleCompleteOrder, addToRequireAttentionQueue, updateWeightAndDimensions, isErrorQueue, setIsErrorQueue, orderData, currentErrorIndex, setCurrentIndex, totalErrorOrders, setTotalErrorOrders }}>
             {!isSetStationId && <CheckSetStationId />}
             {isSetStationId && children}
 

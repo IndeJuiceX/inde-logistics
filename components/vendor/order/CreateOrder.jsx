@@ -57,7 +57,7 @@ export default function CreateOrder({ vendorId }) {
 
             const result = await response.json();
             setUploadResult(result);
-            console.log(result)
+            // console.log(result)
             if (response.ok) {
                 alert('Orders uploaded successfully');
 

@@ -1,36 +1,32 @@
 'use client';
 import React from "react";
-import styles from '@/styles/warehouse/packing/PackingApp.module.scss';
 import PackingHeader from "@/components/warehouse/packing/PackingHeader";
 import PackingItems from "@/components/warehouse/packing/PackingItems";
-import ParcelOptions from "@/components/warehouse/packing/ParcelOptions";
+import RightPanel from "@/components/warehouse/packing/RightPanel";
 import { PackingAppProvider } from "@/contexts/PackingAppContext";
 import { GlobalStateProvider } from "@/contexts/GlobalStateContext";
 import PackingFooter from "@/components/warehouse/packing/PackingFooter";
 import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
-import PageSpinner from "@/components/loader/PageSpinner";
 import PackingNoOrders from "@/components/warehouse/packing/PackingNoOrders";
 
-export default function PackingApp({ orderData }) {
+export default function PackingApp({ orderData, errorQueue }) {
     
     return (
         <>
-            {Array.isArray(orderData?.data) && orderData.data.length === 0 && (
-                
+            {Array.isArray(orderData) && orderData.length === 0 && (
                 <PackingNoOrders />
-
             )}
-            {orderData?.data && !Array.isArray(orderData.data) && (
-                <div className={styles.layout}>
-
+            {((!errorQueue && orderData && !Array.isArray(orderData)) || (errorQueue && orderData && Array.isArray(orderData))) && (
+                <div className="h-screen flex flex-col">
                     <GlobalStateProvider>
                         <ErrorModal />
-                        <PageSpinner />
-                        <PackingAppProvider orderData={orderData.data}>
+                        <PackingAppProvider orderData={orderData} errorQueue={errorQueue}>
                             <PackingHeader />
-                            <div className={styles.main}>
-                                <PackingItems />
-                                <ParcelOptions />
+                            <div className="flex-1 overflow-hidden grid grid-cols-3">
+                                <div className="col-span-2 overflow-y-auto">
+                                    <PackingItems />
+                                </div>
+                                <RightPanel />
                             </div>
                             <PackingFooter />
                         </PackingAppProvider>

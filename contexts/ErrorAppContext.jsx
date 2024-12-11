@@ -1,6 +1,5 @@
 'use client';
 
-
 import { createContext, useState, useContext, useEffect } from 'react';
 import { getStationId } from '@/services/utils/warehouse/packingStation';
 import { useGlobalContext } from '@/contexts/GlobalStateContext';
@@ -22,6 +21,7 @@ export const ErrorAppProvider = ({ children, errorData }) => {
     const [currentOrderShipment, setCurrentOrderShipment] = useState(null);
     const [selectedParcelOption, setSelectedParcelOption] = useState('');
     const [isValidForPrintLabel, setIsValidForPrintLabel] = useState(false);
+    const [isGeneratedLabel, setIsGeneratedLabel] = useState(false);
 
     const [payloadCourier, setPayloadCourier] = useState({
         width: '0',
@@ -33,13 +33,20 @@ export const ErrorAppProvider = ({ children, errorData }) => {
     useEffect(() => {
         if (currentErrorOrder) {
             setCurrentOrderShipment(currentErrorOrder.shipment);
-            console.log(currentErrorOrder.shipment);
+            // console.log(currentErrorOrder.shipment);
             setPayloadCourier({
                 width: currentErrorOrder.shipment.width_cm,
                 length: currentErrorOrder.shipment.height_cm,
                 depth: currentErrorOrder.shipment.depth_cm,
                 weight: currentErrorOrder.shipment.weight_grams,
             });
+
+            const checkValidForLabelPrint = !!currentErrorOrder.shipment.weight_grams;
+            const checkLabelKeyAlreadyGenerated = !!currentErrorOrder.shipment.label_key && !!currentErrorOrder.shipment.tracking;
+
+            setIsGeneratedLabel(checkLabelKeyAlreadyGenerated);
+            setIsValidForPrintLabel(checkValidForLabelPrint);
+
         }
     }, [currentErrorOrder]);
     useEffect(() => {
@@ -64,7 +71,7 @@ export const ErrorAppProvider = ({ children, errorData }) => {
                 weight: updatedCourier.weight,
             }
         }
-        const validationResult = parcelPayloadValidation(currentErrorOrder, validationFormate, validationFormate);
+        const validationResult = await parcelPayloadValidation(currentErrorOrder, validationFormate, validationFormate);
         if (validationResult.error) {
             setLoading(false);
             setLoaded(true);
@@ -104,7 +111,8 @@ export const ErrorAppProvider = ({ children, errorData }) => {
             setIsSetStationId(false);
             return;
         }
-        const printLabelResult = await generateAndPrintLabel(order.vendor_id, order.vendor_order_id, stationId);
+
+        const printLabelResult = await generateAndPrintLabel(currentErrorOrder.vendor_id, currentErrorOrder.vendor_order_id, stationId);
 
         if (printLabelResult.success) {
             setIsGeneratedLabel(true);
@@ -120,8 +128,37 @@ export const ErrorAppProvider = ({ children, errorData }) => {
             setIsErrorReload(true);
         }
     }
+    const handleCompleteOrder = async (withSignOut = false) => {
+        setLoading(true);
+        const vendorId = currentErrorOrder.vendor_id;
+        const vendorOrderId = currentErrorOrder.vendor_order_id;
+        const updateFields = {
+            status: 'dispatched',
+            error: 0,
+            error_reason: ""
+        }
+
+
+        const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);
+        if (response.success) {
+            if (withSignOut) {
+                await doLogOut();
+            }
+            else {
+                // window.location.reload();
+                window.location.href = '/warehouse/error';
+            }
+        }
+        else {
+            setLoading(false);
+            setLoaded(true);
+            setError(true);
+            setErrorMessage(response.error);
+            setIsErrorReload(true);
+        }
+    }
     return (
-        <ErrorAppContext.Provider value={{ errorOrders, setErrorOrders, totalErrorOrders, setTotalErrorOrders, currentErrorOrder, setCurrentErrorOrder, currentErrorOrderIndex, setCurrentErrorOrderIndex, selectedParcelOption, setSelectedParcelOption, currentOrderShipment, setCurrentOrderShipment, payloadCourier, setPayloadCourier, updateWeightAndDimensions, isValidForPrintLabel, printLabel }}>
+        <ErrorAppContext.Provider value={{ errorOrders, setErrorOrders, totalErrorOrders, setTotalErrorOrders, currentErrorOrder, setCurrentErrorOrder, currentErrorOrderIndex, setCurrentErrorOrderIndex, selectedParcelOption, setSelectedParcelOption, currentOrderShipment, setCurrentOrderShipment, payloadCourier, setPayloadCourier, updateWeightAndDimensions, isValidForPrintLabel, printLabel, isGeneratedLabel, handleCompleteOrder }}>
             {children}
         </ErrorAppContext.Provider>
     );

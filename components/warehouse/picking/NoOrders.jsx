@@ -39,13 +39,17 @@ export default function NoOrders() {
 
 
     return (
-        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(false)} statusClass={status} >
-         
-            <div>
-                <h1>{statusHeading}</h1>
-                {isNewOrder && <Link className={styles.viewOrderLink} href = {'/warehouse/picking'}>View Order</Link>}
-                <button onClick={handleSignOut}>Sign Out</button>
-
+        <PickingAppModal isOpen={isOpenModal} onClose={() => setIsOpenModal(true)} statusClass={status} >
+            <div className="flex flex-col items-center space-y-4">
+                <h1 className="text-black text-lg">{statusHeading}</h1>
+                {isNewOrder && (
+                    <Link href={'/warehouse/picking'} className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" >
+                        View Order
+                    </Link>
+                )}
+                <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleSignOut}>
+                    Logout
+                </button>
             </div>
         </ PickingAppModal>
     )

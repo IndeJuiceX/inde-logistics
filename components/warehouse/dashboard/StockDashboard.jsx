@@ -5,7 +5,7 @@ import { LoadingProvider } from "@/contexts/LoadingContext";
 import ErrorModal from "@/components/warehouse/errorModal/ErrorModal";
 import GlobalProductLoad from "@/components/warehouse/GlobalProductLoad";
 
-export default function StockDashboard({ children }) {
+export default function StockDashboard({ children, globalProductsData }) {
 
     return (
         // <LoadingProvider>
@@ -14,7 +14,7 @@ export default function StockDashboard({ children }) {
                 <TapMenu />
                 <PageSpinner />
                 <ErrorModal />
-                <GlobalProductLoad />
+                <GlobalProductLoad globalProductsData={globalProductsData} />
                 {children}
             </div>
         </GlobalStateProvider>
