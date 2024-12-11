@@ -227,7 +227,7 @@ export const getNextUnPackedOrderShipment = async () => {
 
 }
 
-export const getNextUnPickedOrderShipment = async () => {
+/*export const getNextUnPickedOrderShipment = async () => {
   const user = await getLoggedInUser();
   if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
     return { success: false, error: 'Not Authorized' }
@@ -295,8 +295,105 @@ export const getNextUnPickedOrderShipment = async () => {
 
   }
 
-}
+}*/
 
+
+export const getNextUnPickedOrderShipment = async () => {
+  console.time('Total Execution Time');
+
+  console.time('Get Logged In User');
+  const user = await getLoggedInUser();
+  console.timeEnd('Get Logged In User');
+
+  if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
+    console.timeEnd('Total Execution Time');
+    return { success: false, error: 'Not Authorized' };
+  }
+
+  console.time('Query for Processing Orders');
+  const query1 = `
+  SELECT pk,sk
+  FROM order_shipments
+  WHERE status = 'processing' AND (error IS NULL OR error != 1) AND picker = '${user.email}'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;
+  const existingData = await executeDataQuery({ query: query1 });
+  console.timeEnd('Query for Processing Orders');
+
+  const existingKeys = existingData?.data[0] || null;
+
+  if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
+    console.time('Fetch Order Details for Processing Order');
+    const vendorId = getIdFromDynamoKey(existingKeys.pk);
+    const orderId = getIdFromDynamoKey(existingKeys.sk);
+
+    const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
+    console.timeEnd('Fetch Order Details for Processing Order');
+
+    const orderData = orderDetailsData?.data || null;
+
+    if (!orderData) {
+      console.timeEnd('Total Execution Time');
+      return {
+        success: false,
+        error: `Order not found for vendor ${vendorId} and order ${orderId}`,
+      };
+    }
+
+    orderData.picker = user.email;
+    console.timeEnd('Total Execution Time');
+    return {
+      success: true,
+      data: orderData,
+    };
+  }
+
+  console.time('Query for Accepted Orders');
+  const query2 = `
+  SELECT vendor_order_id,vendor_id
+  FROM orders
+  WHERE status = 'accepted'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;
+  const data = await executeDataQuery({ query: query2 });
+  console.timeEnd('Query for Accepted Orders');
+
+  const nextOrderKeys = data?.data[0] || null;
+
+  if (!nextOrderKeys) {
+    console.timeEnd('Total Execution Time');
+    return { success: true, data: [] };
+  }
+
+  console.time('Fetch Order Details for Accepted Order');
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id);
+  console.timeEnd('Fetch Order Details for Accepted Order');
+
+  if (!orderDetailsData || !orderDetailsData?.success) {
+    console.timeEnd('Total Execution Time');
+    return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' };
+  }
+
+  console.time('Create Shipment and Update Order');
+  const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id);
+  console.timeEnd('Create Shipment and Update Order');
+
+  if (!updateResponse?.success) {
+    console.timeEnd('Total Execution Time');
+    return { success: false, error: 'Error while creating order or updating order shipment' };
+  }
+
+  const orderData = orderDetailsData.data;
+  orderData.picker = user?.email || 'Unknown';
+
+  console.timeEnd('Total Execution Time');
+  return {
+    success: true,
+    data: orderData,
+  };
+};
 
 export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
   // Get the order shipment and ensure that it exists
@@ -349,7 +446,7 @@ export const getOrderShipmentsWithErrors = async () => {
     const orderData = orderDetailsData?.data || null
     const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
     const orderShipment = orderShipmentData?.data || null
-  
+
     const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
     const courierData = courierDetailsData?.data || null
     orderData.shipment = orderShipment
@@ -357,8 +454,65 @@ export const getOrderShipmentsWithErrors = async () => {
     if (orderDetailsData.success) {
       // Add the order data to the array
       ordersWithErrors.push(orderData);
-    } 
+    }
   }
 
   return { success: true, data: ordersWithErrors };
 }
+
+export const manifestOrderShipments = async () => {
+  // Query the GSI for all order shipments with status 'dispatched' and ready_for_manifest starts with 'true#'
+  const response = await queryItemsWithPkAndSk(
+    'dispatched',          // pkValue (status)
+    'true#',               // skPrefix (ready_for_manifest prefix)
+    ['pk', 'sk'],          // Only fetch the necessary attributes
+    'order_shipments_ready_for_manifest' // GSI name
+  );
+
+  if (!response.success) {
+    console.error('Error querying order_shipments_ready_for_manifest:', response.error);
+    return { success: false, error: response.error };
+  }
+
+  const orders = response.data;
+
+  if (orders.length === 0) {
+    console.log('No order shipments ready for manifesting.');
+    return { success: true, message: 'No orders to manifest.' };
+  }
+
+  const now = new Date().toISOString();
+  const results = [];
+
+  for (const order of orders) {
+    const { pk, sk } = order;
+
+    try {
+      // Extract vendorId and orderId from pk and sk
+      const vendorId =  getIdFromDynamoKey(pk)//pk.split('#')[1]; // Assuming pk format is `VENDORORDERSHIPMENT#vendorId`
+      const orderId = getIdFromDynamoKey(sk)//sk.split('#')[1];  // Assuming sk format is `ORDERSHIPMENT#orderId`
+
+      // Update the order shipment using the updateOrderShipment function
+      const updatedFields = {
+        manifested_at: now, // Set the current timestamp
+        ready_for_manifest: null, // Explicitly set this to null to trigger removal
+      };
+
+      const updateResponse = await updateOrderShipment(vendorId, orderId, updatedFields);
+      if (updateResponse.success) {
+        console.log(`Order shipment ${pk}#${sk} marked as manifested and ready_for_manifest removed.`);
+        results.push({ pk, sk, success: true });
+      } else {
+        console.error(`Failed to manifest order shipment ${pk}#${sk}:`, updateResponse.error);
+        results.push({ pk, sk, success: false, error: updateResponse.error });
+      }
+    } catch (error) {
+      console.error(`Error processing order shipment ${pk}#${sk}:`, error);
+      results.push({ pk, sk, success: false, error: error.message });
+    }
+  }
+
+  return { success: true, message: 'Orders processed.', data: results };
+};
+
+
