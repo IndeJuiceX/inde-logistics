@@ -14,13 +14,7 @@ export default function NoOrders() {
     const [statusHeading, setStatusHeading] = useState('No Orders Found');
 
     const checkingNewOrders = async () => {
-        // console.log('checkingNewOrders');
-        // app/api/v1/admin/order-shipments/get-next-unpicked/route.js
-        // const response = await fetch('/api/v1/admin/order-shipments/get-next-unpicked');
-        // const data = await response.json();
-        // console.log('data', data);
         const data = await getNextUnPickedOrderShipment();
-
 
         if (data.success && data.data && !Array.isArray(data.data)) {
             setIsNewOrder(true);
@@ -31,8 +25,7 @@ export default function NoOrders() {
     };
 
     useEffect(() => {
-        const intervalId = setInterval(checkingNewOrders, 2 * 60 * 1000); // 2 minutes in milliseconds
-        // Cleanup interval on component unmount
+        const intervalId = setInterval(checkingNewOrders, 60 * 1000); 
         return () => clearInterval(intervalId);
     }, []);
 
@@ -47,6 +40,11 @@ export default function NoOrders() {
                         View Order
                     </Link>
                 )}
+                <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={() => {
+                    window.location.href = '/warehouse';
+                }}>
+                    Menu
+                </button>
                 <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleSignOut}>
                     Logout
                 </button>
