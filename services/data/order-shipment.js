@@ -1,6 +1,6 @@
 'use server';
 
-import { transactWriteItems, getItem, updateItem, queryItemsWithPkAndSk } from "@/services/external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem, queryItemsWithPkAndSk, queryAllItems } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
 import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
 import { getCourierDetails } from "@/services/data/courier";
@@ -462,12 +462,16 @@ export const getOrderShipmentsWithErrors = async () => {
 
 export const manifestOrderShipments = async () => {
   // Query the GSI for all order shipments with status 'dispatched' and ready_for_manifest starts with 'true#'
-  const response = await queryItemsWithPkAndSk(
-    'dispatched',          // pkValue (status)
-    'true#',               // skPrefix (ready_for_manifest prefix)
-    ['pk', 'sk'],          // Only fetch the necessary attributes
-    'order_shipments_ready_for_manifest' // GSI name
-  );
+  const params = {
+    IndexName: 'order_shipments_ready_for_manifest', // GSI name
+    KeyConditionExpression: 'status = :status AND begins_with(ready_for_manifest, :prefix)',
+    ExpressionAttributeValues: {
+      ':status': 'dispatched',
+      ':prefix': 'true#',
+    },
+    ProjectionExpression: 'pk, sk, status, ready_for_manifest',
+  };
+  const response = await queryAllItems(params);
 
   if (!response.success) {
     console.error('Error querying order_shipments_ready_for_manifest:', response.error);
@@ -489,7 +493,7 @@ export const manifestOrderShipments = async () => {
 
     try {
       // Extract vendorId and orderId from pk and sk
-      const vendorId =  getIdFromDynamoKey(pk)//pk.split('#')[1]; // Assuming pk format is `VENDORORDERSHIPMENT#vendorId`
+      const vendorId = getIdFromDynamoKey(pk)//pk.split('#')[1]; // Assuming pk format is `VENDORORDERSHIPMENT#vendorId`
       const orderId = getIdFromDynamoKey(sk)//sk.split('#')[1];  // Assuming sk format is `ORDERSHIPMENT#orderId`
 
       // Update the order shipment using the updateOrderShipment function

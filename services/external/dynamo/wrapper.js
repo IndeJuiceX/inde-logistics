@@ -204,7 +204,7 @@ const queryItems = async (params) => {
 };
 
 
-const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = [], indexName = null) => {
+const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet = []) => {
     const client = getClient();
     let params = {
         TableName: TABLE_NAME,
@@ -221,9 +221,6 @@ const queryItemsWithPkAndSk = async (pkValue, skPrefix = null, attributesToGet =
         params.ExpressionAttributeValues[':skPrefix'] = skPrefix;
     }
 
-    if (indexName) {
-        params.IndexName = indexName
-    }
 
     let items = [];
     let lastEvaluatedKey = null;
@@ -790,6 +787,35 @@ const deleteItemWithPkAndSk = async (pkVal, skVal) => {
     }
 };
 
+const queryAllItems = async (params) => {
+    const client = getClient(); // Initialize the DynamoDB client
+
+    let allItems = [];
+    let lastEvaluatedKey = null;
+
+    try {
+        do {
+            const queryParams = {
+                ...params,
+                ExclusiveStartKey: lastEvaluatedKey, // Handle pagination
+            };
+
+            const data = await client.send(new QueryCommand(queryParams));
+
+            // Append the fetched items to the result array
+            allItems = allItems.concat(data.Items);
+
+            // Update the LastEvaluatedKey to continue querying if necessary
+            lastEvaluatedKey = data.LastEvaluatedKey;
+
+        } while (lastEvaluatedKey); // Continue until all items are fetched
+
+        return { success: true, data: allItems };
+    } catch (error) {
+        console.error('DynamoDB QueryAllItems Error:', error);
+        return { success: false, error };
+    }
+};
 
 
 
@@ -800,6 +826,7 @@ export {
     getItem,
     updateItem,
     queryItems,
+    queryAllItems,
     deleteItem,
     scanItems,
     batchWriteItems,
