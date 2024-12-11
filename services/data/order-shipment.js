@@ -227,7 +227,7 @@ export const getNextUnPackedOrderShipment = async () => {
 
 }
 
-export const getNextUnPickedOrderShipment = async () => {
+/*export const getNextUnPickedOrderShipment = async () => {
   const user = await getLoggedInUser();
   if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
     return { success: false, error: 'Not Authorized' }
@@ -295,8 +295,105 @@ export const getNextUnPickedOrderShipment = async () => {
 
   }
 
-}
+}*/
 
+
+export const getNextUnPickedOrderShipment = async () => {
+  console.time('Total Execution Time');
+
+  console.time('Get Logged In User');
+  const user = await getLoggedInUser();
+  console.timeEnd('Get Logged In User');
+
+  if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
+    console.timeEnd('Total Execution Time');
+    return { success: false, error: 'Not Authorized' };
+  }
+
+  console.time('Query for Processing Orders');
+  const query1 = `
+  SELECT pk,sk
+  FROM order_shipments
+  WHERE status = 'processing' AND (error IS NULL OR error != 1) AND picker = '${user.email}'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;
+  const existingData = await executeDataQuery({ query: query1 });
+  console.timeEnd('Query for Processing Orders');
+
+  const existingKeys = existingData?.data[0] || null;
+
+  if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
+    console.time('Fetch Order Details for Processing Order');
+    const vendorId = getIdFromDynamoKey(existingKeys.pk);
+    const orderId = getIdFromDynamoKey(existingKeys.sk);
+
+    const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
+    console.timeEnd('Fetch Order Details for Processing Order');
+
+    const orderData = orderDetailsData?.data || null;
+
+    if (!orderData) {
+      console.timeEnd('Total Execution Time');
+      return {
+        success: false,
+        error: `Order not found for vendor ${vendorId} and order ${orderId}`,
+      };
+    }
+
+    orderData.picker = user.email;
+    console.timeEnd('Total Execution Time');
+    return {
+      success: true,
+      data: orderData,
+    };
+  }
+
+  console.time('Query for Accepted Orders');
+  const query2 = `
+  SELECT vendor_order_id,vendor_id
+  FROM orders
+  WHERE status = 'accepted'
+  ORDER BY created_at ASC
+  LIMIT 1;
+`;
+  const data = await executeDataQuery({ query: query2 });
+  console.timeEnd('Query for Accepted Orders');
+
+  const nextOrderKeys = data?.data[0] || null;
+
+  if (!nextOrderKeys) {
+    console.timeEnd('Total Execution Time');
+    return { success: true, data: [] };
+  }
+
+  console.time('Fetch Order Details for Accepted Order');
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id);
+  console.timeEnd('Fetch Order Details for Accepted Order');
+
+  if (!orderDetailsData || !orderDetailsData?.success) {
+    console.timeEnd('Total Execution Time');
+    return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' };
+  }
+
+  console.time('Create Shipment and Update Order');
+  const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id);
+  console.timeEnd('Create Shipment and Update Order');
+
+  if (!updateResponse?.success) {
+    console.timeEnd('Total Execution Time');
+    return { success: false, error: 'Error while creating order or updating order shipment' };
+  }
+
+  const orderData = orderDetailsData.data;
+  orderData.picker = user?.email || 'Unknown';
+
+  console.timeEnd('Total Execution Time');
+  return {
+    success: true,
+    data: orderData,
+  };
+};
 
 export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
   // Get the order shipment and ensure that it exists
