@@ -469,7 +469,7 @@ export const manifestOrderShipments = async () => {
       ':status': 'dispatched',
       ':prefix': 'true#',
     },
-    ProjectionExpression: 'pk, sk, status, ready_for_manifest',
+    ProjectionExpression: 'pk, sk',
   };
   const response = await queryAllItems(params);
 
