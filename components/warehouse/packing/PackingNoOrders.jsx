@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 import { getNextUnPackedOrderShipment } from '@/services/data/order-shipment';
-
+import { manifestOrderShipments } from '@/services/data/order-shipment';
 export default function PackingNoOrders() {
     // const { handleSignOut } = usePackingAppContext();
     const [isOpenModal, setIsOpenModal] = useState(true);
@@ -33,6 +33,10 @@ export default function PackingNoOrders() {
         return () => clearInterval(intervalId);
     }, []);
 
+    const handleManifestOrders = async () => {
+        const manifestOrders = await manifestOrderShipments();
+        console.log('manifestOrders', manifestOrders)
+    }
 
 
     return (
@@ -46,6 +50,9 @@ export default function PackingNoOrders() {
                 )}
                 <button className="bg-red-600 border border-white text-white-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={() => window.location.href = '/warehouse/error'}>
                     Error Queue
+                </button>
+                <button className="bg-white border border-gray-800 text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleManifestOrders}>
+                    Manifest
                 </button>
                 <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={handleSignOut}>
                     Logout

@@ -112,7 +112,7 @@ export default function Picking({ order }) {
 
 
             if (data.success) {
-                window.location.reload();
+                window.location.href = '/warehouse/picking';
             }
             else {
                 setError(true);
