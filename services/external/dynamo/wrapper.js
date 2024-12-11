@@ -795,9 +795,11 @@ const queryAllItems = async (params) => {
 
     try {
         do {
+            // Ensure TableName is included in the query
             const queryParams = {
                 ...params,
-                ExclusiveStartKey: lastEvaluatedKey, // Handle pagination
+                TableName: TABLE_NAME, // Add the table name
+                ...(lastEvaluatedKey && { ExclusiveStartKey: lastEvaluatedKey }), // Add pagination key if necessary
             };
 
             const data = await client.send(new QueryCommand(queryParams));
