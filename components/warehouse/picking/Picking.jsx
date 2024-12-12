@@ -11,6 +11,7 @@ import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
 import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
 import PickingAppModal from '../modal/PickingAppModal';
+import { doLogOut } from '@/app/actions';
 
 export default function Picking({ order }) {
     // console.log('test order ', order);
@@ -92,7 +93,7 @@ export default function Picking({ order }) {
             }, 100);
         }
     }
-    const handlePicked = async () => {
+    const handlePicked = async (completeWithSignOut = false) => {
 
         const totalItems = order.items.length; //index starts from 0
         const pickedItemsCount = pickedItems.length;
@@ -112,7 +113,12 @@ export default function Picking({ order }) {
 
 
             if (data.success) {
-                window.location.href = '/warehouse/picking';
+                if (completeWithSignOut) {
+                    await doLogOut();
+                }
+                else {
+                    window.location.href = '/warehouse/picking';
+                }
             }
             else {
                 setError(true);
@@ -281,7 +287,7 @@ export default function Picking({ order }) {
                         {/* Add confirmation screen as last item */}
                         {selectedItem.length === order.items.length && (
                             <div
-                                onClick={handlePicked}
+                                onClick={() => handlePicked(false)}
                                 className="bg-green-500 hover:bg-green-600 rounded-lg shadow-md mb-2 p-2 flex items-center cursor-pointer transition-colors duration-200"
                                 style={{ height: `${windowHeight - 160}px` }}
                             >
@@ -313,6 +319,13 @@ export default function Picking({ order }) {
                                 </button>
                             </div>
                         </div>
+                        {selectedItem.length === order.items.length && (
+                            <div onClick={() => handlePicked(true)}>
+                                <button className="bg-blue-500 text-white w-[150px] h-[41px] rounded-md flex items-center justify-center text-sm font-semibold">
+                                    confirm & sign out
+                                </button>
+                            </div>
+                        )}
                         <div className="mt-2">
                             <ItemBarcode styles={styles} onBarcodeScanned={moveToNextItem} currentItem={order.items[currentIndex]} order={order} />
                         </div>
