@@ -1,6 +1,6 @@
 'use server';
 
-import { transactWriteItems, getItem, updateItem, queryItems, queryItemsWithPkAndSk, queryAllItems,deleteItem } from "@/services/external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem, queryItems, queryItemsWithPkAndSk, queryAllItems, deleteItem } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
 import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
 import { getCourierDetails } from "@/services/data/courier";
@@ -152,7 +152,7 @@ export const updateOrderShipmentError = async (vendorId, orderId, errorReason = 
       return { success: false, error: deleteResponse.error || 'Failed to delete warehouse picking record' };
     }
   }
-  return{success:true,data:[]}
+  return { success: true, data: [] }
 };
 
 export const getNextUnPackedOrderShipment = async () => {
@@ -453,21 +453,17 @@ export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
 };
 
 export const getOrderShipmentsWithErrors = async () => {
-  const query1 = `
-  SELECT pk,sk
-  FROM order_shipments
-  WHERE status = 'picked' OR status = 'processing' AND error =1
-  ORDER BY created_at ASC
-`;
-  const data = await executeDataQuery({ query: query1 });
-  const orderDataKeys = data?.data || null
-  if (!orderDataKeys) {
-    return { success: true, data: [] }
-  }
-  const ordersWithErrors = [];
+  const allErrorKeys = []
+  const processingErrorResponse = await queryOrderShipmentsByReadyForIndex('processing', 'error#');
+  const processingErrors = processingErrorResponse?.data || []
+  allErrorKeys.push(processingErrors)
+  const pickedErrorResponse = await queryOrderShipmentsByReadyForIndex('picked', 'error#');
+  const pickedErrors = pickedErrorResponse?.data || []
+  allErrorKeys.push(pickedErrors)
 
+  console.log(allErrorKeys)
   // Loop over each key and get the order data
-  for (const { pk, sk } of orderDataKeys) {
+  for (const { pk, sk } of allErrorKeys) {
     // Extract vendorId and orderId from pk and sk
     const vendorId = getIdFromDynamoKey(pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
     const orderId = getIdFromDynamoKey(sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
@@ -647,7 +643,7 @@ export const markProcessComplete = async (vendorId, orderId, userEmail, newStatu
     nextContext = 'packing';
   } else if (newStatus === 'packed') {
     nextContext = 'dispatching';
-  } 
+  }
 
   const readyForVal = `${nextContext}#VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`;
 
@@ -714,3 +710,21 @@ export const markProcessComplete = async (vendorId, orderId, userEmail, newStatu
 
   return { success: true };
 };
+
+
+const queryOrderShipmentsByReadyForIndex = async (currentStatus, readyForBeginsWith) => {
+  const params = {
+    IndexName: 'order_shipment_ready_for', // GSI name
+    KeyConditionExpression: '#status = :status AND begins_with(#readyFor, :prefix)',
+    ExpressionAttributeValues: {
+      ':status': currentStatus,
+      ':prefix': readyForBeginsWith,
+    },
+    ExpressionAttributeNames: {
+      '#status': 'status', // Map the reserved keyword 'status'
+      '#readyFor': 'ready_for', // Map sort key if it's reserved
+    },
+    ProjectionExpression: 'pk, sk',
+  };
+  return await queryAllItems(params);
+}

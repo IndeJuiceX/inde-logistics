@@ -117,7 +117,7 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    //shipping_code: order.shipping_code,
+                    shipping_code: order.shipping_code,
                     //expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
                     shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
