@@ -100,10 +100,14 @@ export const createOrder = async (vendorId, order) => {
         // Return success and the created order
         const expectedDeliveryData = await getExpectedDeliveryDate(indeShippingID)
         const expectedDelivery = expectedDeliveryData?.data || null
-        let expectedDeliveryDate = null
+        let expectedDeliveryFromDate = null
+        let expectedDeliveryToDate = null
+
         if (expectedDelivery) {
             const [day, month, year] = expectedDelivery.expected_delivery_to_date.split('-');
-            expectedDeliveryDate = new Date(`${year}-${month}-${day}`).toISOString();
+            expectedDeliveryToDate = new Date(`${year}-${month}-${day}`).toISOString();
+            const [dayF, monthF, yearF] = expectedDelivery.expected_delivery_from_date.split('-');
+            expectedDeliveryFromDate = new Date(`${yearF}-${monthF}-${dayF}`).toISOString();
         }
         // Prepare Put operation for the order itself with 'created_at' and 'updated_at'
         const orderPutOperation = {
@@ -113,9 +117,9 @@ export const createOrder = async (vendorId, order) => {
                     sk: `ORDER#${order.vendor_order_id}`,
                     vendor_id: vendorId,
                     vendor_order_id: order.vendor_order_id,
-                    shipping_code: order.shipping_code,
-                    expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
-                    shipping_cost: order.shipping_cost,
+                    //shipping_code: order.shipping_code,
+                    //expected_delivery_date: expectedDelivery?.expected_delivery_to_date || null, //order.expected_delivery_date,
+                    //shipping_cost: order.shipping_cost,
                     buyer: order.buyer,
                     order_id: uniqueOrderId,
                     entity_type: 'Order',
@@ -128,7 +132,7 @@ export const createOrder = async (vendorId, order) => {
                 ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)', // Ensure order doesn't already exist
             },
         };
-
+        transactionItems.push(orderPutOperation);
         // Process applied_add_ons
         if (order.applied_add_ons) {
             for (const [addOnKey, addOnDetails] of Object.entries(order.applied_add_ons)) {
@@ -141,7 +145,7 @@ export const createOrder = async (vendorId, order) => {
                             sk: `BILLING#${timestamp}#${key}#${order.vendor_order_id}`,
                             vendor_id: vendorId,
                             vendor_order_id: order.vendor_order_id,
-                            order_id : uniqueOrderId,
+                            order_id: uniqueOrderId,
                             add_on_id: key,
                             add_on_name: name,
                             price,
@@ -154,7 +158,28 @@ export const createOrder = async (vendorId, order) => {
                 });
             }
         }
-        transactionItems.push(orderPutOperation);
+
+        // OrderShipment entry
+        const orderShipmentPutOperation = {
+            Put: {
+                Item: {
+                    pk: `VENDORORDERSHIPMENT#${vendorId}`,
+                    sk: `ORDERSHIPMENT#${order.vendor_order_id}`,
+                    ready_for : `picking#VENDOR#${vendorId}#ORDERSHIPMENT#${order.vendor_order_id}#${timestamp}`,
+                    shipping_code: order.shipping_code,
+                    expected_delivery_from_date: expectedDeliveryFromDate,
+                    expected_delivery_to_date:expectedDeliveryToDate, //order.expected_delivery_date,
+                    shipping_cost: order.shipping_cost,
+                    entity_type: 'OrderShipment',
+                    status: 'accepted',
+                    created_at: timestamp,
+                    updated_at: timestamp,
+                    // Include other necessary fields from 'order'
+                },
+                ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)', // Ensure order doesn't already exist
+            },
+        }
+        transactionItems.push(orderShipmentPutOperation);
 
         // Execute the transaction
         const transactionResult = await transactWriteItems(transactionItems);
