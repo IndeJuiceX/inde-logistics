@@ -25,7 +25,7 @@ export default function NoOrders() {
     };
 
     useEffect(() => {
-        const intervalId = setInterval(checkingNewOrders, 60 * 1000); 
+        const intervalId = setInterval(checkingNewOrders, 60 * 1000);
         return () => clearInterval(intervalId);
     }, []);
 
@@ -36,9 +36,11 @@ export default function NoOrders() {
             <div className="flex flex-col items-center space-y-4">
                 <h1 className="text-black text-lg">{statusHeading}</h1>
                 {isNewOrder && (
-                    <Link href={'/warehouse/picking'} className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" >
+                    <button onClick={() => {
+                        window.location.href = '/warehouse/picking';
+                    }} className="bg-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" >
                         View Order
-                    </Link>
+                    </button>
                 )}
                 <button className="border border-white text-gray-800 font-semibold py-2 px-4 rounded-full shadow-md" onClick={() => {
                     window.location.href = '/warehouse';
