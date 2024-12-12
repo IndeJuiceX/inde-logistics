@@ -156,7 +156,13 @@ export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
         const timestamp = new Date().toISOString()
         const updateFields = {
             status: 'dispatched',
-            ready_for_manifest : `true#VENDOR#${order.vendor_id}#ORDER#${order.vendor_order_id}#${timestamp}`
+            ready_for: `manifest#VENDOR#${order.vendor_id}#ORDER#${order.vendor_order_id}#${timestamp}`,
+           
+        }
+
+        if (isErrorQueue) {
+            updateFields.error_reason = ''
+            updateFields.error = 0
         }
 
         const response = await updateOrderShipment(vendorId, vendorOrderId, updateFields);

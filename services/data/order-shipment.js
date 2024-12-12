@@ -454,6 +454,7 @@ export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
 
 export const getOrderShipmentsWithErrors = async () => {
   const allErrorKeys = []
+  const ordersWithErrors = []
   const processingErrorResponse = await queryOrderShipmentsByReadyForIndex('processing', 'error#');
   const processingErrors = processingErrorResponse?.data || []
   allErrorKeys.push(...processingErrors)
@@ -461,7 +462,7 @@ export const getOrderShipmentsWithErrors = async () => {
   const pickedErrors = pickedErrorResponse?.data || []
   allErrorKeys.push(...pickedErrors)
 
-  console.log(allErrorKeys)
+  console.log('allErrorKeys', allErrorKeys)
   // Loop over each key and get the order data
   for (const { pk, sk } of allErrorKeys) {
     // Extract vendorId and orderId from pk and sk
