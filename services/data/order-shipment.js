@@ -152,6 +152,7 @@ export const updateOrderShipmentError = async (vendorId, orderId, errorReason = 
       return { success: false, error: deleteResponse.error || 'Failed to delete warehouse picking record' };
     }
   }
+  return{success:true,data:[]}
 };
 
 export const getNextUnPackedOrderShipment = async () => {
