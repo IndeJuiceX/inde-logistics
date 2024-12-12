@@ -9,7 +9,7 @@ import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
 import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
-import { updateOrderShipmentError, updateOrderShipment } from '@/services/data/order-shipment';
+import { updateOrderShipmentError, updateOrderShipment, markProcessComplete } from '@/services/data/order-shipment';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import { doLogOut, getLoggedInUser } from '@/app/actions';
 
@@ -110,9 +110,10 @@ export default function Picking({ order }) {
                 setIsErrorReload(true);
             }
             console.log('user', user);
-            return;
-            const data = await updateOrderShipment(vendor_id, vendor_order_id, 'picked', user.email);
 
+            const data = await markProcessComplete(vendor_id, vendor_order_id, user.email, 'picked');
+            console.log('data', data);
+            
 
             if (data.success) {
                 if (completeWithSignOut) {

@@ -644,9 +644,9 @@ export const markProcessComplete = async (vendorId, orderId, userEmail, newStatu
 
   let nextContext = '';
   if (newStatus === 'picked') {
-    nextContext = 'PACKING';
+    nextContext = 'packing';
   } else if (newStatus === 'packed') {
-    nextContext = 'DISPATCHING';
+    nextContext = 'dispatching';
   } 
 
   const readyForVal = `${nextContext}#VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`;
