@@ -10,6 +10,9 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     const [barcodeValue, setBarcodeValue] = useState('');
     const [barcodeError, setBarcodeError] = useState(false);
     const [isNewBarcode, setIsNewBarcode] = useState(false);
+    const [needsQuantityConfirmation, setNeedsQuantityConfirmation] = useState(false);
+    const [confirmBarcode, setConfirmBarcode] = useState('');
+    const [confirmBarcodeError, setConfirmBarcodeError] = useState(false);
 
 
     useEffect(() => {
@@ -25,8 +28,25 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
                 if (currentItem.barcodes && Array.isArray(currentItem.barcodes) && currentItem.barcodes.includes(barcodeValue)) {
                     setBarcodeError(false);
                     setBarcodeValue(barcodeValue);
-                    onBarcodeScanned(barcodeValue);
+                    if (currentItem.quantity > 1) {
+                        if (confirmBarcode !== '' && confirmBarcode === barcodeValue) {
+                            setNeedsQuantityConfirmation(false);
+                            onBarcodeScanned(barcodeValue);
+                        }
+                        else {
+                            setConfirmBarcode(barcodeValue);
+                            setNeedsQuantityConfirmation(true);
+                        }
+                    } else {
+                        onBarcodeScanned(barcodeValue);
+                    }
                 } else {
+                    if (confirmBarcode !== '' && needsQuantityConfirmation) {
+                        setConfirmBarcodeError(true);
+                        setTimeout(() => {
+                            setConfirmBarcodeError(false);
+                        }, 2000);
+                    }
                     setBarcodeError(true);
                 }
                 setBarcodeValue('');
@@ -93,6 +113,23 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
                 <div className="p-4">
                     <p className="text-center text-slate-600 mb-4">
                         Please re-scan the barcode for confirmation
+                    </p>
+                    <div className="flex justify-center items-center space-x-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite_0.3s]"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite_0.6s]"></span>
+                    </div>
+                </div>
+            </PickingAppModal>
+            <PickingAppModal
+                isOpen={needsQuantityConfirmation}
+                onClose={() => setNeedsQuantityConfirmation(false)}
+                statusClass="error"
+            >
+                <div className="p-4">
+                    <p className="text-center text-slate-600 mb-4">
+                        {confirmBarcodeError ? 'Barcode error. Barcode not matching.' : `This item requires ${currentItem.quantity} units.
+                        Please re-scan the barcode for confirmation`}
                     </p>
                     <div className="flex justify-center items-center space-x-2">
                         <span className="w-2 h-2 bg-blue-500 rounded-full animate-[pulse_1.5s_ease-in-out_infinite]"></span>
