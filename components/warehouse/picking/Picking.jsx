@@ -15,7 +15,7 @@ import { doLogOut, getLoggedInUser } from '@/app/actions';
 
 export default function Picking({ order }) {
     // console.log('test order ', order);
-    const { setError, setErrorMessage, setIsErrorReload } = useGlobalContext();
+    const { setError, setErrorMessage, setIsErrorReload,user } = useGlobalContext();
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
     const router = useRouter();
     const [windowHeight, setWindowHeight] = useState(0);
@@ -97,7 +97,7 @@ export default function Picking({ order }) {
 
         const totalItems = order.items.length; //index starts from 0
         const pickedItemsCount = pickedItems.length;
-        const user = await getLoggedInUser();
+        
 
 
         if (pickedItemsCount === totalItems) {
@@ -109,11 +109,7 @@ export default function Picking({ order }) {
                 setErrorMessage('Something went wrong, Please reload the page');
                 setIsErrorReload(true);
             }
-
             const data = await markProcessComplete(vendor_id, vendor_order_id, user.email, 'picked');
-            
-            
-
             if (data.success) {
                 if (completeWithSignOut) {
                     await doLogOut();
@@ -128,33 +124,24 @@ export default function Picking({ order }) {
                 setIsErrorReload(true);
             }
         };
-
     }
 
-
-
     const handleErrorQueue = async () => {
+    
         const errorItem = order.items[currentIndex];
         const vendor_id = order.vendor_id;
         const vendor_order_id = order.vendor_order_id;
         const error_reason = 'Missing Item';
-
+        const email = user.email;
         // Validate that vendor_id, stock_shipment_id, and  item are present
         if (!vendor_id || !vendor_order_id) {
             setError(true);
             setErrorMessage('Something went wrong, Please reload the page');
             setIsErrorReload(true);
         }
-
-        // Prepare the arguments array
-        // const args = [vendor_id, vendor_order_id];
-        // if (error_reason && error_reason != '' && error_reason !== undefined) {
-        //     args.push(error_reason);
-        // }
-        const email = order.picker;
+        
         const data = await updateOrderShipmentError(vendor_id, vendor_order_id, error_reason, email, 'picking',);
-        console.log('data', data);
-        // return; 
+      
         if (data.success) {
             window.location.reload();
         }

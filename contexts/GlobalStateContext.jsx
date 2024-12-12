@@ -1,10 +1,15 @@
 "use client";
 
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
+import { getLoggedInUser } from '@/app/actions';
 
 export const GlobalStateContext = createContext();
 
 export const GlobalStateProvider = ({ children }) => {
+
+    const [user, setUser] = useState(null);
+
+
     // States for the loading spinner
     const [loading, setLoading] = useState(false);
     const [loaded, setLoaded] = useState(false);
@@ -19,12 +24,25 @@ export const GlobalStateProvider = ({ children }) => {
     // Globally assign the selected vender products
     const [globalProducts, setGlobalProducts] = useState([]);
 
-   
+    useEffect(() => {
+        if (user) {
+            return;
+        }
+        const getUser = async () => {
+            const user = await getLoggedInUser();
+            setUser(user);
+        }
+        if (!user) {
+            getUser();;
+        }
+
+    }, [user]);
+
 
     return (
         <GlobalStateContext.Provider
             value={
-                { loading, loaded, setLoading, setLoaded, error, setError, errorMessage, setErrorMessage, errorRedirect, setErrorRedirect, globalProducts, setGlobalProducts, isErrorReload, setIsErrorReload }
+                { loading, loaded, setLoading, setLoaded, error, setError, errorMessage, setErrorMessage, errorRedirect, setErrorRedirect, globalProducts, setGlobalProducts, isErrorReload, setIsErrorReload, user, setUser }
             }>
             {children}
         </GlobalStateContext.Provider>
