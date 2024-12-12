@@ -145,12 +145,14 @@ export default function Picking({ order }) {
         }
 
         // Prepare the arguments array
-        const args = [vendor_id, vendor_order_id];
-        if (error_reason && error_reason != '' && error_reason !== undefined) {
-            args.push(error_reason);
-        }
-        const data = await updateOrderShipmentError(...args);
+        // const args = [vendor_id, vendor_order_id];
+        // if (error_reason && error_reason != '' && error_reason !== undefined) {
+        //     args.push(error_reason);
+        // }
+        const email = order.picker;
+        const data = await updateOrderShipmentError(vendor_id, vendor_order_id, error_reason, email, 'picking',);
         console.log('data', data);
+        return; 
         if (data.success) {
             window.location.reload();
         }
@@ -209,6 +211,7 @@ export default function Picking({ order }) {
                                 {/* Image column */}
                                 <div className="w-1/4 relative h-full">
                                     <div className="absolute inset-0 flex items-center justify-center">
+
                                         <img
                                             src={item.image || 'https://cdn.indejuice.com/images/4j6.jpg'}
                                             alt="Product"
