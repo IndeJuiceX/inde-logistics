@@ -44,17 +44,12 @@ export default function ItemBarcode({ styles, onBarcodeScanned, currentItem, ord
     }, [barcodeValue, currentItem, isNewBarcode]);
 
     const handleAddNewBarcode = () => {
-        console.log('handleAddNewBarcode');
-
         setIsNewBarcode(true);
     }
 
 
     const addNewBarcode = async () => {
-
-
         if (!order.vendor_id || !currentItem.vendor_sku || !barcodeValue) {
-            // console.log('addNewBarcode error', order.vendor_id, currentItem.vendor_sku, barcodeValue);
             return;
         }
 
