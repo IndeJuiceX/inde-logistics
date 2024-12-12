@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
-import { getNextUnPickedOrderShipment } from '@/services/data/order-shipment';
+import { getNextUnPickedOrderShipmentNew } from '@/services/data/order-shipment';
 export default function NoOrders() {
     const { handleSignOut } = usePickingAppContext();
     const [isOpenModal, setIsOpenModal] = useState(true);
@@ -14,7 +14,7 @@ export default function NoOrders() {
     const [statusHeading, setStatusHeading] = useState('No Orders Found');
 
     const checkingNewOrders = async () => {
-        const data = await getNextUnPickedOrderShipment();
+        const data = await getNextUnPickedOrderShipmentNew();
 
         if (data.success && data.data && !Array.isArray(data.data)) {
             setIsNewOrder(true);
