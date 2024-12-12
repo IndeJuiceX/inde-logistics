@@ -104,6 +104,8 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
 
 }
 
+
+
 export const updateOrderShipmentError = async (vendorId, orderId, errorReason = '', userEmail, context) => {
   // Fetch the order shipment to ensure it exists
   const upperCaseContext = context?.toUpperCase()
@@ -227,6 +229,116 @@ export const getNextUnPackedOrderShipment = async () => {
   }
 
   const updateResponse = await updateOrderShipment(orderData.vendor_id, orderData.vendor_order_id, { packer: user?.email || 'UNKNOWN' })
+  //updateOrderShipment by adding the packer email to the packer
+  if (!updateResponse?.success) {
+    return { success: false, error: 'Error while creating order or updating order shipment' }
+  }
+
+  const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
+  const orderShipment = orderShipmentData?.data || null
+
+  if (!orderShipment || !orderShipmentData?.success) {
+    return { success: false, error: orderShipmentData.error || 'Error in getting Order Shipment Details' }
+  }
+
+  const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
+  const courierData = courierDetailsData?.data || null
+  if (!courierData || !courierDetailsData?.success) {
+    return { success: false, error: courierDetailsData.error || 'Error in getting Courier Details' }
+  }
+  orderData.shipment = cleanResponseData(orderShipment)
+  orderData.shipment.courier = courierData
+
+  return {
+    success: true,
+    data: orderData,
+
+  }
+
+}
+
+
+export const getNextUnPackedOrderShipmentNew = async () => {
+  const user = await getLoggedInUser();
+  if (!user || !user?.email || !user.email.includes('warehouse@indejuice.com')) {
+    return { success: false, error: 'Not Authorized' }
+  }
+  const params = {
+    KeyConditionExpression: '#pk = :pkVal',
+    ExpressionAttributeNames: { '#pk': 'pk' },
+    ExpressionAttributeValues: { ':pkVal': `WAREHOUSEPACKING#${user.email}` },
+    Limit: 1 // Only return the first item
+  };
+
+  const response = await queryItems(params);
+  const existingKeys = response?.data?.[0] || null;
+
+  if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
+    const vendorId = getIdFromDynamoKey(existingKeys.pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = getIdFromDynamoKey(existingKeys.sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+
+    const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
+    const orderData = orderDetailsData?.data || null
+    if (!orderData) {
+      return {
+        success: false,
+        error: `Order not found for vendor ${vendorId} and order ${orderId}`,
+      }
+    }
+    const orderShipmentData = await getOrderShipment(orderData.vendor_id, orderData.vendor_order_id)
+    const orderShipment = orderShipmentData?.data || null
+
+    if (!orderShipment || !orderShipmentData?.success) {
+      return { success: false, error: orderShipmentData.error || 'Error in getting Order Shipment Details' }
+    }
+
+    const courierDetailsData = await getCourierDetails(orderData.vendor_id, orderShipment.shipping_code)
+    const courierData = courierDetailsData?.data || null
+    if (!courierData || !courierDetailsData?.success) {
+      return { success: false, error: courierDetailsData.error || 'Error in getting Courier Details' }
+    }
+    orderData.shipment = cleanResponseData(orderShipment)
+    orderData.shipment.courier = courierData
+    return {
+      success: true,
+      data: orderData,
+
+    }
+  }
+
+  const params2 = {
+    IndexName: 'order_shipment_ready_for', // GSI name
+    KeyConditionExpression: '#status = :status AND begins_with(#readyFor, :prefix)',
+    ExpressionAttributeValues: {
+      ':status': 'picked',
+      ':prefix': 'packing#',
+    },
+    ExpressionAttributeNames: {
+      '#status': 'status',
+      '#readyFor': 'ready_for',
+    },
+    ProjectionExpression: 'pk, sk',
+    Limit: 1 // Only return the earliest accepted order
+  };
+
+  const responseData = await queryItems(params2);
+
+  const nextOrderKeys = responseData?.data[0] || null
+  if (!nextOrderKeys) {
+    return { success: true, data: [] }
+  }
+
+  const nextOrderVendorId = getIdFromDynamoKey(nextOrderKeys.pk)
+  const nextOrderId = getIdFromDynamoKey(nextOrderKeys.sk)
+  const orderDetailsData = await getOrderWithItemDetails(nextOrderVendorId, nextOrderId)
+  const orderData = orderDetailsData?.data || null
+
+  if (!orderData || !orderDetailsData?.success) {
+    return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' }
+  }
+
+  //const updateResponse = await updateOrderShipment(orderData.vendor_id, orderData.vendor_order_id, { packer: user?.email || 'UNKNOWN' })
+  const updateResponse = await createWarehouseRecordAndUpdateOrder(user?.email,orderData.vendor_id, orderData.vendor_order_id,'packing')
   //updateOrderShipment by adding the packer email to the packer
   if (!updateResponse?.success) {
     return { success: false, error: 'Error while creating order or updating order shipment' }
@@ -412,7 +524,7 @@ export const getNextUnPickedOrderShipmentNew = async () => {
   }
 
   console.time('Create WAREHOUSE PICKING RECORD AND UPDATE ORDERSHIPMENT');
-  const updateResponse = await createWarehousePickingRecordAndUpdateOrder(user?.email, vendorId, orderId);
+  const updateResponse = await createWarehouseRecordAndUpdateOrder(user?.email, vendorId, orderId, 'picking');
   console.timeEnd('Create WAREHOUSE PICKING RECORD AND UPDATE ORDERSHIPMENT');
 
   if (!updateResponse?.success) {
@@ -561,27 +673,33 @@ export const manifestOrderShipments = async () => {
  * @param {string} orderId - The order ID.
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-export const createWarehousePickingRecordAndUpdateOrder = async (pickerEmail, vendorId, orderId) => {
+export const createWarehouseRecordAndUpdateOrder = async (pickerEmail, vendorId, orderId, context) => {
   const now = new Date().toISOString();
 
-
+  const upperCaseContext = context.toUpperCase()
   const transactionItems = [
     // 1. Create the warehouse picking record
     {
       Put: {
         // TableName will be added by transactWriteItems wrapper if needed
         Item: {
-          pk: `WAREHOUSEPICKING#${pickerEmail}`,
+          pk: `WAREHOUSE${upperCaseContext}#${pickerEmail}`,
           sk: `VENDOR#${vendorId}#ORDER#${orderId}`,
           vendor_id: vendorId,
           vendor_order_id: orderId,
-          picker: pickerEmail,
+          packer: pickerEmail,
           created_at: now,
         },
         ConditionExpression: 'attribute_not_exists(pk)',
       }
-    },
-    // 2. Update the order item: remove ready_for_picking, set status=processing
+    }
+
+    // 3. Update the order shipment item: remove ready_for_picking, set status=processing
+
+  ];
+
+  if (context == 'picking') {
+    const updateOrderItem = // 2. Update the order item: remove ready_for_picking, set status=processing
     {
       Update: {
         Key: {
@@ -596,9 +714,9 @@ export const createWarehousePickingRecordAndUpdateOrder = async (pickerEmail, ve
           ':processing': 'processing'
         }
       }
-    },
-    // 3. Update the order shipment item: remove ready_for_picking, set status=processing
-    {
+    }
+    transactionItems.push(updateOrderItem)
+    const updateOrderShipment = {
       Update: {
         Key: {
           pk: `VENDORORDERSHIPMENT#${vendorId}`,
@@ -617,7 +735,27 @@ export const createWarehousePickingRecordAndUpdateOrder = async (pickerEmail, ve
         }
       }
     }
-  ];
+    transactionItems.push(updateOrderShipment)
+  } else {
+    const updateOrderShipmentPacker = {
+      Update: {
+        Key: {
+          pk: `VENDORORDERSHIPMENT#${vendorId}`,
+          sk: `ORDERSHIPMENT#${orderId}`,
+        },
+        UpdateExpression: 'SET  #packer = :packerVal, #readyFor = :readyForVal',
+        ExpressionAttributeNames: {
+          '#packer': 'packer',
+          '#readyFor': 'ready_for'
+        },
+        ExpressionAttributeValues: {
+          ':packerVal': pickerEmail,
+          ':readyForVal': `packing#VENDOR${vendorId}#ORDERSHIPMENT#${orderId}#${now}`
+        }
+      }
+    }
+    transactionItems.push(updateOrderShipmentPacker)
+  }
 
   try {
     const result = await transactWriteItems(transactionItems);
