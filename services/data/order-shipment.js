@@ -634,3 +634,84 @@ export const createWarehousePickingRecordAndUpdateOrder = async (pickerEmail, ve
     return { success: false, error: error.message };
   }
 };
+
+
+export const markProcessComplete = async (vendorId, orderId, userEmail, newStatus) => {
+  // Convert newStatus to lowercase
+  newStatus = newStatus.toLowerCase();
+
+
+  const now = new Date().toISOString();
+
+  let nextContext = '';
+  if (newStatus === 'picked') {
+    nextContext = 'PACKING';
+  } else if (newStatus === 'packed') {
+    nextContext = 'DISPATCHING';
+  } 
+
+  const readyForVal = `${nextContext}#VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`;
+
+  // Build the UpdateExpression for the order shipment:
+  // SET status, updated_at, and <newStatus>_at, and ready_for always updated
+  const updateExpression = `SET #status = :newStatus, updated_at = :now, #${newStatus}_at = :now, ready_for = :readyForVal`;
+
+  const expressionAttributeNames = {
+    '#status': 'status',
+    [`#${newStatus}_at`]: `${newStatus}_at`
+  };
+
+  const expressionAttributeValues = {
+    ':newStatus': newStatus,
+    ':now': now,
+    ':readyForVal': readyForVal
+  };
+
+  // Construct the transaction items
+  const transactItems = [
+    {
+      Update: {
+        Key: {
+          pk: `VENDORORDERSHIPMENT#${vendorId}`,
+          sk: `ORDERSHIPMENT#${orderId}`
+        },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues
+      }
+    }
+  ];
+
+  // If newStatus == 'picked', remove warehouse picking record
+  if (newStatus === 'picked') {
+    transactItems.push({
+      Delete: {
+        Key: {
+          pk: `WAREHOUSEPICKING#${userEmail}`,
+          sk: `VENDOR#${vendorId}#ORDER#${orderId}`
+        }
+      }
+    });
+  }
+
+  // If newStatus == 'packed', remove warehouse packing record
+  if (newStatus === 'packed') {
+    transactItems.push({
+      Delete: {
+        Key: {
+          pk: `WAREHOUSEPACKING#${userEmail}`,
+          sk: `VENDOR#${vendorId}#ORDER#${orderId}`
+        }
+      }
+    });
+  }
+
+  // Execute the transaction
+  const result = await transactWriteItems(transactItems);
+
+  if (!result.success) {
+    return { success: false, error: result.error || 'Transaction failed' };
+  }
+
+  return { success: true };
+};
