@@ -456,10 +456,10 @@ export const getOrderShipmentsWithErrors = async () => {
   const allErrorKeys = []
   const processingErrorResponse = await queryOrderShipmentsByReadyForIndex('processing', 'error#');
   const processingErrors = processingErrorResponse?.data || []
-  allErrorKeys.push(processingErrors)
+  allErrorKeys.push(...processingErrors)
   const pickedErrorResponse = await queryOrderShipmentsByReadyForIndex('picked', 'error#');
   const pickedErrors = pickedErrorResponse?.data || []
-  allErrorKeys.push(pickedErrors)
+  allErrorKeys.push(...pickedErrors)
 
   console.log(allErrorKeys)
   // Loop over each key and get the order data
