@@ -348,7 +348,7 @@ export const getNextUnPickedOrderShipmentNew = async () => {
   // If the user doesn't have a currently processing order, find an accepted one from the GSI
   console.time('Query for Accepted Orders');
   const params2 = {
-    IndexName: 'order_shipments_ready_for', // GSI name
+    IndexName: 'order_shipment_ready_for', // GSI name
     KeyConditionExpression: '#status = :status AND begins_with(#readyFor, :prefix)',
     ExpressionAttributeValues: {
       ':status': 'accepted',

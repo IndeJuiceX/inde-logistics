@@ -211,7 +211,7 @@ export const createOrder = async (vendorId, order) => {
             createdOrder: {
                 order_id: uniqueOrderId,
                 vendor_order_id: order.vendor_order_id,
-                expected_delivery_date: expectedDeliveryDate
+                expected_delivery_date: {from:expectedDeliveryFromDate, to:expectedDeliveryToDate}
             },
         };
     } catch (error) {
