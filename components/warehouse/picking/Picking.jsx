@@ -9,13 +9,13 @@ import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
 import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
-import { updateOrderShipmentError, updateOrderShipment, markProcessComplete } from '@/services/data/order-shipment';
+import { updateOrderShipmentError, markProcessComplete } from '@/services/data/order-shipment';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import { doLogOut, getLoggedInUser } from '@/app/actions';
 
 export default function Picking({ order }) {
     // console.log('test order ', order);
-    const { setError, setErrorMessage, isErrorReload, setIsErrorReload } = useGlobalContext();
+    const { setError, setErrorMessage, setIsErrorReload } = useGlobalContext();
     const { isBarcodeInitiated, setBarcodeInitiated } = usePickingAppContext();
     const router = useRouter();
     const [windowHeight, setWindowHeight] = useState(0);
@@ -109,10 +109,9 @@ export default function Picking({ order }) {
                 setErrorMessage('Something went wrong, Please reload the page');
                 setIsErrorReload(true);
             }
-            console.log('user', user);
 
             const data = await markProcessComplete(vendor_id, vendor_order_id, user.email, 'picked');
-            console.log('data', data);
+            
             
 
             if (data.success) {
