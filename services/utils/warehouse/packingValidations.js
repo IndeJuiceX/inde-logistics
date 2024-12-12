@@ -107,3 +107,15 @@ export const checkParcelDimensions = async (order, payload) => {
     }
     return false;
 }
+
+export const isLabelPreviouslyPrinted = async (shipment) => {
+
+    if (!shipment) {
+        return { error: true, message: 'Invalid shipment data' };
+    }
+
+    if ('label_key' in shipment && 'tracking' in shipment && shipment.label_key && shipment.tracking && shipment.label_key !== '' && shipment.tracking !== '') {
+        return true;
+    }
+    return false;
+}
