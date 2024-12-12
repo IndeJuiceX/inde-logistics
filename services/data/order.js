@@ -169,7 +169,7 @@ export const createOrder = async (vendorId, order) => {
                     shipping_code: order.shipping_code,
                     expected_delivery_from_date: expectedDeliveryFromDate,
                     expected_delivery_to_date:expectedDeliveryToDate, //order.expected_delivery_date,
-                    shipping_cost: order.shipping_cost,
+                    //shipping_cost: order.shipping_cost,
                     entity_type: 'OrderShipment',
                     status: 'accepted',
                     created_at: timestamp,
