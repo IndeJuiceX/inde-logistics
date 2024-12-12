@@ -86,7 +86,7 @@ export const getOrderShipment = async (vendorId, orderId) => {
 export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = 'picked') => {
   // get the ordershipment and ensure that it exists... and has the status of processing before it can be set to picked..
   const orderShipmentResponse = await getOrderShipment(vendorId, orderId)
-  console.log('orderShipmentResponse', orderShipmentResponse);
+  // console.log('orderShipmentResponse', orderShipmentResponse);
 
   const orderShipment = orderShipmentResponse?.data || null
   if (!orderShipment) {
@@ -398,7 +398,6 @@ export const getNextUnPickedOrderShipment = async () => {
 export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
   // Get the order shipment and ensure that it exists
   const orderShipmentResponse = await getOrderShipment(vendorId, orderId);
-  console.log('orderShipmentResponse', orderShipmentResponse);
 
   const orderShipment = orderShipmentResponse?.data || null;
   if (!orderShipment) {
