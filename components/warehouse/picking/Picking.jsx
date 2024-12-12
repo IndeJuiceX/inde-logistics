@@ -9,9 +9,9 @@ import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
 import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
-import { updateOrderShipmentError, updateOrderShipmentStatus } from '@/services/data/order-shipment';
-import PickingAppModal from '../modal/PickingAppModal';
-import { doLogOut } from '@/app/actions';
+import { updateOrderShipmentError, updateOrderShipment } from '@/services/data/order-shipment';
+import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
+import { doLogOut, getLoggedInUser } from '@/app/actions';
 
 export default function Picking({ order }) {
     // console.log('test order ', order);
@@ -97,6 +97,7 @@ export default function Picking({ order }) {
 
         const totalItems = order.items.length; //index starts from 0
         const pickedItemsCount = pickedItems.length;
+        const user = await getLoggedInUser();
 
 
         if (pickedItemsCount === totalItems) {
@@ -108,8 +109,9 @@ export default function Picking({ order }) {
                 setErrorMessage('Something went wrong, Please reload the page');
                 setIsErrorReload(true);
             }
-
-            const data = await updateOrderShipmentStatus(vendor_id, vendor_order_id, 'picked');
+            console.log('user', user);
+            return;
+            const data = await updateOrderShipment(vendor_id, vendor_order_id, 'picked', user.email);
 
 
             if (data.success) {
