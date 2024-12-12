@@ -26,7 +26,7 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         //     args.push(error_reason);
         // }
 
-        const isError = false
+        let isError = false
         if (error_reason && error_reason != '' && error_reason !== undefined) {
             //args.push(error_reason);
             isError= true

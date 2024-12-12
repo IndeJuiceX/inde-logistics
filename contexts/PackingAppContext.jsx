@@ -193,7 +193,7 @@ export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
 
         // Prepare the arguments array
         // const args = [order.vendor_id, order.vendor_order_id];
-        const isError = false
+        let isError = false
         if (error_reason && error_reason != '' && error_reason !== undefined) {
             //args.push(error_reason);
             isError= true
