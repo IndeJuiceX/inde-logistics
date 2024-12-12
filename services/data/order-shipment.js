@@ -115,12 +115,13 @@ export const updateOrderShipmentError = async (vendorId, orderId, errorReason = 
 
   // Infer error value based on errorReason
   const error = errorReason ? 1 : 0;
-
+  const now = new Date().toISOString()
   // Prepare fields for updating
   const updatedFields = {
     error: error,
     error_reason: errorReason ? JSON.stringify(errorReason) : '',  // Set error_reason or empty string
-    updated_at: new Date().toISOString()  // Set updated_at to the current ISO timestamp
+    ready_for : `error#VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`,
+    updated_at: now  // Set updated_at to the current ISO timestamp
   };
 
   // Use the updateItem wrapper function to update the item without expressionAttributeNames
