@@ -1,6 +1,6 @@
 // app/api/onboard-vendor/route.js
 import { v4 as uuidv4 } from 'uuid';
-import { putItem } from '@/lib/dynamodb';
+import { putItem } from '@/services/external/dynamo/wrapper';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { generateJwtToken } from '@/services/utils/token';

@@ -1,5 +1,5 @@
 import AdminProducts from '@/components/admin/vendor/products/AdminProducts';
-import { queryItemCount } from '@/lib/dynamodb';
+import { queryItemCount } from '@/services/external/dynamo/wrapper';
 
 export default async function AdminProductsPage({ params }) {
   const vendorId = params.vendorId; 

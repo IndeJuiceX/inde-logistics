@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 //import SchemaValidation from '@/services/products/SchemaValidation';
 import { validateProducts } from '@/services/schema';
-import { batchWriteItems, getItem } from '@/lib/dynamodb';
+import { batchWriteItems, getItem } from '@/services/external/dynamo/wrapper';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 import { generateProductId } from '@/services/utils'
 import { getVendorIdFromRequest } from '@/services/utils';

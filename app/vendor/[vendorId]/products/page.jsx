@@ -1,5 +1,5 @@
 import ProductDashboard from "@/components/vendor/product/ProductDashboard";
-import { queryItemCount } from '@/lib/dynamodb';
+import { queryItemCount } from '@/services/external/dynamo/wrapper';
 
 
 
