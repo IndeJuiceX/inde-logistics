@@ -152,7 +152,7 @@ export default function Picking({ order }) {
         const email = order.picker;
         const data = await updateOrderShipmentError(vendor_id, vendor_order_id, error_reason, email, 'picking',);
         console.log('data', data);
-        return; 
+        // return; 
         if (data.success) {
             window.location.reload();
         }
