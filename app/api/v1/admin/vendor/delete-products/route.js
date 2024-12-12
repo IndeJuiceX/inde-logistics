@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { queryItems, batchWriteItems } from '@/lib/dynamodb';  // Import your DynamoDB helper functions
+import { queryItems, batchWriteItems } from '@/services/external/dynamo/wrapper';  // Import your DynamoDB helper functions
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 
 export const DELETE = withAuthAndLogging(async (request, { params, user }) => {

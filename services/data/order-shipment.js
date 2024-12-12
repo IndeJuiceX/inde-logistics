@@ -1,6 +1,6 @@
 'use server';
 
-import { transactWriteItems, getItem, updateItem, queryItemsWithPkAndSk, queryAllItems } from "@/services/external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem, queryItems, queryItemsWithPkAndSk, queryAllItems } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
 import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
 import { getCourierDetails } from "@/services/data/courier";
@@ -298,7 +298,7 @@ export const getNextUnPackedOrderShipment = async () => {
 }*/
 
 
-export const getNextUnPickedOrderShipment = async () => {
+export const getNextUnPickedOrderShipmentNew = async () => {
   console.time('Total Execution Time');
 
   console.time('Get Logged In User');
@@ -310,29 +310,28 @@ export const getNextUnPickedOrderShipment = async () => {
     return { success: false, error: 'Not Authorized' };
   }
 
+  // Check if the user has any orders currently opened for picking
   console.time('Query for Processing Orders');
-  const query1 = `
-  SELECT pk,sk
-  FROM order_shipments
-  WHERE status = 'processing' AND (error IS NULL OR error != 1) AND picker = '${user.email}'
-  ORDER BY created_at ASC
-  LIMIT 1;
-`;
-  const existingData = await executeDataQuery({ query: query1 });
-  console.timeEnd('Query for Processing Orders');
+  const params = {
+    KeyConditionExpression: '#pk = :pkVal',
+    ExpressionAttributeNames: { '#pk': 'pk' },
+    ExpressionAttributeValues: { ':pkVal': `WAREHOUSEPICKING#${user.email}` },
+    Limit: 1 // Only return the first item
+  };
 
-  const existingKeys = existingData?.data[0] || null;
+  const response = await queryItems(params);
+  const existingKeys = response?.data?.[0] || null;
+  console.timeEnd('Query for Processing Orders');
 
   if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
     console.time('Fetch Order Details for Processing Order');
-    const vendorId = getIdFromDynamoKey(existingKeys.pk);
-    const orderId = getIdFromDynamoKey(existingKeys.sk);
+    const vendorId = existingKeys.vendor_id;
+    const orderId = existingKeys.vendor_order_id;
 
     const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
     console.timeEnd('Fetch Order Details for Processing Order');
 
     const orderData = orderDetailsData?.data || null;
-
     if (!orderData) {
       console.timeEnd('Total Execution Time');
       return {
@@ -343,24 +342,30 @@ export const getNextUnPickedOrderShipment = async () => {
 
     orderData.picker = user.email;
     console.timeEnd('Total Execution Time');
-    return {
-      success: true,
-      data: orderData,
-    };
+    return { success: true, data: orderData };
   }
 
+  // If the user doesn't have a currently processing order, find an accepted one from the GSI
   console.time('Query for Accepted Orders');
-  const query2 = `
-  SELECT vendor_order_id,vendor_id
-  FROM orders
-  WHERE status = 'accepted'
-  ORDER BY created_at ASC
-  LIMIT 1;
-`;
-  const data = await executeDataQuery({ query: query2 });
+  const params2 = {
+    IndexName: 'order_shipments_ready_for', // GSI name
+    KeyConditionExpression: '#status = :status AND begins_with(#readyFor, :prefix)',
+    ExpressionAttributeValues: {
+      ':status': 'accepted',
+      ':prefix': 'picking#',
+    },
+    ExpressionAttributeNames: {
+      '#status': 'status',
+      '#readyFor': 'ready_for',
+    },
+    ProjectionExpression: 'pk, sk',
+    Limit: 1 // Only return the earliest accepted order
+  };
+
+  const responseData = await queryItems(params2);
   console.timeEnd('Query for Accepted Orders');
 
-  const nextOrderKeys = data?.data[0] || null;
+  const nextOrderKeys = responseData?.data?.[0] || null;
 
   if (!nextOrderKeys) {
     console.timeEnd('Total Execution Time');
@@ -368,7 +373,9 @@ export const getNextUnPickedOrderShipment = async () => {
   }
 
   console.time('Fetch Order Details for Accepted Order');
-  const orderDetailsData = await getOrderWithItemDetails(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id);
+  const vendorId = getIdFromDynamoKey(nextOrderKeys.pk)//nextOrderKeys.pk.split('#')[1];   // Assuming pk = VENDORORDER#vendorId
+  const orderId = getIdFromDynamoKey(nextOrderKeys.sk)//nextOrderKeys.sk.split('#')[1];    // Assuming sk = ORDER#orderId
+  const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId);
   console.timeEnd('Fetch Order Details for Accepted Order');
 
   if (!orderDetailsData || !orderDetailsData?.success) {
@@ -376,9 +383,9 @@ export const getNextUnPickedOrderShipment = async () => {
     return { success: false, error: orderDetailsData.error || 'Error in getting Order Details' };
   }
 
-  console.time('Create Shipment and Update Order');
-  const updateResponse = await createShipmentAndUpdateOrder(nextOrderKeys.vendor_id, nextOrderKeys.vendor_order_id);
-  console.timeEnd('Create Shipment and Update Order');
+  console.time('Create WAREHOUSE PICKING RECORD AND UPDATE ORDERSHIPMENT');
+  const updateResponse = await createWarehousePickingRecordAndUpdateOrder(user?.email, vendorId, orderId);
+  console.timeEnd('Create WAREHOUSE PICKING RECORD AND UPDATE ORDERSHIPMENT');
 
   if (!updateResponse?.success) {
     console.timeEnd('Total Execution Time');
@@ -389,10 +396,7 @@ export const getNextUnPickedOrderShipment = async () => {
   orderData.picker = user?.email || 'Unknown';
 
   console.timeEnd('Total Execution Time');
-  return {
-    success: true,
-    data: orderData,
-  };
+  return { success: true, data: orderData };
 };
 
 export const updateOrderShipment = async (vendorId, orderId, updatedFields) => {
@@ -523,3 +527,81 @@ export const manifestOrderShipments = async () => {
 };
 
 
+/**
+ * Creates a warehouse picking record for a given picker, vendor, and order,
+ * and updates the order shipment status and removes the ready_for_picking attribute.
+ *
+ * @param {string} pickerEmail - The email of the picker.
+ * @param {string} vendorId - The vendor ID.
+ * @param {string} orderId - The order ID.
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export const createWarehousePickingRecordAndUpdateOrder = async (pickerEmail, vendorId, orderId) => {
+  const now = new Date().toISOString();
+
+
+  const transactionItems = [
+    // 1. Create the warehouse picking record
+    {
+      Put: {
+        // TableName will be added by transactWriteItems wrapper if needed
+        Item: {
+          pk: `WAREHOUSEPICKING#${pickerEmail}`,
+          sk: `VENDOR#${vendorId}#ORDER#${orderId}`,
+          vendor_id: vendorId,
+          vendor_order_id: orderId,
+          picker: pickerEmail,
+          created_at: now,
+        },
+        ConditionExpression: 'attribute_not_exists(pk)',
+      }
+    },
+    // 2. Update the order item: remove ready_for_picking, set status=processing
+    {
+      Update: {
+        Key: {
+          pk: `VENDORORDER#${vendorId}`,
+          sk: `ORDER#${orderId}`,
+        },
+        UpdateExpression: 'SET #status = :processing',
+        ExpressionAttributeNames: {
+          '#status': 'status'
+        },
+        ExpressionAttributeValues: {
+          ':processing': 'processing'
+        }
+      }
+    },
+    // 3. Update the order shipment item: remove ready_for_picking, set status=processing
+    {
+      Update: {
+        Key: {
+          pk: `VENDORORDERSHIPMENT#${vendorId}`,
+          sk: `ORDERSHIPMENT#${orderId}`,
+        },
+        UpdateExpression: 'SET #status = :processing, #picker = :pickerVal, #readyFor = :readyForVal',
+        ExpressionAttributeNames: {
+          '#status': 'status',
+          '#picker': 'picker',
+          '#readyFor' :'ready_for'
+        },
+        ExpressionAttributeValues: {
+          ':processing': 'processing',
+          ':pickerVal': pickerEmail,
+          ':readyForVal' : `processing#VENDOR${vendorId}#ORDERSHIPMENT#${orderId}#${now}`
+        }
+      }
+    }
+  ];
+
+  try {
+    const result = await transactWriteItems(transactionItems);
+    if (!result.success) {
+      throw new Error(result.error || 'Unknown transaction error');
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating warehouse picking record and updating order shipment:', error);
+    return { success: false, error: error.message };
+  }
+};

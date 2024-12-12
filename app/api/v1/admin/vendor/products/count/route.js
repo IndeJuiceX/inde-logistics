@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { queryItemCount } from '@/lib/dynamodb';
+import { queryItemCount } from '@/services/external/dynamo/wrapper';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
 
 export const GET = withAuthAndLogging(async (request, { params, user }) => {
