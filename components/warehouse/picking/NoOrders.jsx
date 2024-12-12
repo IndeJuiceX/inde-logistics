@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
-import styles from '@/styles/warehouse/picking-app/Picking.module.scss';
 import { getNextUnPickedOrderShipmentNew } from '@/services/data/order-shipment';
+
 export default function NoOrders() {
     const { handleSignOut } = usePickingAppContext();
     const [isOpenModal, setIsOpenModal] = useState(true);
