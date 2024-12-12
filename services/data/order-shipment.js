@@ -272,10 +272,10 @@ export const getNextUnPackedOrderShipmentNew = async () => {
 
   const response = await queryItems(params);
   const existingKeys = response?.data?.[0] || null;
-
+ console.log('existingKeys',existingKeys)
   if (existingKeys && existingKeys?.pk && existingKeys?.sk) {
-    const vendorId = getIdFromDynamoKey(existingKeys.pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
-    const orderId = getIdFromDynamoKey(existingKeys.sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
+    const vendorId = existingKeys.vendor_id//getIdFromDynamoKey(existingKeys.pk)//existingKeys.pk.substring(existingKeys.pk.indexOf('#') + 1);
+    const orderId = existingKeys.vendor_order_id//getIdFromDynamoKey(existingKeys.sk)//existingKeys.sk.substring(existingKeys.sk.indexOf('#') + 1);
 
     const orderDetailsData = await getOrderWithItemDetails(vendorId, orderId)
     const orderData = orderDetailsData?.data || null
