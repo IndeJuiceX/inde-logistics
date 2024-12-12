@@ -1,6 +1,6 @@
 'use server';
 
-import { transactWriteItems, getItem, updateItem, queryItems, queryItemsWithPkAndSk, queryAllItems } from "@/services/external/dynamo/wrapper";
+import { transactWriteItems, getItem, updateItem, queryItems, queryItemsWithPkAndSk, queryAllItems,deleteItem } from "@/services/external/dynamo/wrapper";
 import { getLoggedInUser } from "@/app/actions";
 import { getOrder, getOrderWithItemDetails } from "@/services/data/order";
 import { getCourierDetails } from "@/services/data/courier";
@@ -104,8 +104,9 @@ export const updateOrderShipmentStatus = async (vendorId, orderId, newStatus = '
 
 }
 
-export const updateOrderShipmentError = async (vendorId, orderId, errorReason = '') => {
+export const updateOrderShipmentError = async (vendorId, orderId, errorReason = '', userEmail, context) => {
   // Fetch the order shipment to ensure it exists
+  const upperCaseContext = context?.toUpperCase()
   const orderShipmentResponse = await getOrderShipment(vendorId, orderId);
   const orderShipment = orderShipmentResponse?.data || null;
 
@@ -120,12 +121,37 @@ export const updateOrderShipmentError = async (vendorId, orderId, errorReason = 
   const updatedFields = {
     error: error,
     error_reason: errorReason ? JSON.stringify(errorReason) : '',  // Set error_reason or empty string
-    ready_for : `error#VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`,
     updated_at: now  // Set updated_at to the current ISO timestamp
   };
+  if (error == 1) {
+    updatedFields.ready_for = `error#VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`
+    //remove the order entry from warehousepicking // warehousepacking... 
+  } else {
+    updatedFields.ready_for = `VENDOR#${vendorId}#ORDERSHIPMENT#${orderId}#${now}`
+  }
 
   // Use the updateItem wrapper function to update the item without expressionAttributeNames
-  return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
+  //return await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
+  // Update the order shipment
+  const updateResponse = await updateItem(orderShipment.pk, orderShipment.sk, updatedFields);
+
+  if (!updateResponse.success) {
+    return { success: false, error: updateResponse.error || 'Failed to update order shipment' };
+  }
+
+  // If error=1, remove the warehouse picking record
+  if (error === 1) {
+    // Assuming warehouse picking record keys:
+    // pk: `WAREHOUSEPICKING#${userEmail}`
+    // sk: `VENDOR#${vendorId}#ORDER#${orderId}`
+    const warehousePk = `WAREHOUSE${upperCaseContext}#${userEmail}`;
+    const warehouseSk = `VENDOR#${vendorId}#ORDER#${orderId}`;
+
+    const deleteResponse = await deleteItem(warehousePk, warehouseSk);
+    if (!deleteResponse.success) {
+      return { success: false, error: deleteResponse.error || 'Failed to delete warehouse picking record' };
+    }
+  }
 };
 
 export const getNextUnPackedOrderShipment = async () => {
@@ -585,12 +611,12 @@ export const createWarehousePickingRecordAndUpdateOrder = async (pickerEmail, ve
         ExpressionAttributeNames: {
           '#status': 'status',
           '#picker': 'picker',
-          '#readyFor' :'ready_for'
+          '#readyFor': 'ready_for'
         },
         ExpressionAttributeValues: {
           ':processing': 'processing',
           ':pickerVal': pickerEmail,
-          ':readyForVal' : `processing#VENDOR${vendorId}#ORDERSHIPMENT#${orderId}#${now}`
+          ':readyForVal': `processing#VENDOR${vendorId}#ORDERSHIPMENT#${orderId}#${now}`
         }
       }
     }
