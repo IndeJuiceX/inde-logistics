@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { withAuthAndLogging } from '@/services/utils/apiMiddleware';
-import { updateOrderShipmentError } from '@/services/data/order-shipment';
+import { updateOrderShipment} from '@/services/data/order-shipment';
 export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
     try {
 
@@ -21,15 +21,25 @@ export const PATCH = withAuthAndLogging(async (request, { params, user }) => {
         }
 
         // Prepare the arguments array
-        const args = [vendor_id, vendor_order_id];
+        // const args = [vendor_id, vendor_order_id];
+        // if (error_reason && error_reason != '' && error_reason !== undefined) {
+        //     args.push(error_reason);
+        // }
+
+        const isError = false
         if (error_reason && error_reason != '' && error_reason !== undefined) {
-            args.push(error_reason);
+            //args.push(error_reason);
+            isError= true
+        }
+        const updatedFields = {}
+        if(isError){
+            updatedFields.error = 1
+            updatedFields.error_reason = error_reason
         }
 
 
-
         // Update the order's buyer information
-        const updateResult = await updateOrderShipmentError(...args);
+        const updateResult = await updateOrderShipment(vendor_id,vendor_order_id, updatedFields);
 
         if (!updateResult || !updateResult?.success) {
             return NextResponse.json({ error: 'Order Shipment error update failed', details: updateResult?.error || 'Order Shipment error update failed' }, { status: 400 });

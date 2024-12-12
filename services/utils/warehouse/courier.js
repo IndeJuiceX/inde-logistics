@@ -2,7 +2,7 @@
 
 
 import { getOrderWithItemDetails } from "@/services/data/order";
-import { getOrderShipment, updateOrderShipment, updateOrderShipmentError } from "@/services/data/order-shipment";
+import { getOrderShipment, updateOrderShipment } from "@/services/data/order-shipment";
 import { getCourierDetails } from "@/services/data/courier";
 import { cleanResponseData } from "@/services/utils";
 
@@ -179,7 +179,7 @@ export const generateLabel = async (vendorId, orderId,stationId) => {
             };
         } else {
             //register the label generation error for the shipment 
-            await updateOrderShipmentError(vendorId,orderId, `Error in generating label, ${result.error}`)
+            await updateOrderShipment(vendorId,orderId,{error:1,error_reason: `Error in generating label, ${result.error}`})
             return { success: false, error: 'Error generating label' };
         }
     }

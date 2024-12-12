@@ -9,7 +9,7 @@ import { usePickingAppContext } from '@/contexts/PickingAppContext';
 import { extractNameFromEmail, getShippingDuration } from '@/services/utils/index';
 import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useGlobalContext } from "@/contexts/GlobalStateContext";
-import { updateOrderShipmentError, markProcessComplete } from '@/services/data/order-shipment';
+import { updateOrderShipment } from '@/services/data/order-shipment';
 import PickingAppModal from '@/components/warehouse/modal/PickingAppModal';
 import { doLogOut, getLoggedInUser } from '@/app/actions';
 
@@ -109,7 +109,9 @@ export default function Picking({ order }) {
                 setErrorMessage('Something went wrong, Please reload the page');
                 setIsErrorReload(true);
             }
-            const data = await markProcessComplete(vendor_id, vendor_order_id, user.email, 'picked');
+            // const data = await markProcessComplete(vendor_id, vendor_order_id, user.email, 'picked');
+            const data = await updateOrderShipment(vendor_id, vendor_order_id, { status:'picked'});
+
             if (data.success) {
                 if (completeWithSignOut) {
                     await doLogOut();
@@ -131,8 +133,8 @@ export default function Picking({ order }) {
         const errorItem = order.items[currentIndex];
         const vendor_id = order.vendor_id;
         const vendor_order_id = order.vendor_order_id;
-        const error_reason = 'Missing Item';
-        const email = user.email;
+        const errorReason = 'Missing Item';
+        //const email = user.email;
         // Validate that vendor_id, stock_shipment_id, and  item are present
         if (!vendor_id || !vendor_order_id) {
             setError(true);
@@ -140,7 +142,7 @@ export default function Picking({ order }) {
             setIsErrorReload(true);
         }
         
-        const data = await updateOrderShipmentError(vendor_id, vendor_order_id, error_reason, email, 'picking',);
+        const data = await updateOrderShipment(vendor_id, vendor_order_id, {error:1,error_reason:errorReason});
       
         if (data.success) {
             window.location.reload();

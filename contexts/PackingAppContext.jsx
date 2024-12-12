@@ -10,7 +10,6 @@ import { parcelPayloadValidation } from '@/services/utils/warehouse/packingValid
 import CheckSetStationId from '@/components/warehouse/packing/CheckSetStationId';
 import { getStationId } from '@/services/utils/warehouse/packingStation';
 import { generateAndPrintLabel } from '@/services/utils/warehouse/printLabel';
-import { updateOrderShipmentError } from '@/services/data/order-shipment';
 
 export const PackingAppContext = createContext();
 
@@ -155,9 +154,7 @@ export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
         const vendorOrderId = order.vendor_order_id;
         const timestamp = new Date().toISOString()
         const updateFields = {
-            status: 'dispatched',
-            ready_for: `manifest#VENDOR#${order.vendor_id}#ORDER#${order.vendor_order_id}#${timestamp}`,
-           
+            status: 'dispatched',           
         }
 
         if (isErrorQueue) {
@@ -195,11 +192,19 @@ export const PackingAppProvider = ({ children, orderData, errorQueue }) => {
         }
 
         // Prepare the arguments array
-        const args = [order.vendor_id, order.vendor_order_id];
+        // const args = [order.vendor_id, order.vendor_order_id];
+        const isError = false
         if (error_reason && error_reason != '' && error_reason !== undefined) {
-            args.push(error_reason);
+            //args.push(error_reason);
+            isError= true
         }
-        const data = await updateOrderShipmentError(...args);
+        const updatedFields = {}
+        if(isError){
+            updatedFields.error = 1
+            updatedFields.error_reason = error_reason
+        }
+
+        const data = await updateOrderShipment(order.vendor_id, order.vendor_order_id , updatedFields);
 
         if (data.success) {
             window.location.reload();
